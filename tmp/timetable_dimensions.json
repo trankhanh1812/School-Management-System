@@ -1,0 +1,296 @@
+﻿{
+    "maxRow":  35,
+    "nonEmptyRows":  33,
+    "firstRows":  [
+                      {
+                          "row":  1,
+                          "count":  2,
+                          "first":  {
+                                        "ref":  "A1",
+                                        "value":  "THPT Yên Dũng số 1\nNăm học 2025"
+                                    },
+                          "last":  {
+                                       "ref":  "F1",
+                                       "value":  "THỜI KHOÁ BIỂU"
+                                   }
+                      },
+                      {
+                          "row":  2,
+                          "count":  1,
+                          "first":  {
+                                        "ref":  "F2",
+                                        "value":  "BUỔI SÁNG"
+                                    },
+                          "last":  {
+                                       "ref":  "F2",
+                                       "value":  "BUỔI SÁNG"
+                                   }
+                      },
+                      {
+                          "row":  5,
+                          "count":  38,
+                          "first":  {
+                                        "ref":  "A5",
+                                        "value":  "THỨ"
+                                    },
+                          "last":  {
+                                       "ref":  "AL5",
+                                       "value":  "12A12\n(C.YếnCN)"
+                                   }
+                      },
+                      {
+                          "row":  6,
+                          "count":  38,
+                          "first":  {
+                                        "ref":  "A6",
+                                        "value":  "2"
+                                    },
+                          "last":  {
+                                       "ref":  "AL6",
+                                       "value":  "Chào cờ"
+                                   }
+                      },
+                      {
+                          "row":  7,
+                          "count":  37,
+                          "first":  {
+                                        "ref":  "B7",
+                                        "value":  "2"
+                                    },
+                          "last":  {
+                                       "ref":  "AL7",
+                                       "value":  "Trải nghiệm hướng nghiệp"
+                                   }
+                      },
+                      {
+                          "row":  8,
+                          "count":  37,
+                          "first":  {
+                                        "ref":  "B8",
+                                        "value":  "3"
+                                    },
+                          "last":  {
+                                       "ref":  "AL8",
+                                       "value":  "Giáo dục địa phương"
+                                   }
+                      },
+                      {
+                          "row":  9,
+                          "count":  37,
+                          "first":  {
+                                        "ref":  "B9",
+                                        "value":  "4"
+                                    },
+                          "last":  {
+                                       "ref":  "AL9",
+                                       "value":  "Công nghệ"
+                                   }
+                      },
+                      {
+                          "row":  10,
+                          "count":  37,
+                          "first":  {
+                                        "ref":  "B10",
+                                        "value":  "5"
+                                    },
+                          "last":  {
+                                       "ref":  "AL10",
+                                       "value":  "Kinh tế pháp luật"
+                                   }
+                      },
+                      {
+                          "row":  11,
+                          "count":  38,
+                          "first":  {
+                                        "ref":  "A11",
+                                        "value":  "3"
+                                    },
+                          "last":  {
+                                       "ref":  "AL11",
+                                       "value":  "Địa"
+                                   }
+                      },
+                      {
+                          "row":  12,
+                          "count":  37,
+                          "first":  {
+                                        "ref":  "B12",
+                                        "value":  "2"
+                                    },
+                          "last":  {
+                                       "ref":  "AL12",
+                                       "value":  "Kinh tế pháp luật"
+                                   }
+                      },
+                      {
+                          "row":  13,
+                          "count":  37,
+                          "first":  {
+                                        "ref":  "B13",
+                                        "value":  "3"
+                                    },
+                          "last":  {
+                                       "ref":  "AL13",
+                                       "value":  "Tiếng Anh"
+                                   }
+                      },
+                      {
+                          "row":  14,
+                          "count":  37,
+                          "first":  {
+                                        "ref":  "B14",
+                                        "value":  "4"
+                                    },
+                          "last":  {
+                                       "ref":  "AL14",
+                                       "value":  "Toán"
+                                   }
+                      }
+                  ],
+    "lastRows":  [
+                     {
+                         "row":  24,
+                         "count":  37,
+                         "first":  {
+                                       "ref":  "B24",
+                                       "value":  "4"
+                                   },
+                         "last":  {
+                                      "ref":  "AL24",
+                                      "value":  "Tiếng Anh"
+                                  }
+                     },
+                     {
+                         "row":  25,
+                         "count":  37,
+                         "first":  {
+                                       "ref":  "B25",
+                                       "value":  "5"
+                                   },
+                         "last":  {
+                                      "ref":  "AL25",
+                                      "value":  "Tiếng Anh"
+                                  }
+                     },
+                     {
+                         "row":  26,
+                         "count":  38,
+                         "first":  {
+                                       "ref":  "A26",
+                                       "value":  "6"
+                                   },
+                         "last":  {
+                                      "ref":  "AL26",
+                                      "value":  "Kinh tế pháp luật"
+                                  }
+                     },
+                     {
+                         "row":  27,
+                         "count":  37,
+                         "first":  {
+                                       "ref":  "B27",
+                                       "value":  "2"
+                                   },
+                         "last":  {
+                                      "ref":  "AL27",
+                                      "value":  "Toán"
+                                  }
+                     },
+                     {
+                         "row":  28,
+                         "count":  37,
+                         "first":  {
+                                       "ref":  "B28",
+                                       "value":  "3"
+                                   },
+                         "last":  {
+                                      "ref":  "AL28",
+                                      "value":  "Văn"
+                                  }
+                     },
+                     {
+                         "row":  29,
+                         "count":  37,
+                         "first":  {
+                                       "ref":  "B29",
+                                       "value":  "4"
+                                   },
+                         "last":  {
+                                      "ref":  "AL29",
+                                      "value":  "Văn"
+                                  }
+                     },
+                     {
+                         "row":  30,
+                         "count":  37,
+                         "first":  {
+                                       "ref":  "B30",
+                                       "value":  "5"
+                                   },
+                         "last":  {
+                                      "ref":  "AL30",
+                                      "value":  "Sử"
+                                  }
+                     },
+                     {
+                         "row":  31,
+                         "count":  38,
+                         "first":  {
+                                       "ref":  "A31",
+                                       "value":  "7"
+                                   },
+                         "last":  {
+                                      "ref":  "AL31",
+                                      "value":  "Văn"
+                                  }
+                     },
+                     {
+                         "row":  32,
+                         "count":  37,
+                         "first":  {
+                                       "ref":  "B32",
+                                       "value":  "2"
+                                   },
+                         "last":  {
+                                      "ref":  "AL32",
+                                      "value":  "Văn"
+                                  }
+                     },
+                     {
+                         "row":  33,
+                         "count":  37,
+                         "first":  {
+                                       "ref":  "B33",
+                                       "value":  "3"
+                                   },
+                         "last":  {
+                                      "ref":  "AL33",
+                                      "value":  "Công nghệ"
+                                  }
+                     },
+                     {
+                         "row":  34,
+                         "count":  37,
+                         "first":  {
+                                       "ref":  "B34",
+                                       "value":  "4"
+                                   },
+                         "last":  {
+                                      "ref":  "AL34",
+                                      "value":  "Hoá"
+                                  }
+                     },
+                     {
+                         "row":  35,
+                         "count":  37,
+                         "first":  {
+                                       "ref":  "B35",
+                                       "value":  "5"
+                                   },
+                         "last":  {
+                                      "ref":  "AL35",
+                                      "value":  "Tiếng Anh"
+                                  }
+                     }
+                 ]
+}

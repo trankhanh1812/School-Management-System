@@ -1,0 +1,303 @@
+package com.school.school_management.service.student;
+
+import com.school.school_management.dto.student.BulkImportRequest;
+import com.school.school_management.dto.student.BulkImportResponse;
+import com.school.school_management.dto.student.ImportErrorRecord;
+import com.school.school_management.dto.student.ParentImportRequest;
+import com.school.school_management.dto.student.StudentImportRequest;
+import com.school.school_management.dto.student.StudentImportPreviewResponse;
+import com.school.school_management.dto.student.StudentUpsertRequest;
+import com.school.school_management.entity.Parent;
+import com.school.school_management.entity.ParentStudent;
+import com.school.school_management.entity.Role;
+import com.school.school_management.entity.Student;
+import com.school.school_management.entity.User;
+import com.school.school_management.entity.UserRole;
+import com.school.school_management.repository.ParentRepository;
+import com.school.school_management.repository.ParentStudentRepository;
+import com.school.school_management.repository.RoleRepository;
+import com.school.school_management.repository.StudentRepository;
+import com.school.school_management.repository.UserRepository;
+import com.school.school_management.util.ExcelImportUtil;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+@Service
+@RequiredArgsConstructor
+public class ImportServiceImpl implements ImportService {
+
+    private final ExcelImportUtil excelImportUtil;
+    private final StudentService studentService;
+    private final StudentRepository studentRepository;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final ParentRepository parentRepository;
+    private final ParentStudentRepository parentStudentRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    private final Map<String, byte[]> errorReportStore = new HashMap<>();
+
+    @Override
+    public StudentImportPreviewResponse getImportPreview(MultipartFile file) {
+        try {
+            BulkImportRequest request = excelImportUtil.parseExcelFile(file.getInputStream());
+            List<ImportErrorRecord> errors = new ArrayList<>();
+            List<StudentImportPreviewResponse.StudentPreviewItem> studentPreviews = new ArrayList<>();
+            List<StudentImportPreviewResponse.ParentPreviewItem> parentPreviews = new ArrayList<>();
+            int validCount = 0;
+            int invalidCount = 0;
+
+            // Process students
+            for (StudentImportRequest row : request.getStudents()) {
+                List<ImportErrorRecord> rowErrors = excelImportUtil.validateStudentData(row);
+                StudentImportPreviewResponse.StudentPreviewItem preview = StudentImportPreviewResponse.StudentPreviewItem.builder()
+                    .rowNumber(row.getRowNumber())
+                    .studentCode(row.getStudentCode())
+                    .fullName(row.getFullName())
+                    .dateOfBirth(row.getDateOfBirth())
+                    .gender(row.getGender())
+                    .phone(row.getPhone())
+                    .email(row.getEmail())
+                    .address(row.getAddress())
+                    .className(row.getClassName())
+                    .academicYear(row.getAcademicYear())
+                    .status(row.getStatus())
+                    .enrollmentDate(row.getEnrollmentDate())
+                    .hasErrors(!rowErrors.isEmpty())
+                    .fieldErrors(new ArrayList<>())
+                    .build();
+
+                if (rowErrors.isEmpty()) {
+                    validCount++;
+                } else {
+                    invalidCount++;
+                    rowErrors.forEach(err -> preview.getFieldErrors().add(err.getField() + ": " + err.getError()));
+                    errors.addAll(rowErrors);
+                }
+
+                studentPreviews.add(preview);
+            }
+
+            // Process parents
+            for (ParentImportRequest row : request.getParents()) {
+                List<ImportErrorRecord> rowErrors = excelImportUtil.validateParentData(row);
+                StudentImportPreviewResponse.ParentPreviewItem preview = StudentImportPreviewResponse.ParentPreviewItem.builder()
+                    .rowNumber(row.getRowNumber())
+                    .studentCode(row.getStudentCode())
+                    .parentName(row.getParentName())
+                    .parentPhone(row.getParentPhone())
+                    .parentEmail(row.getParentEmail())
+                    .relation(row.getRelation())
+                    .isPrimary(row.getIsPrimary())
+                    .hasErrors(!rowErrors.isEmpty())
+                    .fieldErrors(new ArrayList<>())
+                    .build();
+
+                if (rowErrors.isEmpty()) {
+                    validCount++;
+                } else {
+                    invalidCount++;
+                    rowErrors.forEach(err -> preview.getFieldErrors().add(err.getField() + ": " + err.getError()));
+                    errors.addAll(rowErrors);
+                }
+
+                parentPreviews.add(preview);
+            }
+
+            String importId = UUID.randomUUID().toString();
+            return StudentImportPreviewResponse.builder()
+                .importId(importId)
+                .totalRecords(request.getStudents().size() + request.getParents().size())
+                .validRecords(validCount)
+                .invalidRecords(invalidCount)
+                .students(studentPreviews)
+                .parents(parentPreviews)
+                .errors(errors)
+                .build();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate import preview: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public BulkImportResponse processBulkImport(MultipartFile file) {
+        try {
+            BulkImportRequest request = excelImportUtil.parseExcelFile(file.getInputStream());
+            List<ImportErrorRecord> errors = new ArrayList<>();
+            int success = 0;
+            Map<String, Student> importedStudents = new HashMap<>();
+
+            for (StudentImportRequest row : request.getStudents()) {
+                List<ImportErrorRecord> rowErrors = excelImportUtil.validateStudentData(row);
+                if (!rowErrors.isEmpty()) {
+                    errors.addAll(rowErrors);
+                    continue;
+                }
+
+                try {
+                    String studentCode = normalizeCode(row.getStudentCode());
+                    if (studentCode == null) {
+                        studentCode = generateStudentCode();
+                    }
+
+                    StudentUpsertRequest upsert = StudentUpsertRequest.builder()
+                        .studentCode(studentCode)
+                        .fullName(row.getFullName())
+                        .dateOfBirth(row.getDateOfBirth())
+                        .gender(row.getGender())
+                        .phone(row.getPhone())
+                        .email(row.getEmail())
+                        .address(row.getAddress())
+                        .className(row.getClassName())
+                        .academicYear(row.getAcademicYear())
+                        .status(row.getStatus())
+                        .build();
+
+                    studentService.createStudent(upsert);
+                    Student student = studentRepository.findByStudentCodeAndDeletedAtIsNull(studentCode).orElse(null);
+                    if (student != null) {
+                        importedStudents.put(studentCode, student);
+                    }
+                    success++;
+                } catch (Exception ex) {
+                    errors.add(ImportErrorRecord.builder()
+                        .row(row.getRowNumber())
+                        .studentCode(row.getStudentCode())
+                        .field("general")
+                        .error(ex.getMessage())
+                        .build());
+                }
+            }
+
+            for (ParentImportRequest row : request.getParents()) {
+                List<ImportErrorRecord> rowErrors = excelImportUtil.validateParentData(row);
+                if (!rowErrors.isEmpty()) {
+                    errors.addAll(rowErrors);
+                    continue;
+                }
+
+                String studentCode = normalizeCode(row.getStudentCode());
+                Student student = importedStudents.get(studentCode);
+                if (student == null) {
+                    student = studentRepository.findByStudentCodeAndDeletedAtIsNull(studentCode).orElse(null);
+                }
+                if (student == null) {
+                    errors.add(ImportErrorRecord.builder()
+                        .row(row.getRowNumber())
+                        .studentCode(row.getStudentCode())
+                        .field("student_code")
+                        .error("Student not found")
+                        .build());
+                    continue;
+                }
+
+                try {
+                    createParentAndLink(student, row);
+                } catch (Exception ex) {
+                    errors.add(ImportErrorRecord.builder()
+                        .row(row.getRowNumber())
+                        .studentCode(row.getStudentCode())
+                        .field("general")
+                        .error(ex.getMessage())
+                        .build());
+                }
+            }
+
+            UUID importId = UUID.randomUUID();
+            if (!errors.isEmpty()) {
+                byte[] report = excelImportUtil.generateErrorReport(errors).readAllBytes();
+                errorReportStore.put(importId.toString(), report);
+            }
+
+            return BulkImportResponse.builder()
+                .importId(importId)
+                .totalRecords(request.getStudents().size() + request.getParents().size())
+                .successfulRecords(success)
+                .failedRecords((int) errors.stream().map(ImportErrorRecord::getRow).filter(r -> r != null).distinct().count())
+                .errors(errors)
+                .message("Import completed")
+                .build();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to import excel", e);
+        }
+    }
+
+    @Override
+    public byte[] getErrorReport(String importId) {
+        byte[] data = errorReportStore.get(importId);
+        if (data == null) {
+            throw new RuntimeException("Error report not found");
+        }
+        return data;
+    }
+
+    private void createParentAndLink(Student student, ParentImportRequest row) {
+        String email = isBlank(row.getParentEmail()) ? buildSyntheticEmail(generateParentCode()) : row.getParentEmail().trim().toLowerCase();
+        User user = User.builder()
+            .username(generateParentCode())
+            .email(email)
+            .passwordHash(passwordEncoder.encode("Parent@123"))
+            .fullName(row.getParentName())
+            .status("ACTIVE")
+            .build();
+
+        Role parentRole = roleRepository.findByCode("PARENT").orElseThrow(() -> new RuntimeException("PARENT role missing"));
+        user.getUserRoles().add(UserRole.builder().user(user).role(parentRole).build());
+        User savedUser = userRepository.save(user);
+
+        Parent parent = Parent.builder()
+            .user(savedUser)
+            .parentCode(generateParentCode())
+            .fullName(row.getParentName())
+            .phone(row.getParentPhone())
+            .build();
+        Parent savedParent = parentRepository.save(parent);
+
+        Optional<ParentStudent> existing = parentStudentRepository.findByParentAndStudent(savedParent, student);
+        if (existing.isEmpty()) {
+            ParentStudent relation = ParentStudent.builder()
+                .parent(savedParent)
+                .student(student)
+                .isPrimaryContact("father".equalsIgnoreCase(row.getRelation()) || "mother".equalsIgnoreCase(row.getRelation()))
+                .canViewScore(true)
+                .build();
+            parentStudentRepository.save(relation);
+        }
+    }
+
+    private String generateStudentCode() {
+        long count = studentRepository.count() + 1;
+        return String.format("STD%06d", count);
+    }
+
+    private String generateParentCode() {
+        long count = parentRepository.count() + 1;
+        return String.format("PAR%06d", count);
+    }
+
+    private String buildSyntheticEmail(String code) {
+        return code.toLowerCase() + "@import.local";
+    }
+
+    private String normalizeCode(String v) {
+        if (isBlank(v)) {
+            return null;
+        }
+        return v.trim().toUpperCase();
+    }
+
+    private boolean isBlank(String v) {
+        return v == null || v.trim().isEmpty();
+    }
+}

@@ -1,0 +1,193 @@
+"use client";
+
+import { useEffect, useState, type ReactNode } from "react";
+import { SidebarNav } from "@/features/dashboard/components/sidebar-nav";
+import { TopNavbar } from "@/features/dashboard/components/top-navbar";
+import { storageKeys } from "@/constants/storage-keys";
+import { useAuthSession } from "@/hooks/use-auth-session";
+import { ButtonLink } from "@/shared/ui/button";
+import { Panel } from "@/shared/ui/panel";
+
+type AppShellProps = {
+  children: ReactNode;
+};
+
+function formatRoleLabel(role?: string) {
+  switch (role) {
+    case "ADMIN":
+      return "Quản trị viên";
+    case "TEACHER":
+      return "Giáo viên";
+    case "STUDENT":
+      return "Học sinh";
+    case "PARENT":
+      return "Phụ huynh";
+    default:
+      return "Người dùng";
+  }
+}
+
+export function AppShell({ children }: AppShellProps) {
+  const { session } = useAuthSession();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>
+    typeof window === "undefined"
+      ? false
+      : window.localStorage.getItem(storageKeys.sidebarCollapsed) === "true",
+  );
+  const isHydrated = true;
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    if (isHydrated) {
+      window.localStorage.setItem(storageKeys.sidebarCollapsed, String(sidebarCollapsed));
+    }
+  }, [sidebarCollapsed, isHydrated]);
+
+  const userName = session?.user.fullName ?? "Người dùng";
+  const roleLabel = formatRoleLabel(session?.user.role);
+
+  return (
+    <div className="mx-auto flex min-h-screen w-[min(98vw,2500px)] gap-4 px-3 py-4 sm:px-4 xl:px-5 2xl:w-[min(98.5vw,2800px)]">
+      {mobileNavOpen ? (
+        <>
+          <button
+            type="button"
+            className="fixed inset-0 z-30 bg-slate-900/30 xl:hidden"
+            onClick={() => setMobileNavOpen(false)}
+            aria-label="Đóng menu"
+          />
+          <aside className="fixed left-3 top-3 z-40 h-[calc(100vh-24px)] w-[min(86vw,320px)] xl:hidden">
+            <Panel className="h-full overflow-hidden p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-sky-700">Điều hướng</p>
+                <button
+                  type="button"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 text-slate-700"
+                  aria-label="Đóng menu"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="h-[calc(100%-44px)] overflow-y-auto pr-1">
+                <SidebarNav collapsed={false} />
+              </div>
+            </Panel>
+          </aside>
+        </>
+      ) : null}
+
+      <aside
+        suppressHydrationWarning
+        className={`hidden shrink-0 transition-[width] duration-200 xl:block ${
+          isHydrated && sidebarCollapsed ? "w-[92px]" : "w-[280px] 2xl:w-[320px]"
+        }`}
+      >
+        <Panel className="sticky top-4 overflow-hidden p-4">
+          <div className="grid gap-4">
+            <div
+              suppressHydrationWarning
+              className={`grid gap-3 ${isHydrated && sidebarCollapsed ? "justify-items-center" : ""}`}
+            >
+              <div
+                suppressHydrationWarning
+                className={`w-full rounded-2xl border border-slate-200 bg-white ${
+                  isHydrated && sidebarCollapsed ? "px-3 py-4 text-center" : "p-4"
+                }`}
+              >
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-sky-600 font-mono text-sm font-bold text-white">
+                  SMS
+                </div>
+                {isHydrated && !sidebarCollapsed ? (
+                  <>
+                    <p className="hidden">
+                      Hệ thống quản lý trường học
+                    </p>
+                    <h1 className="hidden">
+                      Bảng điều khiển
+                    </h1>
+                    <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-sky-700">
+                      Hệ thống quản lý trường học
+                    </p>
+                    <h1 className="mt-2 text-xl font-bold text-slate-950">
+                      Bảng điều khiển
+                    </h1>
+                    <p className="hidden">
+                      Quản lý học sinh, lớp học và vận hành học vụ trong một giao diện gọn hơn.
+                    </p>
+                  </>
+                ) : isHydrated ? (
+                  <p className="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-sky-700">
+                    SMS
+                  </p>
+                ) : null}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setSidebarCollapsed((value) => !value)}
+                suppressHydrationWarning
+                className={`inline-flex h-10 items-center justify-center rounded-xl border border-sky-200 bg-sky-50/80 text-sm font-semibold text-sky-800 transition hover:border-sky-300 hover:bg-sky-100 ${
+                  isHydrated && sidebarCollapsed ? "w-11" : "w-full gap-2"
+                }`}
+                aria-label={
+                  sidebarCollapsed ? "Mở rộng thanh điều hướng" : "Thu gọn thanh điều hướng"
+                }
+                title={
+                  sidebarCollapsed ? "Mở rộng thanh điều hướng" : "Thu gọn thanh điều hướng"
+                }
+              >
+                <span aria-hidden="true">{isHydrated && sidebarCollapsed ? "»" : "«"}</span>
+                {isHydrated && !sidebarCollapsed ? <span>Thu gọn</span> : null}
+              </button>
+            </div>
+
+            <SidebarNav collapsed={isHydrated ? sidebarCollapsed : false} />
+
+            <div
+              suppressHydrationWarning
+              className={`rounded-[1.5rem] border border-sky-100 bg-sky-50/80 ${
+                isHydrated && sidebarCollapsed ? "px-3 py-4 text-center" : "p-4"
+              }`}
+            >
+              {isHydrated && sidebarCollapsed ? (
+                <div className="grid gap-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
+                    HK
+                  </p>
+                  <p className="text-sm font-semibold text-slate-950">26-27</p>
+                </div>
+              ) : isHydrated ? (
+                <>
+                  <p className="text-sm font-semibold text-sky-800">Năm học đang chọn</p>
+                  <p className="mt-2 text-xl font-semibold text-slate-950">2026 - 2027</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Học kỳ II đang mở nhập điểm và đồng bộ học bạ điện tử.
+                  </p>
+                  <ButtonLink href="/reports" tone="secondary" className="mt-4 w-full">
+                    Mở báo cáo nhanh
+                  </ButtonLink>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-semibold text-sky-800">Năm học đang chọn</p>
+                  <p className="mt-2 text-xl font-semibold text-slate-950">2026 - 2027</p>
+                </>
+              )}
+            </div>
+          </div>
+        </Panel>
+      </aside>
+
+      <div className="flex min-w-0 flex-1 flex-col gap-4">
+        <TopNavbar
+          userName={userName}
+          roleLabel={roleLabel}
+          roleCode={session?.user.role}
+          onOpenMobileNav={() => setMobileNavOpen(true)}
+        />
+        <div className="grid gap-4">{children}</div>
+      </div>
+    </div>
+  );
+}

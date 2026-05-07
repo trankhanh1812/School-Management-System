@@ -1,0 +1,5787 @@
+﻿[
+    {
+        "row":  1,
+        "ref":  "A1",
+        "value":  "THPT Yên Dũng số 1\nNăm học 2025 "
+    },
+    {
+        "row":  1,
+        "ref":  "F1",
+        "value":  "THỜI KHOÁ BIỂU"
+    },
+    {
+        "row":  2,
+        "ref":  "F2",
+        "value":  "BUỔI SÁNG"
+    },
+    {
+        "row":  5,
+        "ref":  "A5",
+        "value":  "THỨ"
+    },
+    {
+        "row":  5,
+        "ref":  "B5",
+        "value":  "TIẾT"
+    },
+    {
+        "row":  5,
+        "ref":  "C5",
+        "value":  "10A1\n(C.UyênS)"
+    },
+    {
+        "row":  5,
+        "ref":  "D5",
+        "value":  "10A2\n(C.Dương)"
+    },
+    {
+        "row":  5,
+        "ref":  "E5",
+        "value":  "10A3\n(C.TrangLi)"
+    },
+    {
+        "row":  5,
+        "ref":  "F5",
+        "value":  "10A4\n(C.Hằng)"
+    },
+    {
+        "row":  5,
+        "ref":  "G5",
+        "value":  "10A5\n(C.HuyềnT)"
+    },
+    {
+        "row":  5,
+        "ref":  "H5",
+        "value":  "10A6\n(C.Hiệp)"
+    },
+    {
+        "row":  5,
+        "ref":  "I5",
+        "value":  "10A7\n(C.Quý)"
+    },
+    {
+        "row":  5,
+        "ref":  "J5",
+        "value":  "10A8\n(C.TuyếtT)"
+    },
+    {
+        "row":  5,
+        "ref":  "K5",
+        "value":  "10A9\n(C.MếnT)"
+    },
+    {
+        "row":  5,
+        "ref":  "L5",
+        "value":  "10A10\n(C.YếnS)"
+    },
+    {
+        "row":  5,
+        "ref":  "M5",
+        "value":  "10A11\n(T.Khoa)"
+    },
+    {
+        "row":  5,
+        "ref":  "N5",
+        "value":  "10A12\n(T.Chung)"
+    },
+    {
+        "row":  5,
+        "ref":  "O5",
+        "value":  "11A1\n(C.NgaT)"
+    },
+    {
+        "row":  5,
+        "ref":  "P5",
+        "value":  "11A2\n(T.Tuấn)"
+    },
+    {
+        "row":  5,
+        "ref":  "Q5",
+        "value":  "11A3\n(C.Ngân)"
+    },
+    {
+        "row":  5,
+        "ref":  "R5",
+        "value":  "11A4\n(C.HườngH)"
+    },
+    {
+        "row":  5,
+        "ref":  "S5",
+        "value":  "11A5\n(T.V Thái)"
+    },
+    {
+        "row":  5,
+        "ref":  "T5",
+        "value":  "11A6\n(C.Duyến)"
+    },
+    {
+        "row":  5,
+        "ref":  "U5",
+        "value":  "11A7\n(C.Xuyên)"
+    },
+    {
+        "row":  5,
+        "ref":  "V5",
+        "value":  "11A8\n(C.YếnV)"
+    },
+    {
+        "row":  5,
+        "ref":  "W5",
+        "value":  "11A9\n(C.Hồng)"
+    },
+    {
+        "row":  5,
+        "ref":  "X5",
+        "value":  "11A10\n(C.Hoa)"
+    },
+    {
+        "row":  5,
+        "ref":  "Y5",
+        "value":  "11A11\n(C.Luận)"
+    },
+    {
+        "row":  5,
+        "ref":  "Z5",
+        "value":  "11A12\n(T.Cường)"
+    },
+    {
+        "row":  5,
+        "ref":  "AA5",
+        "value":  "12A1\n(C.Gấm)"
+    },
+    {
+        "row":  5,
+        "ref":  "AB5",
+        "value":  "12A2\n(C.HuyềnLi)"
+    },
+    {
+        "row":  5,
+        "ref":  "AC5",
+        "value":  "12A3\n(C.Hoan)"
+    },
+    {
+        "row":  5,
+        "ref":  "AD5",
+        "value":  "12A4\n(T.Đ Thái)"
+    },
+    {
+        "row":  5,
+        "ref":  "AE5",
+        "value":  "12A5\n(T.Tám)"
+    },
+    {
+        "row":  5,
+        "ref":  "AF5",
+        "value":  "12A6\n(C.Hương)"
+    },
+    {
+        "row":  5,
+        "ref":  "AG5",
+        "value":  "12A7\n(C.Hiền)"
+    },
+    {
+        "row":  5,
+        "ref":  "AH5",
+        "value":  "12A8\n(C.Tư)"
+    },
+    {
+        "row":  5,
+        "ref":  "AI5",
+        "value":  "12A9\n(C.Ảnh)"
+    },
+    {
+        "row":  5,
+        "ref":  "AJ5",
+        "value":  "12A10\n(C.NgaA)"
+    },
+    {
+        "row":  5,
+        "ref":  "AK5",
+        "value":  "12A11\n(C.ThảoD)"
+    },
+    {
+        "row":  5,
+        "ref":  "AL5",
+        "value":  "12A12\n(C.YếnCN)"
+    },
+    {
+        "row":  6,
+        "ref":  "A6",
+        "value":  "2"
+    },
+    {
+        "row":  6,
+        "ref":  "B6",
+        "value":  "1"
+    },
+    {
+        "row":  6,
+        "ref":  "C6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "D6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "E6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "F6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "G6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "H6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "I6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "J6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "K6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "L6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "M6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "N6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "O6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "P6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "Q6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "R6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "S6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "T6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "U6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "V6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "W6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "X6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "Y6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "Z6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "AA6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "AB6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "AC6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "AD6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "AE6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "AF6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "AG6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "AH6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "AI6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "AJ6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "AK6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  6,
+        "ref":  "AL6",
+        "value":  "Chào cờ "
+    },
+    {
+        "row":  7,
+        "ref":  "B7",
+        "value":  "2"
+    },
+    {
+        "row":  7,
+        "ref":  "C7",
+        "value":  "Văn "
+    },
+    {
+        "row":  7,
+        "ref":  "D7",
+        "value":  "Tin "
+    },
+    {
+        "row":  7,
+        "ref":  "E7",
+        "value":  "Văn "
+    },
+    {
+        "row":  7,
+        "ref":  "F7",
+        "value":  "Toán "
+    },
+    {
+        "row":  7,
+        "ref":  "G7",
+        "value":  "Toán "
+    },
+    {
+        "row":  7,
+        "ref":  "H7",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  7,
+        "ref":  "I7",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  7,
+        "ref":  "J7",
+        "value":  "Lí "
+    },
+    {
+        "row":  7,
+        "ref":  "K7",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  7,
+        "ref":  "L7",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  7,
+        "ref":  "M7",
+        "value":  "Hoá "
+    },
+    {
+        "row":  7,
+        "ref":  "N7",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  7,
+        "ref":  "O7",
+        "value":  "Hoá "
+    },
+    {
+        "row":  7,
+        "ref":  "P7",
+        "value":  "Lí "
+    },
+    {
+        "row":  7,
+        "ref":  "Q7",
+        "value":  "Văn "
+    },
+    {
+        "row":  7,
+        "ref":  "R7",
+        "value":  "Hoá "
+    },
+    {
+        "row":  7,
+        "ref":  "S7",
+        "value":  "Toán "
+    },
+    {
+        "row":  7,
+        "ref":  "T7",
+        "value":  "Toán "
+    },
+    {
+        "row":  7,
+        "ref":  "U7",
+        "value":  "Lí "
+    },
+    {
+        "row":  7,
+        "ref":  "V7",
+        "value":  "Toán "
+    },
+    {
+        "row":  7,
+        "ref":  "W7",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  7,
+        "ref":  "X7",
+        "value":  "Văn "
+    },
+    {
+        "row":  7,
+        "ref":  "Y7",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  7,
+        "ref":  "Z7",
+        "value":  "Hoá "
+    },
+    {
+        "row":  7,
+        "ref":  "AA7",
+        "value":  "Sinh "
+    },
+    {
+        "row":  7,
+        "ref":  "AB7",
+        "value":  "Sử "
+    },
+    {
+        "row":  7,
+        "ref":  "AC7",
+        "value":  "Toán "
+    },
+    {
+        "row":  7,
+        "ref":  "AD7",
+        "value":  "Sử "
+    },
+    {
+        "row":  7,
+        "ref":  "AE7",
+        "value":  "Hoá "
+    },
+    {
+        "row":  7,
+        "ref":  "AF7",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  7,
+        "ref":  "AG7",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  7,
+        "ref":  "AH7",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  7,
+        "ref":  "AI7",
+        "value":  "Toán "
+    },
+    {
+        "row":  7,
+        "ref":  "AJ7",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  7,
+        "ref":  "AK7",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  7,
+        "ref":  "AL7",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  8,
+        "ref":  "B8",
+        "value":  "3"
+    },
+    {
+        "row":  8,
+        "ref":  "C8",
+        "value":  "Sinh "
+    },
+    {
+        "row":  8,
+        "ref":  "D8",
+        "value":  "Toán "
+    },
+    {
+        "row":  8,
+        "ref":  "E8",
+        "value":  "Văn "
+    },
+    {
+        "row":  8,
+        "ref":  "F8",
+        "value":  "Hoá "
+    },
+    {
+        "row":  8,
+        "ref":  "G8",
+        "value":  "Văn "
+    },
+    {
+        "row":  8,
+        "ref":  "H8",
+        "value":  " Lí "
+    },
+    {
+        "row":  8,
+        "ref":  "I8",
+        "value":  "Toán "
+    },
+    {
+        "row":  8,
+        "ref":  "J8",
+        "value":  "Toán "
+    },
+    {
+        "row":  8,
+        "ref":  "K8",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  8,
+        "ref":  "L8",
+        "value":  "Văn "
+    },
+    {
+        "row":  8,
+        "ref":  "M8",
+        "value":  "Hoá "
+    },
+    {
+        "row":  8,
+        "ref":  "N8",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  8,
+        "ref":  "O8",
+        "value":  "Lí "
+    },
+    {
+        "row":  8,
+        "ref":  "P8",
+        "value":  "Toán "
+    },
+    {
+        "row":  8,
+        "ref":  "Q8",
+        "value":  "Sinh "
+    },
+    {
+        "row":  8,
+        "ref":  "R8",
+        "value":  " Lí "
+    },
+    {
+        "row":  8,
+        "ref":  "S8",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  8,
+        "ref":  "T8",
+        "value":  "Địa "
+    },
+    {
+        "row":  8,
+        "ref":  "U8",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  8,
+        "ref":  "V8",
+        "value":  "Văn "
+    },
+    {
+        "row":  8,
+        "ref":  "W8",
+        "value":  "Lí "
+    },
+    {
+        "row":  8,
+        "ref":  "X8",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  8,
+        "ref":  "Y8",
+        "value":  "Toán "
+    },
+    {
+        "row":  8,
+        "ref":  "Z8",
+        "value":  "Văn "
+    },
+    {
+        "row":  8,
+        "ref":  "AA8",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  8,
+        "ref":  "AB8",
+        "value":  "Lí "
+    },
+    {
+        "row":  8,
+        "ref":  "AC8",
+        "value":  "Sử "
+    },
+    {
+        "row":  8,
+        "ref":  "AD8",
+        "value":  "Tin "
+    },
+    {
+        "row":  8,
+        "ref":  "AE8",
+        "value":  "Toán "
+    },
+    {
+        "row":  8,
+        "ref":  "AF8",
+        "value":  "Lí "
+    },
+    {
+        "row":  8,
+        "ref":  "AG8",
+        "value":  "Văn "
+    },
+    {
+        "row":  8,
+        "ref":  "AH8",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  8,
+        "ref":  "AI8",
+        "value":  "Toán "
+    },
+    {
+        "row":  8,
+        "ref":  "AJ8",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  8,
+        "ref":  "AK8",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  8,
+        "ref":  "AL8",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  9,
+        "ref":  "B9",
+        "value":  "4"
+    },
+    {
+        "row":  9,
+        "ref":  "C9",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  9,
+        "ref":  "D9",
+        "value":  "Toán "
+    },
+    {
+        "row":  9,
+        "ref":  "E9",
+        "value":  "Hoá "
+    },
+    {
+        "row":  9,
+        "ref":  "F9",
+        "value":  "Sử "
+    },
+    {
+        "row":  9,
+        "ref":  "G9",
+        "value":  "Lí "
+    },
+    {
+        "row":  9,
+        "ref":  "H9",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  9,
+        "ref":  "I9",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  9,
+        "ref":  "J9",
+        "value":  "Văn "
+    },
+    {
+        "row":  9,
+        "ref":  "K9",
+        "value":  "Địa "
+    },
+    {
+        "row":  9,
+        "ref":  "L9",
+        "value":  "Văn "
+    },
+    {
+        "row":  9,
+        "ref":  "M9",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  9,
+        "ref":  "N9",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  9,
+        "ref":  "O9",
+        "value":  "Toán "
+    },
+    {
+        "row":  9,
+        "ref":  "P9",
+        "value":  "Hoá "
+    },
+    {
+        "row":  9,
+        "ref":  "Q9",
+        "value":  "Toán "
+    },
+    {
+        "row":  9,
+        "ref":  "R9",
+        "value":  "Lí "
+    },
+    {
+        "row":  9,
+        "ref":  "S9",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  9,
+        "ref":  "T9",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  9,
+        "ref":  "U9",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  9,
+        "ref":  "V9",
+        "value":  "Sử "
+    },
+    {
+        "row":  9,
+        "ref":  "W9",
+        "value":  "Toán "
+    },
+    {
+        "row":  9,
+        "ref":  "X9",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  9,
+        "ref":  "Y9",
+        "value":  "Hoá "
+    },
+    {
+        "row":  9,
+        "ref":  "Z9",
+        "value":  "Địa "
+    },
+    {
+        "row":  9,
+        "ref":  "AA9",
+        "value":  "Tin "
+    },
+    {
+        "row":  9,
+        "ref":  "AB9",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  9,
+        "ref":  "AC9",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  9,
+        "ref":  "AD9",
+        "value":  "Lí "
+    },
+    {
+        "row":  9,
+        "ref":  "AE9",
+        "value":  "Toán "
+    },
+    {
+        "row":  9,
+        "ref":  "AF9",
+        "value":  "Văn "
+    },
+    {
+        "row":  9,
+        "ref":  "AG9",
+        "value":  "Toán "
+    },
+    {
+        "row":  9,
+        "ref":  "AH9",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  9,
+        "ref":  "AI9",
+        "value":  "Lí "
+    },
+    {
+        "row":  9,
+        "ref":  "AJ9",
+        "value":  "Văn "
+    },
+    {
+        "row":  9,
+        "ref":  "AK9",
+        "value":  "Hoá "
+    },
+    {
+        "row":  9,
+        "ref":  "AL9",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  10,
+        "ref":  "B10",
+        "value":  "5"
+    },
+    {
+        "row":  10,
+        "ref":  "C10",
+        "value":  "Sử "
+    },
+    {
+        "row":  10,
+        "ref":  "D10",
+        "value":  "Sinh "
+    },
+    {
+        "row":  10,
+        "ref":  "E10",
+        "value":  "Hoá "
+    },
+    {
+        "row":  10,
+        "ref":  "F10",
+        "value":  "Văn "
+    },
+    {
+        "row":  10,
+        "ref":  "G10",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  10,
+        "ref":  "H10",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  10,
+        "ref":  "I10",
+        "value":  "Văn "
+    },
+    {
+        "row":  10,
+        "ref":  "J10",
+        "value":  "Văn "
+    },
+    {
+        "row":  10,
+        "ref":  "K10",
+        "value":  "Toán "
+    },
+    {
+        "row":  10,
+        "ref":  "L10",
+        "value":  "Sử "
+    },
+    {
+        "row":  10,
+        "ref":  "M10",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  10,
+        "ref":  "N10",
+        "value":  "Hoá "
+    },
+    {
+        "row":  10,
+        "ref":  "O10",
+        "value":  "Toán "
+    },
+    {
+        "row":  10,
+        "ref":  "P10",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  10,
+        "ref":  "Q10",
+        "value":  "Toán "
+    },
+    {
+        "row":  10,
+        "ref":  "R10",
+        "value":  "Toán "
+    },
+    {
+        "row":  10,
+        "ref":  "S10",
+        "value":  "Văn "
+    },
+    {
+        "row":  10,
+        "ref":  "T10",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  10,
+        "ref":  "U10",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  10,
+        "ref":  "V10",
+        "value":  "Địa "
+    },
+    {
+        "row":  10,
+        "ref":  "W10",
+        "value":  "Toán "
+    },
+    {
+        "row":  10,
+        "ref":  "X10",
+        "value":  "Toán "
+    },
+    {
+        "row":  10,
+        "ref":  "Y10",
+        "value":  "Địa "
+    },
+    {
+        "row":  10,
+        "ref":  "Z10",
+        "value":  "Lí "
+    },
+    {
+        "row":  10,
+        "ref":  "AA10",
+        "value":  "Lí "
+    },
+    {
+        "row":  10,
+        "ref":  "AB10",
+        "value":  "Hoá "
+    },
+    {
+        "row":  10,
+        "ref":  "AC10",
+        "value":  "Hoá "
+    },
+    {
+        "row":  10,
+        "ref":  "AD10",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  10,
+        "ref":  "AE10",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  10,
+        "ref":  "AF10",
+        "value":  "Văn "
+    },
+    {
+        "row":  10,
+        "ref":  "AG10",
+        "value":  "Toán "
+    },
+    {
+        "row":  10,
+        "ref":  "AH10",
+        "value":  "Lí "
+    },
+    {
+        "row":  10,
+        "ref":  "AI10",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  10,
+        "ref":  "AJ10",
+        "value":  "Văn "
+    },
+    {
+        "row":  10,
+        "ref":  "AK10",
+        "value":  "Sử "
+    },
+    {
+        "row":  10,
+        "ref":  "AL10",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  11,
+        "ref":  "A11",
+        "value":  "3"
+    },
+    {
+        "row":  11,
+        "ref":  "B11",
+        "value":  "1"
+    },
+    {
+        "row":  11,
+        "ref":  "C11",
+        "value":  "Toán "
+    },
+    {
+        "row":  11,
+        "ref":  "D11",
+        "value":  "Sử "
+    },
+    {
+        "row":  11,
+        "ref":  "E11",
+        "value":  "Văn "
+    },
+    {
+        "row":  11,
+        "ref":  "F11",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  11,
+        "ref":  "G11",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  11,
+        "ref":  "H11",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  11,
+        "ref":  "I11",
+        "value":  "Toán "
+    },
+    {
+        "row":  11,
+        "ref":  "J11",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  11,
+        "ref":  "K11",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  11,
+        "ref":  "L11",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  11,
+        "ref":  "M11",
+        "value":  "Toán "
+    },
+    {
+        "row":  11,
+        "ref":  "N11",
+        "value":  "Sử "
+    },
+    {
+        "row":  11,
+        "ref":  "O11",
+        "value":  "Toán "
+    },
+    {
+        "row":  11,
+        "ref":  "P11",
+        "value":  "Văn "
+    },
+    {
+        "row":  11,
+        "ref":  "Q11",
+        "value":  "Tin "
+    },
+    {
+        "row":  11,
+        "ref":  "R11",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  11,
+        "ref":  "S11",
+        "value":  "Sinh "
+    },
+    {
+        "row":  11,
+        "ref":  "T11",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  11,
+        "ref":  "U11",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  11,
+        "ref":  "V11",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  11,
+        "ref":  "W11",
+        "value":  "Lí "
+    },
+    {
+        "row":  11,
+        "ref":  "X11",
+        "value":  "Toán "
+    },
+    {
+        "row":  11,
+        "ref":  "Y11",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  11,
+        "ref":  "Z11",
+        "value":  " Văn "
+    },
+    {
+        "row":  11,
+        "ref":  "AA11",
+        "value":  "Toán "
+    },
+    {
+        "row":  11,
+        "ref":  "AB11",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  11,
+        "ref":  "AC11",
+        "value":  "Lí "
+    },
+    {
+        "row":  11,
+        "ref":  "AD11",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  11,
+        "ref":  "AE11",
+        "value":  "Văn "
+    },
+    {
+        "row":  11,
+        "ref":  "AF11",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  11,
+        "ref":  "AG11",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  11,
+        "ref":  "AH11",
+        "value":  "Văn "
+    },
+    {
+        "row":  11,
+        "ref":  "AI11",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  11,
+        "ref":  "AJ11",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  11,
+        "ref":  "AK11",
+        "value":  "Văn "
+    },
+    {
+        "row":  11,
+        "ref":  "AL11",
+        "value":  "Địa "
+    },
+    {
+        "row":  12,
+        "ref":  "B12",
+        "value":  "2"
+    },
+    {
+        "row":  12,
+        "ref":  "C12",
+        "value":  "Sử "
+    },
+    {
+        "row":  12,
+        "ref":  "D12",
+        "value":  "Toán "
+    },
+    {
+        "row":  12,
+        "ref":  "E12",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  12,
+        "ref":  "F12",
+        "value":  "Sinh "
+    },
+    {
+        "row":  12,
+        "ref":  "G12",
+        "value":  "Văn "
+    },
+    {
+        "row":  12,
+        "ref":  "H12",
+        "value":  "Toán "
+    },
+    {
+        "row":  12,
+        "ref":  "I12",
+        "value":  "Toán "
+    },
+    {
+        "row":  12,
+        "ref":  "J12",
+        "value":  "Toán "
+    },
+    {
+        "row":  12,
+        "ref":  "K12",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  12,
+        "ref":  "L12",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  12,
+        "ref":  "M12",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  12,
+        "ref":  "N12",
+        "value":  "Toán "
+    },
+    {
+        "row":  12,
+        "ref":  "O12",
+        "value":  "Toán "
+    },
+    {
+        "row":  12,
+        "ref":  "P12",
+        "value":  "Sinh "
+    },
+    {
+        "row":  12,
+        "ref":  "Q12",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  12,
+        "ref":  "R12",
+        "value":  "Tin "
+    },
+    {
+        "row":  12,
+        "ref":  "S12",
+        "value":  "Lí "
+    },
+    {
+        "row":  12,
+        "ref":  "T12",
+        "value":  "Hoá "
+    },
+    {
+        "row":  12,
+        "ref":  "U12",
+        "value":  "Sử "
+    },
+    {
+        "row":  12,
+        "ref":  "V12",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  12,
+        "ref":  "W12",
+        "value":  "Văn "
+    },
+    {
+        "row":  12,
+        "ref":  "X12",
+        "value":  "Toán "
+    },
+    {
+        "row":  12,
+        "ref":  "Y12",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  12,
+        "ref":  "Z12",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  12,
+        "ref":  "AA12",
+        "value":  "Toán "
+    },
+    {
+        "row":  12,
+        "ref":  "AB12",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  12,
+        "ref":  "AC12",
+        "value":  "Lí "
+    },
+    {
+        "row":  12,
+        "ref":  "AD12",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  12,
+        "ref":  "AE12",
+        "value":  "Văn "
+    },
+    {
+        "row":  12,
+        "ref":  "AF12",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  12,
+        "ref":  "AG12",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  12,
+        "ref":  "AH12",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  12,
+        "ref":  "AI12",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  12,
+        "ref":  "AJ12",
+        "value":  "Toán "
+    },
+    {
+        "row":  12,
+        "ref":  "AK12",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  12,
+        "ref":  "AL12",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  13,
+        "ref":  "B13",
+        "value":  "3"
+    },
+    {
+        "row":  13,
+        "ref":  "C13",
+        "value":  "Sinh "
+    },
+    {
+        "row":  13,
+        "ref":  "D13",
+        "value":  "Toán "
+    },
+    {
+        "row":  13,
+        "ref":  "E13",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  13,
+        "ref":  "F13",
+        "value":  "Sinh "
+    },
+    {
+        "row":  13,
+        "ref":  "G13",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  13,
+        "ref":  "H13",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  13,
+        "ref":  "I13",
+        "value":  "Văn "
+    },
+    {
+        "row":  13,
+        "ref":  "J13",
+        "value":  "Sử "
+    },
+    {
+        "row":  13,
+        "ref":  "K13",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  13,
+        "ref":  "L13",
+        "value":  " Văn "
+    },
+    {
+        "row":  13,
+        "ref":  "M13",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  13,
+        "ref":  "N13",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  13,
+        "ref":  "O13",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  13,
+        "ref":  "P13",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  13,
+        "ref":  "Q13",
+        "value":  "Sinh "
+    },
+    {
+        "row":  13,
+        "ref":  "R13",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  13,
+        "ref":  "S13",
+        "value":  "Hoá "
+    },
+    {
+        "row":  13,
+        "ref":  "T13",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  13,
+        "ref":  "U13",
+        "value":  "Toán "
+    },
+    {
+        "row":  13,
+        "ref":  "V13",
+        "value":  "Toán "
+    },
+    {
+        "row":  13,
+        "ref":  "W13",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  13,
+        "ref":  "X13",
+        "value":  "Văn "
+    },
+    {
+        "row":  13,
+        "ref":  "Y13",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  13,
+        "ref":  "Z13",
+        "value":  " Lí "
+    },
+    {
+        "row":  13,
+        "ref":  "AA13",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  13,
+        "ref":  "AB13",
+        "value":  "Văn "
+    },
+    {
+        "row":  13,
+        "ref":  "AC13",
+        "value":  "Sinh "
+    },
+    {
+        "row":  13,
+        "ref":  "AD13",
+        "value":  "Văn "
+    },
+    {
+        "row":  13,
+        "ref":  "AE13",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  13,
+        "ref":  "AF13",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  13,
+        "ref":  "AG13",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  13,
+        "ref":  "AH13",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  13,
+        "ref":  "AI13",
+        "value":  "Văn "
+    },
+    {
+        "row":  13,
+        "ref":  "AJ13",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  13,
+        "ref":  "AK13",
+        "value":  "Địa "
+    },
+    {
+        "row":  13,
+        "ref":  "AL13",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  14,
+        "ref":  "B14",
+        "value":  "4"
+    },
+    {
+        "row":  14,
+        "ref":  "C14",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  14,
+        "ref":  "D14",
+        "value":  "Sinh "
+    },
+    {
+        "row":  14,
+        "ref":  "E14",
+        "value":  "Sử "
+    },
+    {
+        "row":  14,
+        "ref":  "F14",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  14,
+        "ref":  "G14",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  14,
+        "ref":  "H14",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  14,
+        "ref":  "I14",
+        "value":  "Lí "
+    },
+    {
+        "row":  14,
+        "ref":  "J14",
+        "value":  "Văn "
+    },
+    {
+        "row":  14,
+        "ref":  "K14",
+        "value":  "Toán "
+    },
+    {
+        "row":  14,
+        "ref":  "L14",
+        "value":  "Toán "
+    },
+    {
+        "row":  14,
+        "ref":  "M14",
+        "value":  "Địa "
+    },
+    {
+        "row":  14,
+        "ref":  "N14",
+        "value":  "Văn "
+    },
+    {
+        "row":  14,
+        "ref":  "O14",
+        "value":  "Tin "
+    },
+    {
+        "row":  14,
+        "ref":  "P14",
+        "value":  "Toán "
+    },
+    {
+        "row":  14,
+        "ref":  "Q14",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  14,
+        "ref":  "R14",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  14,
+        "ref":  "S14",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  14,
+        "ref":  "T14",
+        "value":  "Văn "
+    },
+    {
+        "row":  14,
+        "ref":  "U14",
+        "value":  "Toán "
+    },
+    {
+        "row":  14,
+        "ref":  "V14",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  14,
+        "ref":  "W14",
+        "value":  "Địa "
+    },
+    {
+        "row":  14,
+        "ref":  "X14",
+        "value":  " Văn "
+    },
+    {
+        "row":  14,
+        "ref":  "Y14",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  14,
+        "ref":  "Z14",
+        "value":  "Hoá "
+    },
+    {
+        "row":  14,
+        "ref":  "AA14",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  14,
+        "ref":  "AB14",
+        "value":  "Toán "
+    },
+    {
+        "row":  14,
+        "ref":  "AC14",
+        "value":  "Văn "
+    },
+    {
+        "row":  14,
+        "ref":  "AD14",
+        "value":  "Lí "
+    },
+    {
+        "row":  14,
+        "ref":  "AE14",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  14,
+        "ref":  "AF14",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  14,
+        "ref":  "AG14",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  14,
+        "ref":  "AH14",
+        "value":  "Toán "
+    },
+    {
+        "row":  14,
+        "ref":  "AI14",
+        "value":  "Văn "
+    },
+    {
+        "row":  14,
+        "ref":  "AJ14",
+        "value":  "Hoá "
+    },
+    {
+        "row":  14,
+        "ref":  "AK14",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  14,
+        "ref":  "AL14",
+        "value":  "Toán "
+    },
+    {
+        "row":  15,
+        "ref":  "B15",
+        "value":  "5"
+    },
+    {
+        "row":  15,
+        "ref":  "C15",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  15,
+        "ref":  "D15",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  15,
+        "ref":  "E15",
+        "value":  "Sinh "
+    },
+    {
+        "row":  15,
+        "ref":  "F15",
+        "value":  "Lí "
+    },
+    {
+        "row":  15,
+        "ref":  "G15",
+        "value":  "Sinh "
+    },
+    {
+        "row":  15,
+        "ref":  "H15",
+        "value":  "Địa "
+    },
+    {
+        "row":  15,
+        "ref":  "I15",
+        "value":  " Lí "
+    },
+    {
+        "row":  15,
+        "ref":  "J15",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  15,
+        "ref":  "K15",
+        "value":  "Toán "
+    },
+    {
+        "row":  15,
+        "ref":  "L15",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  15,
+        "ref":  "M15",
+        "value":  "Văn "
+    },
+    {
+        "row":  15,
+        "ref":  "N15",
+        "value":  "Văn "
+    },
+    {
+        "row":  15,
+        "ref":  "O15",
+        "value":  "Sinh "
+    },
+    {
+        "row":  15,
+        "ref":  "P15",
+        "value":  "Toán "
+    },
+    {
+        "row":  15,
+        "ref":  "Q15",
+        "value":  "Hoá "
+    },
+    {
+        "row":  15,
+        "ref":  "R15",
+        "value":  "Toán "
+    },
+    {
+        "row":  15,
+        "ref":  "S15",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  15,
+        "ref":  "T15",
+        "value":  "Địa "
+    },
+    {
+        "row":  15,
+        "ref":  "U15",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  15,
+        "ref":  "V15",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  15,
+        "ref":  "W15",
+        "value":  " Văn "
+    },
+    {
+        "row":  15,
+        "ref":  "X15",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  15,
+        "ref":  "Y15",
+        "value":  "Hoá "
+    },
+    {
+        "row":  15,
+        "ref":  "Z15",
+        "value":  "Toán "
+    },
+    {
+        "row":  15,
+        "ref":  "AA15",
+        "value":  "Văn "
+    },
+    {
+        "row":  15,
+        "ref":  "AB15",
+        "value":  "Toán "
+    },
+    {
+        "row":  15,
+        "ref":  "AC15",
+        "value":  "Văn "
+    },
+    {
+        "row":  15,
+        "ref":  "AD15",
+        "value":  "Lí "
+    },
+    {
+        "row":  15,
+        "ref":  "AE15",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  15,
+        "ref":  "AF15",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  15,
+        "ref":  "AG15",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  15,
+        "ref":  "AH15",
+        "value":  "Toán "
+    },
+    {
+        "row":  15,
+        "ref":  "AI15",
+        "value":  "Sử "
+    },
+    {
+        "row":  15,
+        "ref":  "AJ15",
+        "value":  "Hoá "
+    },
+    {
+        "row":  15,
+        "ref":  "AK15",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  15,
+        "ref":  "AL15",
+        "value":  "Toán "
+    },
+    {
+        "row":  16,
+        "ref":  "A16",
+        "value":  "4"
+    },
+    {
+        "row":  16,
+        "ref":  "B16",
+        "value":  "1"
+    },
+    {
+        "row":  16,
+        "ref":  "C16",
+        "value":  "Toán "
+    },
+    {
+        "row":  16,
+        "ref":  "D16",
+        "value":  "Hoá "
+    },
+    {
+        "row":  16,
+        "ref":  "E16",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  16,
+        "ref":  "F16",
+        "value":  "Sinh "
+    },
+    {
+        "row":  16,
+        "ref":  "G16",
+        "value":  "Sử "
+    },
+    {
+        "row":  16,
+        "ref":  "H16",
+        "value":  "Văn "
+    },
+    {
+        "row":  16,
+        "ref":  "I16",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  16,
+        "ref":  "J16",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  16,
+        "ref":  "K16",
+        "value":  "Văn "
+    },
+    {
+        "row":  16,
+        "ref":  "L16",
+        "value":  "Lí "
+    },
+    {
+        "row":  16,
+        "ref":  "M16",
+        "value":  "Sử "
+    },
+    {
+        "row":  16,
+        "ref":  "N16",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  16,
+        "ref":  "O16",
+        "value":  "Hoá "
+    },
+    {
+        "row":  16,
+        "ref":  "P16",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  16,
+        "ref":  "Q16",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  16,
+        "ref":  "R16",
+        "value":  "Văn "
+    },
+    {
+        "row":  16,
+        "ref":  "S16",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  16,
+        "ref":  "T16",
+        "value":  "Hoá "
+    },
+    {
+        "row":  16,
+        "ref":  "U16",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  16,
+        "ref":  "V16",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  16,
+        "ref":  "W16",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  16,
+        "ref":  "X16",
+        "value":  "Văn "
+    },
+    {
+        "row":  16,
+        "ref":  "Y16",
+        "value":  "Sử "
+    },
+    {
+        "row":  16,
+        "ref":  "Z16",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  16,
+        "ref":  "AA16",
+        "value":  "Hoá "
+    },
+    {
+        "row":  16,
+        "ref":  "AB16",
+        "value":  "Hoá "
+    },
+    {
+        "row":  16,
+        "ref":  "AC16",
+        "value":  "Lí "
+    },
+    {
+        "row":  16,
+        "ref":  "AD16",
+        "value":  "Sinh "
+    },
+    {
+        "row":  16,
+        "ref":  "AE16",
+        "value":  "Lí "
+    },
+    {
+        "row":  16,
+        "ref":  "AF16",
+        "value":  "Địa "
+    },
+    {
+        "row":  16,
+        "ref":  "AG16",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  16,
+        "ref":  "AH16",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  16,
+        "ref":  "AI16",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  16,
+        "ref":  "AJ16",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  16,
+        "ref":  "AK16",
+        "value":  "Toán "
+    },
+    {
+        "row":  16,
+        "ref":  "AL16",
+        "value":  "Địa "
+    },
+    {
+        "row":  17,
+        "ref":  "B17",
+        "value":  "2"
+    },
+    {
+        "row":  17,
+        "ref":  "C17",
+        "value":  "Toán "
+    },
+    {
+        "row":  17,
+        "ref":  "D17",
+        "value":  "Hoá "
+    },
+    {
+        "row":  17,
+        "ref":  "E17",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  17,
+        "ref":  "F17",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  17,
+        "ref":  "G17",
+        "value":  "Lí "
+    },
+    {
+        "row":  17,
+        "ref":  "H17",
+        "value":  "Văn "
+    },
+    {
+        "row":  17,
+        "ref":  "I17",
+        "value":  "Sử "
+    },
+    {
+        "row":  17,
+        "ref":  "J17",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  17,
+        "ref":  "K17",
+        "value":  "Văn "
+    },
+    {
+        "row":  17,
+        "ref":  "L17",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  17,
+        "ref":  "M17",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  17,
+        "ref":  "N17",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  17,
+        "ref":  "O17",
+        "value":  "Hoá "
+    },
+    {
+        "row":  17,
+        "ref":  "P17",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  17,
+        "ref":  "Q17",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  17,
+        "ref":  "R17",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  17,
+        "ref":  "S17",
+        "value":  "Văn "
+    },
+    {
+        "row":  17,
+        "ref":  "T17",
+        "value":  "Hoá "
+    },
+    {
+        "row":  17,
+        "ref":  "U17",
+        "value":  "Địa "
+    },
+    {
+        "row":  17,
+        "ref":  "V17",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  17,
+        "ref":  "W17",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  17,
+        "ref":  "X17",
+        "value":  "Sử "
+    },
+    {
+        "row":  17,
+        "ref":  "Y17",
+        "value":  "Toán "
+    },
+    {
+        "row":  17,
+        "ref":  "Z17",
+        "value":  "Hoá "
+    },
+    {
+        "row":  17,
+        "ref":  "AA17",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  17,
+        "ref":  "AB17",
+        "value":  "Sinh "
+    },
+    {
+        "row":  17,
+        "ref":  "AC17",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  17,
+        "ref":  "AD17",
+        "value":  "Hoá "
+    },
+    {
+        "row":  17,
+        "ref":  "AE17",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  17,
+        "ref":  "AF17",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  17,
+        "ref":  "AG17",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  17,
+        "ref":  "AH17",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  17,
+        "ref":  "AI17",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  17,
+        "ref":  "AJ17",
+        "value":  "Toán "
+    },
+    {
+        "row":  17,
+        "ref":  "AK17",
+        "value":  "Toán "
+    },
+    {
+        "row":  17,
+        "ref":  "AL17",
+        "value":  "Địa "
+    },
+    {
+        "row":  18,
+        "ref":  "B18",
+        "value":  "3"
+    },
+    {
+        "row":  18,
+        "ref":  "C18",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  18,
+        "ref":  "D18",
+        "value":  "Lí "
+    },
+    {
+        "row":  18,
+        "ref":  "E18",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  18,
+        "ref":  "F18",
+        "value":  "Hoá "
+    },
+    {
+        "row":  18,
+        "ref":  "G18",
+        "value":  "Sinh "
+    },
+    {
+        "row":  18,
+        "ref":  "H18",
+        "value":  "Toán "
+    },
+    {
+        "row":  18,
+        "ref":  "I18",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  18,
+        "ref":  "J18",
+        "value":  "Địa "
+    },
+    {
+        "row":  18,
+        "ref":  "K18",
+        "value":  "Lí "
+    },
+    {
+        "row":  18,
+        "ref":  "L18",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  18,
+        "ref":  "M18",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  18,
+        "ref":  "N18",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  18,
+        "ref":  "O18",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  18,
+        "ref":  "P18",
+        "value":  "Lí "
+    },
+    {
+        "row":  18,
+        "ref":  "Q18",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  18,
+        "ref":  "R18",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  18,
+        "ref":  "S18",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  18,
+        "ref":  "T18",
+        "value":  "Sử "
+    },
+    {
+        "row":  18,
+        "ref":  "U18",
+        "value":  " Lí "
+    },
+    {
+        "row":  18,
+        "ref":  "V18",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  18,
+        "ref":  "W18",
+        "value":  "Văn "
+    },
+    {
+        "row":  18,
+        "ref":  "X18",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  18,
+        "ref":  "Y18",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  18,
+        "ref":  "Z18",
+        "value":  "Địa "
+    },
+    {
+        "row":  18,
+        "ref":  "AA18",
+        "value":  "Lí "
+    },
+    {
+        "row":  18,
+        "ref":  "AB18",
+        "value":  "Sinh "
+    },
+    {
+        "row":  18,
+        "ref":  "AC18",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  18,
+        "ref":  "AD18",
+        "value":  "Toán "
+    },
+    {
+        "row":  18,
+        "ref":  "AE18",
+        "value":  "Văn "
+    },
+    {
+        "row":  18,
+        "ref":  "AF18",
+        "value":  "Văn "
+    },
+    {
+        "row":  18,
+        "ref":  "AG18",
+        "value":  "Lí "
+    },
+    {
+        "row":  18,
+        "ref":  "AH18",
+        "value":  "Lí "
+    },
+    {
+        "row":  18,
+        "ref":  "AI18",
+        "value":  "Địa "
+    },
+    {
+        "row":  18,
+        "ref":  "AJ18",
+        "value":  "Văn "
+    },
+    {
+        "row":  18,
+        "ref":  "AK18",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  18,
+        "ref":  "AL18",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  19,
+        "ref":  "B19",
+        "value":  "4"
+    },
+    {
+        "row":  19,
+        "ref":  "C19",
+        "value":  "Hoá "
+    },
+    {
+        "row":  19,
+        "ref":  "D19",
+        "value":  "Văn "
+    },
+    {
+        "row":  19,
+        "ref":  "E19",
+        "value":  " Lí "
+    },
+    {
+        "row":  19,
+        "ref":  "F19",
+        "value":  "Toán "
+    },
+    {
+        "row":  19,
+        "ref":  "G19",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  19,
+        "ref":  "H19",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  19,
+        "ref":  "I19",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  19,
+        "ref":  "J19",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  19,
+        "ref":  "K19",
+        "value":  "Sử "
+    },
+    {
+        "row":  19,
+        "ref":  "L19",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  19,
+        "ref":  "M19",
+        "value":  "Văn "
+    },
+    {
+        "row":  19,
+        "ref":  "N19",
+        "value":  "Sử "
+    },
+    {
+        "row":  19,
+        "ref":  "O19",
+        "value":  "Lí "
+    },
+    {
+        "row":  19,
+        "ref":  "P19",
+        "value":  "Văn "
+    },
+    {
+        "row":  19,
+        "ref":  "Q19",
+        "value":  "Sử "
+    },
+    {
+        "row":  19,
+        "ref":  "R19",
+        "value":  "Hoá "
+    },
+    {
+        "row":  19,
+        "ref":  "S19",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  19,
+        "ref":  "T19",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  19,
+        "ref":  "U19",
+        "value":  "Văn "
+    },
+    {
+        "row":  19,
+        "ref":  "V19",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  19,
+        "ref":  "W19",
+        "value":  " Lí "
+    },
+    {
+        "row":  19,
+        "ref":  "X19",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  19,
+        "ref":  "Y19",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  19,
+        "ref":  "Z19",
+        "value":  "Lí "
+    },
+    {
+        "row":  19,
+        "ref":  "AA19",
+        "value":  "Lí "
+    },
+    {
+        "row":  19,
+        "ref":  "AB19",
+        "value":  "Lí "
+    },
+    {
+        "row":  19,
+        "ref":  "AC19",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  19,
+        "ref":  "AD19",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  19,
+        "ref":  "AE19",
+        "value":  "Văn "
+    },
+    {
+        "row":  19,
+        "ref":  "AF19",
+        "value":  "Sử "
+    },
+    {
+        "row":  19,
+        "ref":  "AG19",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  19,
+        "ref":  "AH19",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  19,
+        "ref":  "AI19",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  19,
+        "ref":  "AJ19",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  19,
+        "ref":  "AK19",
+        "value":  "Địa "
+    },
+    {
+        "row":  19,
+        "ref":  "AL19",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  20,
+        "ref":  "B20",
+        "value":  "5"
+    },
+    {
+        "row":  20,
+        "ref":  "C20",
+        "value":  "Văn "
+    },
+    {
+        "row":  20,
+        "ref":  "D20",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  20,
+        "ref":  "E20",
+        "value":  "Toán "
+    },
+    {
+        "row":  20,
+        "ref":  "F20",
+        "value":  "Toán "
+    },
+    {
+        "row":  20,
+        "ref":  "G20",
+        "value":  "Văn "
+    },
+    {
+        "row":  20,
+        "ref":  "H20",
+        "value":  "Lí "
+    },
+    {
+        "row":  20,
+        "ref":  "I20",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  20,
+        "ref":  "J20",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  20,
+        "ref":  "K20",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  20,
+        "ref":  "L20",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  20,
+        "ref":  "M20",
+        "value":  "Địa "
+    },
+    {
+        "row":  20,
+        "ref":  "N20",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  20,
+        "ref":  "O20",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  20,
+        "ref":  "P20",
+        "value":  "Sử "
+    },
+    {
+        "row":  20,
+        "ref":  "Q20",
+        "value":  "Toán "
+    },
+    {
+        "row":  20,
+        "ref":  "R20",
+        "value":  "Lí "
+    },
+    {
+        "row":  20,
+        "ref":  "S20",
+        "value":  "Hoá "
+    },
+    {
+        "row":  20,
+        "ref":  "T20",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  20,
+        "ref":  "U20",
+        "value":  "Văn "
+    },
+    {
+        "row":  20,
+        "ref":  "V20",
+        "value":  "Lí "
+    },
+    {
+        "row":  20,
+        "ref":  "W20",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  20,
+        "ref":  "X20",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  20,
+        "ref":  "Y20",
+        "value":  "Lí "
+    },
+    {
+        "row":  20,
+        "ref":  "Z20",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  20,
+        "ref":  "AA20",
+        "value":  "Sử "
+    },
+    {
+        "row":  20,
+        "ref":  "AB20",
+        "value":  "Toán "
+    },
+    {
+        "row":  20,
+        "ref":  "AC20",
+        "value":  "Sinh "
+    },
+    {
+        "row":  20,
+        "ref":  "AD20",
+        "value":  "Văn "
+    },
+    {
+        "row":  20,
+        "ref":  "AE20",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  20,
+        "ref":  "AF20",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  20,
+        "ref":  "AG20",
+        "value":  "Văn "
+    },
+    {
+        "row":  20,
+        "ref":  "AH20",
+        "value":  "Địa "
+    },
+    {
+        "row":  20,
+        "ref":  "AI20",
+        "value":  "Lí "
+    },
+    {
+        "row":  20,
+        "ref":  "AJ20",
+        "value":  "Hoá "
+    },
+    {
+        "row":  20,
+        "ref":  "AK20",
+        "value":  "Sử "
+    },
+    {
+        "row":  20,
+        "ref":  "AL20",
+        "value":  "Hoá "
+    },
+    {
+        "row":  21,
+        "ref":  "A21",
+        "value":  "5"
+    },
+    {
+        "row":  21,
+        "ref":  "B21",
+        "value":  "1"
+    },
+    {
+        "row":  21,
+        "ref":  "C21",
+        "value":  "Toán "
+    },
+    {
+        "row":  21,
+        "ref":  "D21",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  21,
+        "ref":  "E21",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  21,
+        "ref":  "F21",
+        "value":  "Văn "
+    },
+    {
+        "row":  21,
+        "ref":  "G21",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  21,
+        "ref":  "H21",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  21,
+        "ref":  "I21",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  21,
+        "ref":  "J21",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  21,
+        "ref":  "K21",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  21,
+        "ref":  "L21",
+        "value":  "Sử "
+    },
+    {
+        "row":  21,
+        "ref":  "M21",
+        "value":  "Văn "
+    },
+    {
+        "row":  21,
+        "ref":  "N21",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  21,
+        "ref":  "O21",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  21,
+        "ref":  "P21",
+        "value":  "Văn "
+    },
+    {
+        "row":  21,
+        "ref":  "Q21",
+        "value":  " Lí "
+    },
+    {
+        "row":  21,
+        "ref":  "R21",
+        "value":  "Tin "
+    },
+    {
+        "row":  21,
+        "ref":  "S21",
+        "value":  "Sinh "
+    },
+    {
+        "row":  21,
+        "ref":  "T21",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  21,
+        "ref":  "U21",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  21,
+        "ref":  "V21",
+        "value":  " Văn "
+    },
+    {
+        "row":  21,
+        "ref":  "W21",
+        "value":  "Toán "
+    },
+    {
+        "row":  21,
+        "ref":  "X21",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  21,
+        "ref":  "Y21",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  21,
+        "ref":  "Z21",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  21,
+        "ref":  "AA21",
+        "value":  "Văn "
+    },
+    {
+        "row":  21,
+        "ref":  "AB21",
+        "value":  "Tin "
+    },
+    {
+        "row":  21,
+        "ref":  "AC21",
+        "value":  "Hoá "
+    },
+    {
+        "row":  21,
+        "ref":  "AD21",
+        "value":  "Sử "
+    },
+    {
+        "row":  21,
+        "ref":  "AE21",
+        "value":  "Lí "
+    },
+    {
+        "row":  21,
+        "ref":  "AF21",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  21,
+        "ref":  "AG21",
+        "value":  "Địa "
+    },
+    {
+        "row":  21,
+        "ref":  "AH21",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  21,
+        "ref":  "AI21",
+        "value":  "Địa "
+    },
+    {
+        "row":  21,
+        "ref":  "AJ21",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  21,
+        "ref":  "AK21",
+        "value":  "Văn "
+    },
+    {
+        "row":  21,
+        "ref":  "AL21",
+        "value":  "Toán "
+    },
+    {
+        "row":  22,
+        "ref":  "B22",
+        "value":  "2"
+    },
+    {
+        "row":  22,
+        "ref":  "C22",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  22,
+        "ref":  "D22",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  22,
+        "ref":  "E22",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  22,
+        "ref":  "F22",
+        "value":  "Văn "
+    },
+    {
+        "row":  22,
+        "ref":  "G22",
+        "value":  "Toán "
+    },
+    {
+        "row":  22,
+        "ref":  "H22",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  22,
+        "ref":  "I22",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  22,
+        "ref":  "J22",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  22,
+        "ref":  "K22",
+        "value":  "Văn "
+    },
+    {
+        "row":  22,
+        "ref":  "L22",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  22,
+        "ref":  "M22",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  22,
+        "ref":  "N22",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  22,
+        "ref":  "O22",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  22,
+        "ref":  "P22",
+        "value":  " Lí "
+    },
+    {
+        "row":  22,
+        "ref":  "Q22",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  22,
+        "ref":  "R22",
+        "value":  "Văn "
+    },
+    {
+        "row":  22,
+        "ref":  "S22",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  22,
+        "ref":  "T22",
+        "value":  "Tin "
+    },
+    {
+        "row":  22,
+        "ref":  "U22",
+        "value":  "Toán "
+    },
+    {
+        "row":  22,
+        "ref":  "V22",
+        "value":  " Lí "
+    },
+    {
+        "row":  22,
+        "ref":  "W22",
+        "value":  "Toán "
+    },
+    {
+        "row":  22,
+        "ref":  "X22",
+        "value":  "Địa "
+    },
+    {
+        "row":  22,
+        "ref":  "Y22",
+        "value":  "Lí "
+    },
+    {
+        "row":  22,
+        "ref":  "Z22",
+        "value":  "Sử "
+    },
+    {
+        "row":  22,
+        "ref":  "AA22",
+        "value":  "Văn "
+    },
+    {
+        "row":  22,
+        "ref":  "AB22",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  22,
+        "ref":  "AC22",
+        "value":  "Hoá "
+    },
+    {
+        "row":  22,
+        "ref":  "AD22",
+        "value":  "Sinh "
+    },
+    {
+        "row":  22,
+        "ref":  "AE22",
+        "value":  "Sinh "
+    },
+    {
+        "row":  22,
+        "ref":  "AF22",
+        "value":  "Toán "
+    },
+    {
+        "row":  22,
+        "ref":  "AG22",
+        "value":  "Sử "
+    },
+    {
+        "row":  22,
+        "ref":  "AH22",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  22,
+        "ref":  "AI22",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  22,
+        "ref":  "AJ22",
+        "value":  "Địa "
+    },
+    {
+        "row":  22,
+        "ref":  "AK22",
+        "value":  "Văn "
+    },
+    {
+        "row":  22,
+        "ref":  "AL22",
+        "value":  "Hoá "
+    },
+    {
+        "row":  23,
+        "ref":  "B23",
+        "value":  "3"
+    },
+    {
+        "row":  23,
+        "ref":  "C23",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  23,
+        "ref":  "D23",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  23,
+        "ref":  "E23",
+        "value":  "Tin "
+    },
+    {
+        "row":  23,
+        "ref":  "F23",
+        "value":  "Lí "
+    },
+    {
+        "row":  23,
+        "ref":  "G23",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  23,
+        "ref":  "H23",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  23,
+        "ref":  "I23",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  23,
+        "ref":  "J23",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  23,
+        "ref":  "K23",
+        "value":  " Lí "
+    },
+    {
+        "row":  23,
+        "ref":  "L23",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  23,
+        "ref":  "M23",
+        "value":  "Sử "
+    },
+    {
+        "row":  23,
+        "ref":  "N23",
+        "value":  "Tin "
+    },
+    {
+        "row":  23,
+        "ref":  "O23",
+        "value":  " Lí "
+    },
+    {
+        "row":  23,
+        "ref":  "P23",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  23,
+        "ref":  "Q23",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  23,
+        "ref":  "R23",
+        "value":  "Văn "
+    },
+    {
+        "row":  23,
+        "ref":  "S23",
+        "value":  "Sử "
+    },
+    {
+        "row":  23,
+        "ref":  "T23",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  23,
+        "ref":  "U23",
+        "value":  "Toán "
+    },
+    {
+        "row":  23,
+        "ref":  "V23",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  23,
+        "ref":  "W23",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  23,
+        "ref":  "X23",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  23,
+        "ref":  "Y23",
+        "value":  "Văn "
+    },
+    {
+        "row":  23,
+        "ref":  "Z23",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  23,
+        "ref":  "AA23",
+        "value":  "Hoá "
+    },
+    {
+        "row":  23,
+        "ref":  "AB23",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  23,
+        "ref":  "AC23",
+        "value":  "Sinh "
+    },
+    {
+        "row":  23,
+        "ref":  "AD23",
+        "value":  "Toán "
+    },
+    {
+        "row":  23,
+        "ref":  "AE23",
+        "value":  "Hoá "
+    },
+    {
+        "row":  23,
+        "ref":  "AF23",
+        "value":  "Toán "
+    },
+    {
+        "row":  23,
+        "ref":  "AG23",
+        "value":  "Lí "
+    },
+    {
+        "row":  23,
+        "ref":  "AH23",
+        "value":  "Văn "
+    },
+    {
+        "row":  23,
+        "ref":  "AI23",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  23,
+        "ref":  "AJ23",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  23,
+        "ref":  "AK23",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  23,
+        "ref":  "AL23",
+        "value":  "Sử "
+    },
+    {
+        "row":  24,
+        "ref":  "B24",
+        "value":  "4"
+    },
+    {
+        "row":  24,
+        "ref":  "C24",
+        "value":  "Tin "
+    },
+    {
+        "row":  24,
+        "ref":  "D24",
+        "value":  "Văn "
+    },
+    {
+        "row":  24,
+        "ref":  "E24",
+        "value":  "Toán "
+    },
+    {
+        "row":  24,
+        "ref":  "F24",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  24,
+        "ref":  "G24",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  24,
+        "ref":  "H24",
+        "value":  "Sử "
+    },
+    {
+        "row":  24,
+        "ref":  "I24",
+        "value":  "Địa "
+    },
+    {
+        "row":  24,
+        "ref":  "J24",
+        "value":  " Văn "
+    },
+    {
+        "row":  24,
+        "ref":  "K24",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  24,
+        "ref":  "L24",
+        "value":  "Toán "
+    },
+    {
+        "row":  24,
+        "ref":  "M24",
+        "value":  "Tin "
+    },
+    {
+        "row":  24,
+        "ref":  "N24",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  24,
+        "ref":  "O24",
+        "value":  "Tin "
+    },
+    {
+        "row":  24,
+        "ref":  "P24",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  24,
+        "ref":  "Q24",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  24,
+        "ref":  "R24",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  24,
+        "ref":  "S24",
+        "value":  "Toán "
+    },
+    {
+        "row":  24,
+        "ref":  "T24",
+        "value":  "Văn "
+    },
+    {
+        "row":  24,
+        "ref":  "U24",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  24,
+        "ref":  "V24",
+        "value":  "Địa "
+    },
+    {
+        "row":  24,
+        "ref":  "W24",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  24,
+        "ref":  "X24",
+        "value":  "Toán "
+    },
+    {
+        "row":  24,
+        "ref":  "Y24",
+        "value":  "Văn "
+    },
+    {
+        "row":  24,
+        "ref":  "Z24",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  24,
+        "ref":  "AA24",
+        "value":  "Sinh "
+    },
+    {
+        "row":  24,
+        "ref":  "AB24",
+        "value":  "Văn "
+    },
+    {
+        "row":  24,
+        "ref":  "AC24",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  24,
+        "ref":  "AD24",
+        "value":  "Toán "
+    },
+    {
+        "row":  24,
+        "ref":  "AE24",
+        "value":  "Sử "
+    },
+    {
+        "row":  24,
+        "ref":  "AF24",
+        "value":  "Lí "
+    },
+    {
+        "row":  24,
+        "ref":  "AG24",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  24,
+        "ref":  "AH24",
+        "value":  "Địa "
+    },
+    {
+        "row":  24,
+        "ref":  "AI24",
+        "value":  "Sử "
+    },
+    {
+        "row":  24,
+        "ref":  "AJ24",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  24,
+        "ref":  "AK24",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  24,
+        "ref":  "AL24",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  25,
+        "ref":  "B25",
+        "value":  "5"
+    },
+    {
+        "row":  25,
+        "ref":  "C25",
+        "value":  "Văn "
+    },
+    {
+        "row":  25,
+        "ref":  "D25",
+        "value":  "Tin "
+    },
+    {
+        "row":  25,
+        "ref":  "E25",
+        "value":  "Sinh "
+    },
+    {
+        "row":  25,
+        "ref":  "F25",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  25,
+        "ref":  "G25",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  25,
+        "ref":  "H25",
+        "value":  "Toán "
+    },
+    {
+        "row":  25,
+        "ref":  "I25",
+        "value":  "Sử "
+    },
+    {
+        "row":  25,
+        "ref":  "J25",
+        "value":  "Sử "
+    },
+    {
+        "row":  25,
+        "ref":  "K25",
+        "value":  " Văn "
+    },
+    {
+        "row":  25,
+        "ref":  "L25",
+        "value":  "Toán "
+    },
+    {
+        "row":  25,
+        "ref":  "M25",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  25,
+        "ref":  "N25",
+        "value":  "Địa "
+    },
+    {
+        "row":  25,
+        "ref":  "O25",
+        "value":  "Văn "
+    },
+    {
+        "row":  25,
+        "ref":  "P25",
+        "value":  "Tin "
+    },
+    {
+        "row":  25,
+        "ref":  "Q25",
+        "value":  "Sinh "
+    },
+    {
+        "row":  25,
+        "ref":  "R25",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  25,
+        "ref":  "S25",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  25,
+        "ref":  "T25",
+        "value":  "Toán "
+    },
+    {
+        "row":  25,
+        "ref":  "U25",
+        "value":  "Lí "
+    },
+    {
+        "row":  25,
+        "ref":  "V25",
+        "value":  "Lí "
+    },
+    {
+        "row":  25,
+        "ref":  "W25",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  25,
+        "ref":  "X25",
+        "value":  " Lí "
+    },
+    {
+        "row":  25,
+        "ref":  "Y25",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  25,
+        "ref":  "Z25",
+        "value":  "Toán "
+    },
+    {
+        "row":  25,
+        "ref":  "AA25",
+        "value":  "Toán "
+    },
+    {
+        "row":  25,
+        "ref":  "AB25",
+        "value":  "Văn "
+    },
+    {
+        "row":  25,
+        "ref":  "AC25",
+        "value":  "Tin "
+    },
+    {
+        "row":  25,
+        "ref":  "AD25",
+        "value":  "Hoá "
+    },
+    {
+        "row":  25,
+        "ref":  "AE25",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  25,
+        "ref":  "AF25",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  25,
+        "ref":  "AG25",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  25,
+        "ref":  "AH25",
+        "value":  "Sử "
+    },
+    {
+        "row":  25,
+        "ref":  "AI25",
+        "value":  "Văn "
+    },
+    {
+        "row":  25,
+        "ref":  "AJ25",
+        "value":  "Toán "
+    },
+    {
+        "row":  25,
+        "ref":  "AK25",
+        "value":  "Hoá "
+    },
+    {
+        "row":  25,
+        "ref":  "AL25",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  26,
+        "ref":  "A26",
+        "value":  "6"
+    },
+    {
+        "row":  26,
+        "ref":  "B26",
+        "value":  "1"
+    },
+    {
+        "row":  26,
+        "ref":  "C26",
+        "value":  " Lí "
+    },
+    {
+        "row":  26,
+        "ref":  "D26",
+        "value":  "Văn "
+    },
+    {
+        "row":  26,
+        "ref":  "E26",
+        "value":  "Sử "
+    },
+    {
+        "row":  26,
+        "ref":  "F26",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  26,
+        "ref":  "G26",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  26,
+        "ref":  "H26",
+        "value":  "Lí "
+    },
+    {
+        "row":  26,
+        "ref":  "I26",
+        "value":  "Địa "
+    },
+    {
+        "row":  26,
+        "ref":  "J26",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  26,
+        "ref":  "K26",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  26,
+        "ref":  "L26",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  26,
+        "ref":  "M26",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  26,
+        "ref":  "N26",
+        "value":  "Địa "
+    },
+    {
+        "row":  26,
+        "ref":  "O26",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  26,
+        "ref":  "P26",
+        "value":  "Hoá "
+    },
+    {
+        "row":  26,
+        "ref":  "Q26",
+        "value":  "Tin "
+    },
+    {
+        "row":  26,
+        "ref":  "R26",
+        "value":  "Sử "
+    },
+    {
+        "row":  26,
+        "ref":  "S26",
+        "value":  " Lí "
+    },
+    {
+        "row":  26,
+        "ref":  "T26",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  26,
+        "ref":  "U26",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  26,
+        "ref":  "V26",
+        "value":  "Toán "
+    },
+    {
+        "row":  26,
+        "ref":  "W26",
+        "value":  "Toán "
+    },
+    {
+        "row":  26,
+        "ref":  "X26",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  26,
+        "ref":  "Y26",
+        "value":  "Hoá "
+    },
+    {
+        "row":  26,
+        "ref":  "Z26",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  26,
+        "ref":  "AA26",
+        "value":  "Toán "
+    },
+    {
+        "row":  26,
+        "ref":  "AB26",
+        "value":  "Văn "
+    },
+    {
+        "row":  26,
+        "ref":  "AC26",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  26,
+        "ref":  "AD26",
+        "value":  "Tin "
+    },
+    {
+        "row":  26,
+        "ref":  "AE26",
+        "value":  "Tin "
+    },
+    {
+        "row":  26,
+        "ref":  "AF26",
+        "value":  "Văn "
+    },
+    {
+        "row":  26,
+        "ref":  "AG26",
+        "value":  "Lí "
+    },
+    {
+        "row":  26,
+        "ref":  "AH26",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  26,
+        "ref":  "AI26",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  26,
+        "ref":  "AJ26",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  26,
+        "ref":  "AK26",
+        "value":  "Toán "
+    },
+    {
+        "row":  26,
+        "ref":  "AL26",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  27,
+        "ref":  "B27",
+        "value":  "2"
+    },
+    {
+        "row":  27,
+        "ref":  "C27",
+        "value":  "Lí "
+    },
+    {
+        "row":  27,
+        "ref":  "D27",
+        "value":  "Sử "
+    },
+    {
+        "row":  27,
+        "ref":  "E27",
+        "value":  "Lí "
+    },
+    {
+        "row":  27,
+        "ref":  "F27",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  27,
+        "ref":  "G27",
+        "value":  "Sử "
+    },
+    {
+        "row":  27,
+        "ref":  "H27",
+        "value":  "Địa "
+    },
+    {
+        "row":  27,
+        "ref":  "I27",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  27,
+        "ref":  "J27",
+        "value":  "Địa "
+    },
+    {
+        "row":  27,
+        "ref":  "K27",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  27,
+        "ref":  "L27",
+        "value":  "Văn "
+    },
+    {
+        "row":  27,
+        "ref":  "M27",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  27,
+        "ref":  "N27",
+        "value":  "Toán "
+    },
+    {
+        "row":  27,
+        "ref":  "O27",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  27,
+        "ref":  "P27",
+        "value":  "Hoá "
+    },
+    {
+        "row":  27,
+        "ref":  "Q27",
+        "value":  "Văn "
+    },
+    {
+        "row":  27,
+        "ref":  "R27",
+        "value":  "Sinh "
+    },
+    {
+        "row":  27,
+        "ref":  "S27",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  27,
+        "ref":  "T27",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  27,
+        "ref":  "U27",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  27,
+        "ref":  "V27",
+        "value":  "Toán "
+    },
+    {
+        "row":  27,
+        "ref":  "W27",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  27,
+        "ref":  "X27",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  27,
+        "ref":  "Y27",
+        "value":  "Hoá "
+    },
+    {
+        "row":  27,
+        "ref":  "Z27",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  27,
+        "ref":  "AA27",
+        "value":  "Tin "
+    },
+    {
+        "row":  27,
+        "ref":  "AB27",
+        "value":  "Toán "
+    },
+    {
+        "row":  27,
+        "ref":  "AC27",
+        "value":  "Văn "
+    },
+    {
+        "row":  27,
+        "ref":  "AD27",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  27,
+        "ref":  "AE27",
+        "value":  "Toán "
+    },
+    {
+        "row":  27,
+        "ref":  "AF27",
+        "value":  "Lí "
+    },
+    {
+        "row":  27,
+        "ref":  "AG27",
+        "value":  "Toán "
+    },
+    {
+        "row":  27,
+        "ref":  "AH27",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  27,
+        "ref":  "AI27",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  27,
+        "ref":  "AJ27",
+        "value":  "Sử "
+    },
+    {
+        "row":  27,
+        "ref":  "AK27",
+        "value":  "Toán "
+    },
+    {
+        "row":  27,
+        "ref":  "AL27",
+        "value":  "Toán "
+    },
+    {
+        "row":  28,
+        "ref":  "B28",
+        "value":  "3"
+    },
+    {
+        "row":  28,
+        "ref":  "C28",
+        "value":  "Hoá "
+    },
+    {
+        "row":  28,
+        "ref":  "D28",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  28,
+        "ref":  "E28",
+        "value":  "Tin "
+    },
+    {
+        "row":  28,
+        "ref":  "F28",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  28,
+        "ref":  "G28",
+        "value":  "Hoá "
+    },
+    {
+        "row":  28,
+        "ref":  "H28",
+        "value":  "Sử "
+    },
+    {
+        "row":  28,
+        "ref":  "I28",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  28,
+        "ref":  "J28",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  28,
+        "ref":  "K28",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  28,
+        "ref":  "L28",
+        "value":  "Lí "
+    },
+    {
+        "row":  28,
+        "ref":  "M28",
+        "value":  "Tin "
+    },
+    {
+        "row":  28,
+        "ref":  "N28",
+        "value":  "Toán "
+    },
+    {
+        "row":  28,
+        "ref":  "O28",
+        "value":  "Văn "
+    },
+    {
+        "row":  28,
+        "ref":  "P28",
+        "value":  "Sinh "
+    },
+    {
+        "row":  28,
+        "ref":  "Q28",
+        "value":  "Văn "
+    },
+    {
+        "row":  28,
+        "ref":  "R28",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  28,
+        "ref":  "S28",
+        "value":  "Toán "
+    },
+    {
+        "row":  28,
+        "ref":  "T28",
+        "value":  "Tin "
+    },
+    {
+        "row":  28,
+        "ref":  "U28",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  28,
+        "ref":  "V28",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  28,
+        "ref":  "W28",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  28,
+        "ref":  "X28",
+        "value":  "Lí "
+    },
+    {
+        "row":  28,
+        "ref":  "Y28",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  28,
+        "ref":  "Z28",
+        "value":  "Hoá "
+    },
+    {
+        "row":  28,
+        "ref":  "AA28",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  28,
+        "ref":  "AB28",
+        "value":  "Sử "
+    },
+    {
+        "row":  28,
+        "ref":  "AC28",
+        "value":  "Văn "
+    },
+    {
+        "row":  28,
+        "ref":  "AD28",
+        "value":  "Toán "
+    },
+    {
+        "row":  28,
+        "ref":  "AE28",
+        "value":  "Toán "
+    },
+    {
+        "row":  28,
+        "ref":  "AF28",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  28,
+        "ref":  "AG28",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  28,
+        "ref":  "AH28",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  28,
+        "ref":  "AI28",
+        "value":  "Toán "
+    },
+    {
+        "row":  28,
+        "ref":  "AJ28",
+        "value":  "Địa "
+    },
+    {
+        "row":  28,
+        "ref":  "AK28",
+        "value":  "Địa "
+    },
+    {
+        "row":  28,
+        "ref":  "AL28",
+        "value":  "Văn "
+    },
+    {
+        "row":  29,
+        "ref":  "B29",
+        "value":  "4"
+    },
+    {
+        "row":  29,
+        "ref":  "C29",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  29,
+        "ref":  "D29",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  29,
+        "ref":  "E29",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  29,
+        "ref":  "F29",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  29,
+        "ref":  "G29",
+        "value":  "Sinh "
+    },
+    {
+        "row":  29,
+        "ref":  "H29",
+        "value":  " Văn "
+    },
+    {
+        "row":  29,
+        "ref":  "I29",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  29,
+        "ref":  "J29",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  29,
+        "ref":  "K29",
+        "value":  "Toán "
+    },
+    {
+        "row":  29,
+        "ref":  "L29",
+        "value":  "Địa "
+    },
+    {
+        "row":  29,
+        "ref":  "M29",
+        "value":  "Toán "
+    },
+    {
+        "row":  29,
+        "ref":  "N29",
+        "value":  "Tin "
+    },
+    {
+        "row":  29,
+        "ref":  "O29",
+        "value":  "Sử "
+    },
+    {
+        "row":  29,
+        "ref":  "P29",
+        "value":  "Tin "
+    },
+    {
+        "row":  29,
+        "ref":  "Q29",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  29,
+        "ref":  "R29",
+        "value":  "Toán "
+    },
+    {
+        "row":  29,
+        "ref":  "S29",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  29,
+        "ref":  "T29",
+        "value":  "Toán "
+    },
+    {
+        "row":  29,
+        "ref":  "U29",
+        "value":  "Toán "
+    },
+    {
+        "row":  29,
+        "ref":  "V29",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  29,
+        "ref":  "W29",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  29,
+        "ref":  "X29",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  29,
+        "ref":  "Y29",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  29,
+        "ref":  "Z29",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  29,
+        "ref":  "AA29",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  29,
+        "ref":  "AB29",
+        "value":  "Hoá "
+    },
+    {
+        "row":  29,
+        "ref":  "AC29",
+        "value":  "Toán "
+    },
+    {
+        "row":  29,
+        "ref":  "AD29",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  29,
+        "ref":  "AE29",
+        "value":  "Lí "
+    },
+    {
+        "row":  29,
+        "ref":  "AF29",
+        "value":  "Toán "
+    },
+    {
+        "row":  29,
+        "ref":  "AG29",
+        "value":  "Sử "
+    },
+    {
+        "row":  29,
+        "ref":  "AH29",
+        "value":  "Toán "
+    },
+    {
+        "row":  29,
+        "ref":  "AI29",
+        "value":  "Toán "
+    },
+    {
+        "row":  29,
+        "ref":  "AJ29",
+        "value":  "Địa "
+    },
+    {
+        "row":  29,
+        "ref":  "AK29",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  29,
+        "ref":  "AL29",
+        "value":  "Văn "
+    },
+    {
+        "row":  30,
+        "ref":  "B30",
+        "value":  "5"
+    },
+    {
+        "row":  30,
+        "ref":  "C30",
+        "value":  "Tin "
+    },
+    {
+        "row":  30,
+        "ref":  "D30",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  30,
+        "ref":  "E30",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  30,
+        "ref":  "F30",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  30,
+        "ref":  "G30",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  30,
+        "ref":  "H30",
+        "value":  "Văn "
+    },
+    {
+        "row":  30,
+        "ref":  "I30",
+        "value":  "Toán "
+    },
+    {
+        "row":  30,
+        "ref":  "J30",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  30,
+        "ref":  "K30",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  30,
+        "ref":  "L30",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  30,
+        "ref":  "M30",
+        "value":  "Toán "
+    },
+    {
+        "row":  30,
+        "ref":  "N30",
+        "value":  "Hoá "
+    },
+    {
+        "row":  30,
+        "ref":  "O30",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  30,
+        "ref":  "P30",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  30,
+        "ref":  "Q30",
+        "value":  "Lí "
+    },
+    {
+        "row":  30,
+        "ref":  "R30",
+        "value":  "Toán "
+    },
+    {
+        "row":  30,
+        "ref":  "S30",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  30,
+        "ref":  "T30",
+        "value":  "Địa "
+    },
+    {
+        "row":  30,
+        "ref":  "U30",
+        "value":  "Văn "
+    },
+    {
+        "row":  30,
+        "ref":  "V30",
+        "value":  "Văn "
+    },
+    {
+        "row":  30,
+        "ref":  "W30",
+        "value":  "Sử "
+    },
+    {
+        "row":  30,
+        "ref":  "X30",
+        "value":  "Toán "
+    },
+    {
+        "row":  30,
+        "ref":  "Y30",
+        "value":  " Lí "
+    },
+    {
+        "row":  30,
+        "ref":  "Z30",
+        "value":  "Toán "
+    },
+    {
+        "row":  30,
+        "ref":  "AA30",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  30,
+        "ref":  "AB30",
+        "value":  "Sinh "
+    },
+    {
+        "row":  30,
+        "ref":  "AC30",
+        "value":  "Tin "
+    },
+    {
+        "row":  30,
+        "ref":  "AD30",
+        "value":  "Văn "
+    },
+    {
+        "row":  30,
+        "ref":  "AE30",
+        "value":  "Sử "
+    },
+    {
+        "row":  30,
+        "ref":  "AF30",
+        "value":  "Toán "
+    },
+    {
+        "row":  30,
+        "ref":  "AG30",
+        "value":  "Địa "
+    },
+    {
+        "row":  30,
+        "ref":  "AH30",
+        "value":  "Toán "
+    },
+    {
+        "row":  30,
+        "ref":  "AI30",
+        "value":  "Địa "
+    },
+    {
+        "row":  30,
+        "ref":  "AJ30",
+        "value":  "Toán "
+    },
+    {
+        "row":  30,
+        "ref":  "AK30",
+        "value":  "Văn "
+    },
+    {
+        "row":  30,
+        "ref":  "AL30",
+        "value":  "Sử "
+    },
+    {
+        "row":  31,
+        "ref":  "A31",
+        "value":  "7"
+    },
+    {
+        "row":  31,
+        "ref":  "B31",
+        "value":  "1"
+    },
+    {
+        "row":  31,
+        "ref":  "C31",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  31,
+        "ref":  "D31",
+        "value":  " Lí "
+    },
+    {
+        "row":  31,
+        "ref":  "E31",
+        "value":  "Hoá "
+    },
+    {
+        "row":  31,
+        "ref":  "F31",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  31,
+        "ref":  "G31",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  31,
+        "ref":  "H31",
+        "value":  "Toán "
+    },
+    {
+        "row":  31,
+        "ref":  "I31",
+        "value":  " Văn "
+    },
+    {
+        "row":  31,
+        "ref":  "J31",
+        "value":  " Lí "
+    },
+    {
+        "row":  31,
+        "ref":  "K31",
+        "value":  "Lí "
+    },
+    {
+        "row":  31,
+        "ref":  "L31",
+        "value":  "Toán "
+    },
+    {
+        "row":  31,
+        "ref":  "M31",
+        "value":  "Hoá "
+    },
+    {
+        "row":  31,
+        "ref":  "N31",
+        "value":  "Tin "
+    },
+    {
+        "row":  31,
+        "ref":  "O31",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  31,
+        "ref":  "P31",
+        "value":  "Toán "
+    },
+    {
+        "row":  31,
+        "ref":  "Q31",
+        "value":  "Hoá "
+    },
+    {
+        "row":  31,
+        "ref":  "R31",
+        "value":  "Sinh "
+    },
+    {
+        "row":  31,
+        "ref":  "S31",
+        "value":  "Văn "
+    },
+    {
+        "row":  31,
+        "ref":  "T31",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  31,
+        "ref":  "U31",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  31,
+        "ref":  "V31",
+        "value":  "Toán "
+    },
+    {
+        "row":  31,
+        "ref":  "W31",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  31,
+        "ref":  "X31",
+        "value":  "Địa "
+    },
+    {
+        "row":  31,
+        "ref":  "Y31",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  31,
+        "ref":  "Z31",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  31,
+        "ref":  "AA31",
+        "value":  "Hoá "
+    },
+    {
+        "row":  31,
+        "ref":  "AB31",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  31,
+        "ref":  "AC31",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  31,
+        "ref":  "AD31",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  31,
+        "ref":  "AE31",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  31,
+        "ref":  "AF31",
+        "value":  "Địa "
+    },
+    {
+        "row":  31,
+        "ref":  "AG31",
+        "value":  "Toán "
+    },
+    {
+        "row":  31,
+        "ref":  "AH31",
+        "value":  "Lí "
+    },
+    {
+        "row":  31,
+        "ref":  "AI31",
+        "value":  "Văn "
+    },
+    {
+        "row":  31,
+        "ref":  "AJ31",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  31,
+        "ref":  "AK31",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  31,
+        "ref":  "AL31",
+        "value":  "Văn "
+    },
+    {
+        "row":  32,
+        "ref":  "B32",
+        "value":  "2"
+    },
+    {
+        "row":  32,
+        "ref":  "C32",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  32,
+        "ref":  "D32",
+        "value":  "Lí "
+    },
+    {
+        "row":  32,
+        "ref":  "E32",
+        "value":  "Toán "
+    },
+    {
+        "row":  32,
+        "ref":  "F32",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  32,
+        "ref":  "G32",
+        "value":  "Toán "
+    },
+    {
+        "row":  32,
+        "ref":  "H32",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  32,
+        "ref":  "I32",
+        "value":  "Văn "
+    },
+    {
+        "row":  32,
+        "ref":  "J32",
+        "value":  "Toán "
+    },
+    {
+        "row":  32,
+        "ref":  "K32",
+        "value":  "Sử "
+    },
+    {
+        "row":  32,
+        "ref":  "L32",
+        "value":  "Địa "
+    },
+    {
+        "row":  32,
+        "ref":  "M32",
+        "value":  "Toán "
+    },
+    {
+        "row":  32,
+        "ref":  "N32",
+        "value":  "Hoá "
+    },
+    {
+        "row":  32,
+        "ref":  "O32",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  32,
+        "ref":  "P32",
+        "value":  "Toán "
+    },
+    {
+        "row":  32,
+        "ref":  "Q32",
+        "value":  "Lí "
+    },
+    {
+        "row":  32,
+        "ref":  "R32",
+        "value":  "Sinh "
+    },
+    {
+        "row":  32,
+        "ref":  "S32",
+        "value":  "Lí "
+    },
+    {
+        "row":  32,
+        "ref":  "T32",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  32,
+        "ref":  "U32",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  32,
+        "ref":  "V32",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  32,
+        "ref":  "W32",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  32,
+        "ref":  "X32",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  32,
+        "ref":  "Y32",
+        "value":  "Văn "
+    },
+    {
+        "row":  32,
+        "ref":  "Z32",
+        "value":  "Văn "
+    },
+    {
+        "row":  32,
+        "ref":  "AA32",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  32,
+        "ref":  "AB32",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  32,
+        "ref":  "AC32",
+        "value":  "Sử "
+    },
+    {
+        "row":  32,
+        "ref":  "AD32",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  32,
+        "ref":  "AE32",
+        "value":  "Tin "
+    },
+    {
+        "row":  32,
+        "ref":  "AF32",
+        "value":  "Địa "
+    },
+    {
+        "row":  32,
+        "ref":  "AG32",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  32,
+        "ref":  "AH32",
+        "value":  "Văn "
+    },
+    {
+        "row":  32,
+        "ref":  "AI32",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  32,
+        "ref":  "AJ32",
+        "value":  "Văn "
+    },
+    {
+        "row":  32,
+        "ref":  "AK32",
+        "value":  "Hoá "
+    },
+    {
+        "row":  32,
+        "ref":  "AL32",
+        "value":  "Văn "
+    },
+    {
+        "row":  33,
+        "ref":  "B33",
+        "value":  "3"
+    },
+    {
+        "row":  33,
+        "ref":  "C33",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  33,
+        "ref":  "D33",
+        "value":  "Hoá "
+    },
+    {
+        "row":  33,
+        "ref":  "E33",
+        "value":  "Toán "
+    },
+    {
+        "row":  33,
+        "ref":  "F33",
+        "value":  "Toán "
+    },
+    {
+        "row":  33,
+        "ref":  "G33",
+        "value":  "Toán "
+    },
+    {
+        "row":  33,
+        "ref":  "H33",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  33,
+        "ref":  "I33",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  33,
+        "ref":  "J33",
+        "value":  "Toán "
+    },
+    {
+        "row":  33,
+        "ref":  "K33",
+        "value":  "Địa "
+    },
+    {
+        "row":  33,
+        "ref":  "L33",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  33,
+        "ref":  "M33",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  33,
+        "ref":  "N33",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  33,
+        "ref":  "O33",
+        "value":  "Sinh "
+    },
+    {
+        "row":  33,
+        "ref":  "P33",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  33,
+        "ref":  "Q33",
+        "value":  "Toán "
+    },
+    {
+        "row":  33,
+        "ref":  "R33",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  33,
+        "ref":  "S33",
+        "value":  "Toán "
+    },
+    {
+        "row":  33,
+        "ref":  "T33",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  33,
+        "ref":  "U33",
+        "value":  " Văn "
+    },
+    {
+        "row":  33,
+        "ref":  "V33",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  33,
+        "ref":  "W33",
+        "value":  "Địa "
+    },
+    {
+        "row":  33,
+        "ref":  "X33",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  33,
+        "ref":  "Y33",
+        "value":  " Văn "
+    },
+    {
+        "row":  33,
+        "ref":  "Z33",
+        "value":  "Văn "
+    },
+    {
+        "row":  33,
+        "ref":  "AA33",
+        "value":  "Sinh "
+    },
+    {
+        "row":  33,
+        "ref":  "AB33",
+        "value":  "Tin "
+    },
+    {
+        "row":  33,
+        "ref":  "AC33",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  33,
+        "ref":  "AD33",
+        "value":  "Hoá "
+    },
+    {
+        "row":  33,
+        "ref":  "AE33",
+        "value":  "Hoá "
+    },
+    {
+        "row":  33,
+        "ref":  "AF33",
+        "value":  "Sử "
+    },
+    {
+        "row":  33,
+        "ref":  "AG33",
+        "value":  "Địa "
+    },
+    {
+        "row":  33,
+        "ref":  "AH33",
+        "value":  "Văn "
+    },
+    {
+        "row":  33,
+        "ref":  "AI33",
+        "value":  "Lí "
+    },
+    {
+        "row":  33,
+        "ref":  "AJ33",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  33,
+        "ref":  "AK33",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  33,
+        "ref":  "AL33",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  34,
+        "ref":  "B34",
+        "value":  "4"
+    },
+    {
+        "row":  34,
+        "ref":  "C34",
+        "value":  "Lí "
+    },
+    {
+        "row":  34,
+        "ref":  "D34",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  34,
+        "ref":  "E34",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  34,
+        "ref":  "F34",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  34,
+        "ref":  "G34",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  34,
+        "ref":  "H34",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  34,
+        "ref":  "I34",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  34,
+        "ref":  "J34",
+        "value":  "Lí "
+    },
+    {
+        "row":  34,
+        "ref":  "K34",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  34,
+        "ref":  "L34",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  34,
+        "ref":  "M34",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  34,
+        "ref":  "N34",
+        "value":  "Văn "
+    },
+    {
+        "row":  34,
+        "ref":  "O34",
+        "value":  "Toán "
+    },
+    {
+        "row":  34,
+        "ref":  "P34",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  34,
+        "ref":  "Q34",
+        "value":  "Toán "
+    },
+    {
+        "row":  34,
+        "ref":  "R34",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  34,
+        "ref":  "S34",
+        "value":  "Toán "
+    },
+    {
+        "row":  34,
+        "ref":  "T34",
+        "value":  "Văn "
+    },
+    {
+        "row":  34,
+        "ref":  "U34",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  34,
+        "ref":  "V34",
+        "value":  "Văn "
+    },
+    {
+        "row":  34,
+        "ref":  "W34",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  34,
+        "ref":  "X34",
+        "value":  "Lí "
+    },
+    {
+        "row":  34,
+        "ref":  "Y34",
+        "value":  "Địa "
+    },
+    {
+        "row":  34,
+        "ref":  "Z34",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  34,
+        "ref":  "AA34",
+        "value":  "Sử "
+    },
+    {
+        "row":  34,
+        "ref":  "AB34",
+        "value":  "Lí "
+    },
+    {
+        "row":  34,
+        "ref":  "AC34",
+        "value":  "Toán "
+    },
+    {
+        "row":  34,
+        "ref":  "AD34",
+        "value":  "Văn "
+    },
+    {
+        "row":  34,
+        "ref":  "AE34",
+        "value":  "Sinh "
+    },
+    {
+        "row":  34,
+        "ref":  "AF34",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  34,
+        "ref":  "AG34",
+        "value":  "Văn "
+    },
+    {
+        "row":  34,
+        "ref":  "AH34",
+        "value":  "Sử "
+    },
+    {
+        "row":  34,
+        "ref":  "AI34",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  34,
+        "ref":  "AJ34",
+        "value":  "Công nghệ "
+    },
+    {
+        "row":  34,
+        "ref":  "AK34",
+        "value":  "Giáo dục thể chất "
+    },
+    {
+        "row":  34,
+        "ref":  "AL34",
+        "value":  "Hoá "
+    },
+    {
+        "row":  35,
+        "ref":  "B35",
+        "value":  "5"
+    },
+    {
+        "row":  35,
+        "ref":  "C35",
+        "value":  "Hoá "
+    },
+    {
+        "row":  35,
+        "ref":  "D35",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  35,
+        "ref":  "E35",
+        "value":  "Lí "
+    },
+    {
+        "row":  35,
+        "ref":  "F35",
+        "value":  "Sử "
+    },
+    {
+        "row":  35,
+        "ref":  "G35",
+        "value":  "Hoá "
+    },
+    {
+        "row":  35,
+        "ref":  "H35",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  35,
+        "ref":  "I35",
+        "value":  "Lí "
+    },
+    {
+        "row":  35,
+        "ref":  "J35",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  35,
+        "ref":  "K35",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  35,
+        "ref":  "L35",
+        "value":  " Lí "
+    },
+    {
+        "row":  35,
+        "ref":  "M35",
+        "value":  "Tin "
+    },
+    {
+        "row":  35,
+        "ref":  "N35",
+        "value":  "Toán "
+    },
+    {
+        "row":  35,
+        "ref":  "O35",
+        "value":  "Văn "
+    },
+    {
+        "row":  35,
+        "ref":  "P35",
+        "value":  "Giáo dục quốc phòng "
+    },
+    {
+        "row":  35,
+        "ref":  "Q35",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  35,
+        "ref":  "R35",
+        "value":  "Toán "
+    },
+    {
+        "row":  35,
+        "ref":  "S35",
+        "value":  "Trải nghiệm hướng nghiệp "
+    },
+    {
+        "row":  35,
+        "ref":  "T35",
+        "value":  "Hoá "
+    },
+    {
+        "row":  35,
+        "ref":  "U35",
+        "value":  "Địa "
+    },
+    {
+        "row":  35,
+        "ref":  "V35",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  35,
+        "ref":  "W35",
+        "value":  "Văn "
+    },
+    {
+        "row":  35,
+        "ref":  "X35",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  35,
+        "ref":  "Y35",
+        "value":  "Toán "
+    },
+    {
+        "row":  35,
+        "ref":  "Z35",
+        "value":  "Kinh tế pháp luật "
+    },
+    {
+        "row":  35,
+        "ref":  "AA35",
+        "value":  "Văn "
+    },
+    {
+        "row":  35,
+        "ref":  "AB35",
+        "value":  "Giáo dục địa phương "
+    },
+    {
+        "row":  35,
+        "ref":  "AC35",
+        "value":  "Toán "
+    },
+    {
+        "row":  35,
+        "ref":  "AD35",
+        "value":  "Sinh "
+    },
+    {
+        "row":  35,
+        "ref":  "AE35",
+        "value":  "Sinh "
+    },
+    {
+        "row":  35,
+        "ref":  "AF35",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  35,
+        "ref":  "AG35",
+        "value":  "Văn "
+    },
+    {
+        "row":  35,
+        "ref":  "AH35",
+        "value":  "Địa "
+    },
+    {
+        "row":  35,
+        "ref":  "AI35",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  35,
+        "ref":  "AJ35",
+        "value":  "Sử "
+    },
+    {
+        "row":  35,
+        "ref":  "AK35",
+        "value":  "Tiếng Anh "
+    },
+    {
+        "row":  35,
+        "ref":  "AL35",
+        "value":  "Tiếng Anh "
+    }
+]
