@@ -1,23 +1,26 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useRef } from 'react';
-import { useAuthSession } from '@/hooks/use-auth-session';
-import chatApi, { ChatGroupResponse, ChatMessageResponse } from './api';
-import ChatGroupList from './chat-group-list';
-import ChatWindow from './chat-window';
-import CreateGroupModal from './create-group-modal';
-import { useChatWebSocket } from './hooks';
+import { useEffect, useState, useRef } from "react";
+import { useAuthSession } from "@/hooks/use-auth-session";
+import chatApi, { ChatGroupResponse, ChatMessageResponse } from "./api";
+import ChatGroupList from "./chat-group-list";
+import ChatWindow from "./chat-window";
+import CreateGroupModal from "./create-group-modal";
+import { useChatWebSocket } from "./hooks";
 
 export default function ChatPage() {
   const { session } = useAuthSession();
   const user = session?.user;
   const token = session?.tokens.accessToken;
   const [groups, setGroups] = useState<ChatGroupResponse[]>([]);
-  const [selectedGroup, setSelectedGroup] = useState<ChatGroupResponse | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<ChatGroupResponse | null>(
+    null,
+  );
   const [messages, setMessages] = useState<ChatMessageResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const { connected, send, subscribe, subscribeToGroup } = useChatWebSocket(token);
+  const { connected, send, subscribe, subscribeToGroup } =
+    useChatWebSocket(token);
   const unsubscribeRef = useRef<(() => void) | null>(null);
 
   // Load user groups on mount
@@ -30,22 +33,26 @@ export default function ChatPage() {
     if (!selectedGroup) return;
 
     const unsubscribe = subscribeToGroup(selectedGroup.id, (msg) => {
-      if (msg.action === 'send_message' && selectedGroup?.id === msg.chatGroupId) {
+      if (
+        msg.action === "send_message" &&
+        selectedGroup?.id === msg.chatGroupId
+      ) {
         // Ensure we have a valid message ID
-        if (!msg.messageId || typeof msg.messageId !== 'string') {
-          console.warn('Received message without valid ID:', msg);
+        if (!msg.messageId || typeof msg.messageId !== "string") {
+          console.warn("Received message without valid ID:", msg);
           return;
         }
 
         setMessages((prev) => {
           // More robust dedup: check by ID and timestamp to prevent duplicates
-          const isDuplicate = prev.some((m) => 
-            m.id === msg.messageId || 
-            (m.senderId === msg.senderId && 
-             m.createdAt === msg.timestamp && 
-             m.messageText === msg.messageText)
+          const isDuplicate = prev.some(
+            (m) =>
+              m.id === msg.messageId ||
+              (m.senderId === msg.senderId &&
+                m.createdAt === msg.timestamp &&
+                m.messageText === msg.messageText),
           );
-          
+
           if (isDuplicate) {
             return prev;
           }
@@ -55,11 +62,11 @@ export default function ChatPage() {
             chatGroupId: msg.chatGroupId,
             senderId: msg.senderId,
             senderName: msg.senderName,
-            messageText: msg.messageText || '',
+            messageText: msg.messageText || "",
             mediaUrl: msg.mediaUrl,
             mediaType: msg.mediaType,
             fileName: msg.fileName,
-            messageType: msg.messageType || 'TEXT',
+            messageType: msg.messageType || "TEXT",
             readCount: 0,
             isReadByCurrentUser: false,
             createdAt: msg.timestamp,
@@ -86,7 +93,7 @@ export default function ChatPage() {
       const data = await chatApi.listMyGroups(0, 50);
       setGroups(data.content || []);
     } catch (error) {
-      console.error('Failed to load groups:', error);
+      console.error("Failed to load groups:", error);
     } finally {
       setLoading(false);
     }
@@ -101,11 +108,16 @@ export default function ChatPage() {
       // Mark all as read
       await chatApi.markGroupMessagesAsRead(group.id);
     } catch (error) {
-      console.error('Failed to load messages:', error);
+      console.error("Failed to load messages:", error);
     }
   };
 
-  const handleSendMessage = async (messageData: { text?: string; media?: string; mediaType?: string; fileName?: string }) => {
+  const handleSendMessage = async (messageData: {
+    text?: string;
+    media?: string;
+    mediaType?: string;
+    fileName?: string;
+  }) => {
     if (!selectedGroup || !user) return;
 
     try {
@@ -114,7 +126,7 @@ export default function ChatPage() {
         mediaUrl: messageData.media,
         mediaType: messageData.mediaType,
         fileName: messageData.fileName,
-        messageType: messageData.media ? 'MEDIA' : 'TEXT',
+        messageType: messageData.media ? "MEDIA" : "TEXT",
       });
 
       setMessages((prev) => [...prev, message]);
@@ -122,7 +134,7 @@ export default function ChatPage() {
       // Broadcast via WebSocket
       if (connected) {
         send({
-          action: 'send_message',
+          action: "send_message",
           chatGroupId: selectedGroup.id,
           messageId: message.id,
           senderId: user.id,
@@ -136,7 +148,7 @@ export default function ChatPage() {
         });
       }
     } catch (error) {
-      console.error('Failed to send message:', error);
+      console.error("Failed to send message:", error);
     }
   };
 
@@ -150,7 +162,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-screen gap-4 bg-gray-50 p-4">
+    <div className="flex h-[calc(100vh-8rem)] gap-4">
       {/* Groups Panel */}
       <div className="w-80 flex flex-col border border-gray-200 rounded-lg bg-white shadow-sm">
         <div className="border-b border-gray-200 p-4">
