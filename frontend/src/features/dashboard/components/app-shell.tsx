@@ -53,7 +53,7 @@ export function AppShell({ children }: AppShellProps) {
   const roleLabel = formatRoleLabel(session?.user.role);
 
   return (
-    <div className="mx-auto flex min-h-screen w-[min(98vw,2500px)] gap-4 px-3 py-4 sm:px-4 xl:px-5 2xl:w-[min(98.5vw,2800px)]">
+    <div className="mx-auto flex h-screen gap-4 w-[min(98vw,2500px)] overflow-hidden pl-3 pt-4 pb-0 sm:pl-4 xl:pl-5 2xl:w-[min(98.5vw,2800px)]">
       {mobileNavOpen ? (
         <>
           <button
@@ -93,7 +93,7 @@ export function AppShell({ children }: AppShellProps) {
             : "w-[280px] 2xl:w-[320px]"
         }`}
       >
-        <Panel className="sticky top-4 flex h-[calc(100vh-2rem)] flex-col p-2">
+        <Panel className="flex h-full flex-col p-2">
           {/* overflow-hidden removed — replaced with overflow-visible so collapsed
               icons are never clipped; the nav scroll area handles its own overflow */}
           {/* ── TOP: logo + collapse button ── */}
@@ -203,20 +203,21 @@ export function AppShell({ children }: AppShellProps) {
         </Panel>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-4">
+      <div className="flex min-w-0 flex-1 flex-col gap-4 overflow-hidden pr-3 pt-0 sm:pr-4 xl:pr-5">
         <TopNavbar
           userName={userName}
           roleLabel={roleLabel}
           roleCode={session?.user.role}
           onOpenMobileNav={() => setMobileNavOpen(true)}
         />
-        {/* Chat page fills remaining height without page scroll */}
+        {/* Chat fills remaining height; all other pages scroll inside this column */}
         {isChat ? (
           <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
         ) : (
-          <div className="grid gap-4 pb-4">{children}</div>
+          <div className="-mr-3 flex-1 overflow-y-auto pb-4 pr-3 sm:-mr-4 sm:pr-4 xl:-mr-5 xl:pr-5">
+            <div className="grid gap-4">{children}</div>
+          </div>
         )}
-        {/* <div className="grid gap-4">{children}</div> */}
       </div>
     </div>
   );

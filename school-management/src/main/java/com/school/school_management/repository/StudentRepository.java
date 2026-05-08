@@ -1,6 +1,7 @@
 package com.school.school_management.repository;
 
 import com.school.school_management.entity.Student;
+import com.school.school_management.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -18,6 +19,9 @@ public interface StudentRepository extends BaseRepository<Student, UUID> {
     Optional<Student> findByStudentCodeAndDeletedAtIsNull(String studentCode);
 
     boolean existsByStudentCodeAndDeletedAtIsNull(String studentCode);
+
+    /** Resolve the Student profile linked to a given User account. */
+    Optional<Student> findByUserAndDeletedAtIsNull(User user);
 
     @Query("""
                 select distinct s from Student s

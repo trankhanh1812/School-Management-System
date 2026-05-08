@@ -3,6 +3,8 @@ package com.school.school_management.service.attendance;
 import com.school.school_management.dto.attendance.AttendanceResponse;
 import com.school.school_management.dto.attendance.AttendanceUpsertRequest;
 import com.school.school_management.dto.attendance.QRAttendanceRequest;
+import com.school.school_management.dto.attendance.QRConfirmRequest;
+import com.school.school_management.dto.attendance.QRConfirmResponse;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -16,11 +18,21 @@ public interface AttendanceService {
     // Manual attendance entry
     AttendanceResponse recordManualAttendance(AttendanceUpsertRequest request);
 
-    // QR code scanning
+    // QR code scanning — legacy browser-camera flow (kept for compatibility)
     AttendanceResponse recordQRAttendance(QRAttendanceRequest request);
 
-    // Generate QR code data (returns encoded session info + expiry)
+    /**
+     * Generate QR token for a session.
+     * Returns a signed JWT (15 min TTL) to be embedded in the deep-link URL.
+     */
     String generateQRCode(String sessionId);
+
+    /**
+     * Confirm attendance via deep-link QR token.
+     * Called by the /attend page after the student opens the QR URL on their phone.
+     * The caller must be authenticated as STUDENT.
+     */
+    QRConfirmResponse confirmQRAttendance(QRConfirmRequest request);
 
     // Get attendance for a session
     List<AttendanceResponse> getSessionAttendance(String sessionId);

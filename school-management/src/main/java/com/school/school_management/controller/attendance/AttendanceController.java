@@ -4,6 +4,8 @@ import com.school.school_management.dto.ApiResponse;
 import com.school.school_management.dto.attendance.AttendanceResponse;
 import com.school.school_management.dto.attendance.AttendanceUpsertRequest;
 import com.school.school_management.dto.attendance.QRAttendanceRequest;
+import com.school.school_management.dto.attendance.QRConfirmRequest;
+import com.school.school_management.dto.attendance.QRConfirmResponse;
 import com.school.school_management.service.attendance.AttendanceService;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
@@ -69,19 +71,35 @@ public class AttendanceController {
     }
 
     /**
-     * Generate QR code for a session (TEACHER)
+     * Generate QR code for a session (TEACHER/ADMIN).
+     * Returns a deep-link URL: {appUrl}/attend?token=<jwt>
+     * The URL is encoded as a QR image by the frontend.
      */
     @PostMapping("/qr/generate/{sessionId}")
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     public ResponseEntity<ApiResponse<Map<String, String>>> generateQRCode(@PathVariable String sessionId) {
         log.info("Generating QR code for session: {}", sessionId);
-        String qrCode = attendanceService.generateQRCode(sessionId);
+        String qrUrl = attendanceService.generateQRCode(sessionId);
         Map<String, String> response = Map.of(
-            "qrCode", qrCode,
+            "qrCode", qrUrl,          // deep-link URL to encode as QR image
             "expiryMinutes", "15",
             "message", "QR code valid for 15 minutes"
         );
         return ResponseEntity.ok(ApiResponse.success(response, "QR code generated successfully"));
+    }
+
+    /**
+     * Confirm attendance via deep-link QR token (STUDENT).
+     * Called by the /attend page after the student opens the QR URL on their phone.
+     */
+    @PostMapping("/qr/confirm")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<ApiResponse<QRConfirmResponse>> confirmQRAttendance(
+            @Valid @RequestBody QRConfirmRequest request) {
+        log.info("Confirming QR attendance via deep-link token");
+        QRConfirmResponse response = attendanceService.confirmQRAttendance(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(ApiResponse.success(response, "QR attendance confirmed successfully"));
     }
 
     /**

@@ -161,18 +161,22 @@ export default function ChatPage() {
     return <div>Đang tải...</div>;
   }
 
+  const canCreateGroup = user.role === "ADMIN" || user.role === "TEACHER";
+
   return (
     <div className="flex h-[calc(100vh-8rem)] gap-4">
       {/* Groups Panel */}
       <div className="w-80 flex flex-col border border-gray-200 rounded-lg bg-white shadow-sm">
         <div className="border-b border-gray-200 p-4">
           <h1 className="text-xl font-bold text-gray-800">Tin nhắn</h1>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="mt-3 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-          >
-            + Tạo nhóm mới
-          </button>
+          {canCreateGroup && (
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="mt-3 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
+              + Tạo nhóm mới
+            </button>
+          )}
         </div>
         <ChatGroupList
           groups={groups}

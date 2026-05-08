@@ -654,63 +654,82 @@ export default function AttendancePage() {
       ) : null}
 
       <Panel className="p-5 sm:p-6">
-        <div className="grid gap-4 md:grid-cols-5">
-          <FormSelect
-            label="Năm học"
-            value={academicYearCode}
-            onChange={(event) => setAcademicYearCode(event.target.value)}
-            disabled={loadingOptions || yearOptions.length === 0 || (isTeacher && Boolean(teacherCurrentSlot?.hasCurrentSlot))}
-          >
-            <option value="">Chọn năm học</option>
-            {yearOptions.map((item) => (
-              <option key={item.value} value={item.value}>{item.label}</option>
-            ))}
-          </FormSelect>
+        <div className="grid gap-3">
+          {/* Row 1: compact filters */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="grid gap-1">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Năm học</label>
+              <select
+                value={academicYearCode}
+                onChange={(event) => setAcademicYearCode(event.target.value)}
+                disabled={loadingOptions || yearOptions.length === 0 || (isTeacher && Boolean(teacherCurrentSlot?.hasCurrentSlot))}
+                className="h-9 rounded-lg border border-slate-200 px-2 text-xs"
+              >
+                <option value="">Chọn năm</option>
+                {yearOptions.map((item) => (
+                  <option key={item.value} value={item.value}>{item.label}</option>
+                ))}
+              </select>
+            </div>
 
-          <FormSelect
-            label="Học kỳ"
-            value={semesterCode}
-            onChange={(event) => setSemesterCode(event.target.value)}
-            disabled={loadingOptions || semesterOptions.length === 0 || (isTeacher && Boolean(teacherCurrentSlot?.hasCurrentSlot))}
-          >
-            <option value="">Chọn học kỳ</option>
-            {semesterOptions.map((item) => (
-              <option key={item.value} value={item.value}>{item.label}</option>
-            ))}
-          </FormSelect>
+            <div className="grid gap-1">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Học kỳ</label>
+              <select
+                value={semesterCode}
+                onChange={(event) => setSemesterCode(event.target.value)}
+                disabled={loadingOptions || semesterOptions.length === 0 || (isTeacher && Boolean(teacherCurrentSlot?.hasCurrentSlot))}
+                className="h-9 rounded-lg border border-slate-200 px-2 text-xs"
+              >
+                <option value="">Chọn kỳ</option>
+                {semesterOptions.map((item) => (
+                  <option key={item.value} value={item.value}>{item.label}</option>
+                ))}
+              </select>
+            </div>
 
-          <FormSelect
-            label="Lớp học"
-            value={classCode}
-            onChange={(event) => setClassCode(event.target.value)}
-            disabled={loadingOptions || classOptions.length === 0 || (isTeacher && Boolean(teacherCurrentSlot?.hasCurrentSlot))}
-          >
-            <option value="">Chọn lớp</option>
-            {classOptions.map((item) => (
-              <option key={item.value} value={item.value}>{item.label}</option>
-            ))}
-          </FormSelect>
+            <div className="grid gap-1">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Ngày</label>
+              <input
+                type="date"
+                value={attendanceDate}
+                onChange={(event) => setAttendanceDate(event.target.value)}
+                disabled={isTeacher && Boolean(teacherCurrentSlot?.hasCurrentSlot)}
+                className="h-9 rounded-lg border border-slate-200 px-2 text-xs"
+              />
+            </div>
 
-          <FormInput
-            label="Ngày"
-            type="date"
-            value={attendanceDate}
-            onChange={(event) => setAttendanceDate(event.target.value)}
-            disabled={isTeacher && Boolean(teacherCurrentSlot?.hasCurrentSlot)}
-          />
+            <div className="grid gap-1">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Lớp học</label>
+              <select
+                value={classCode}
+                onChange={(event) => setClassCode(event.target.value)}
+                disabled={loadingOptions || classOptions.length === 0 || (isTeacher && Boolean(teacherCurrentSlot?.hasCurrentSlot))}
+                className="h-9 rounded-lg border border-slate-200 px-2 text-xs"
+              >
+                <option value="">Chọn lớp</option>
+                {classOptions.map((item) => (
+                  <option key={item.value} value={item.value}>{item.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-          <FormSelect
-            label="Tiết học"
-            value={selectedSessionId}
-            onChange={(event) => setSelectedSessionId(event.target.value)}
-          >
-            <option value="">Chọn tiết học</option>
-            {sessions.map((item) => (
-              <option key={item.sessionId} value={item.sessionId}>
-                {formatSessionOption(item)}
-              </option>
-            ))}
-          </FormSelect>
+          {/* Row 2: tiết học full width */}
+          <div className="grid gap-1">
+            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Tiết học</label>
+            <select
+              value={selectedSessionId}
+              onChange={(event) => setSelectedSessionId(event.target.value)}
+              className="h-9 w-full rounded-lg border border-slate-200 px-2 text-sm"
+            >
+              <option value="">Chọn tiết học</option>
+              {sessions.map((item) => (
+                <option key={item.sessionId} value={item.sessionId}>
+                  {formatSessionOption(item)}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -790,13 +809,13 @@ export default function AttendancePage() {
         </div>
 
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[860px] text-sm">
+          <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
                 <th className="px-3 py-2 text-left font-semibold text-slate-900">Học sinh</th>
                 <th className="px-3 py-2 text-left font-semibold text-slate-900">Có mặt</th>
                 <th className="px-3 py-2 text-left font-semibold text-slate-900">Trạng thái</th>
-                <th className="px-3 py-2 text-left font-semibold text-slate-900">Bản ghi hiện có</th>
+                <th className="hidden sm:table-cell px-3 py-2 text-left font-semibold text-slate-900">Bản ghi hiện có</th>
               </tr>
             </thead>
             <tbody>
@@ -859,7 +878,7 @@ export default function AttendancePage() {
                         ))}
                       </select>
                     </td>
-                    <td className="px-3 py-3 text-xs text-slate-600">
+                    <td className="hidden sm:table-cell px-3 py-3 text-xs text-slate-600">
                       {row.attendanceId ? "Đã có (sẽ cập nhật)" : "Chưa có (sẽ tạo mới)"}
                     </td>
                   </tr>
@@ -876,13 +895,13 @@ export default function AttendancePage() {
         <p className="mt-1 text-sm text-slate-600">Cập nhật hoặc chỉnh sửa bản ghi điểm danh trong buổi đã chọn.</p>
 
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[920px] text-sm">
+          <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
                 <th className="px-3 py-2 text-left font-semibold text-slate-900">Học sinh</th>
                 <th className="px-3 py-2 text-left font-semibold text-slate-900">Trạng thái</th>
-                <th className="px-3 py-2 text-left font-semibold text-slate-900">Phương thức</th>
-                <th className="px-3 py-2 text-left font-semibold text-slate-900">Người ghi nhận</th>
+                <th className="hidden sm:table-cell px-3 py-2 text-left font-semibold text-slate-900">Phương thức</th>
+                <th className="hidden md:table-cell px-3 py-2 text-left font-semibold text-slate-900">Người ghi nhận</th>
                 <th className="px-3 py-2 text-left font-semibold text-slate-900">Thao tác</th>
               </tr>
             </thead>
@@ -983,10 +1002,10 @@ function AttendanceRow({
       <td className="px-3 py-3 text-slate-700">
         <span className="rounded-lg bg-slate-100 px-2 py-1 text-xs font-semibold">{row.status}</span>
       </td>
-      <td className="px-3 py-3 text-slate-700">
+      <td className="hidden sm:table-cell px-3 py-3 text-slate-700">
         <span className="rounded-lg bg-sky-50 px-2 py-1 text-xs font-semibold text-sky-700">{row.method}</span>
       </td>
-      <td className="px-3 py-3 text-slate-700">{row.capturedByName ?? "QR tự động"}</td>
+      <td className="hidden md:table-cell px-3 py-3 text-slate-700">{row.capturedByName ?? "QR tự động"}</td>
       <td className="px-3 py-3">
         <div className="flex items-center gap-2">
           <select

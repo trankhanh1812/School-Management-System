@@ -94,7 +94,7 @@ export function MyAttendanceContent() {
         <div className="flex-1">
           <p className="font-semibold text-blue-900">Điểm danh bằng QR</p>
           <p className="text-sm text-blue-700">
-            Kết nối WiFi trường và quét mã QR giáo viên hiển thị để điểm danh nhanh.
+            Dùng camera điện thoại quét mã QR giáo viên hiển thị — xem hướng dẫn chi tiết.
           </p>
         </div>
         <span className="text-blue-400">→</span>
@@ -151,7 +151,7 @@ export function MyAttendanceContent() {
                 <th className="px-4 py-3 text-left font-semibold text-slate-900">Ngày</th>
                 <th className="px-4 py-3 text-left font-semibold text-slate-900">Môn học</th>
                 <th className="px-4 py-3 text-left font-semibold text-slate-900">Trạng thái</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-900">Phương thức</th>
+                <th className="hidden sm:table-cell px-4 py-3 text-left font-semibold text-slate-900">Phương thức</th>
               </tr>
             </thead>
             <tbody>
@@ -164,11 +164,13 @@ export function MyAttendanceContent() {
               ) : (
                 attendanceData.recentRecords.map((record) => (
                 <tr key={record.attendanceId} className="border-b border-slate-100 hover:bg-slate-50">
-                  <td className="px-4 py-3 text-slate-900">{new Date(record.sessionStartTime).toLocaleString("vi-VN")}</td>
+                  <td className="px-4 py-3 text-slate-900 whitespace-nowrap text-xs sm:text-sm">
+                    {new Date(record.sessionStartTime).toLocaleString("vi-VN")}
+                  </td>
                   <td className="px-4 py-3 text-slate-700">{record.subjectName}</td>
                   <td className="px-4 py-3">
                     <span
-                      className={`inline-block rounded-lg px-3 py-1 text-sm font-medium ${
+                      className={`inline-block rounded-lg px-2 py-1 text-xs font-medium ${
                         record.status === "PRESENT"
                           ? "bg-green-100 text-green-900"
                           : record.status === "ABSENT"
@@ -185,7 +187,7 @@ export function MyAttendanceContent() {
                         : "Có phép"}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{record.method}</td>
+                  <td className="hidden sm:table-cell px-4 py-3 text-slate-600">{record.method}</td>
                 </tr>
               )))}
             </tbody>

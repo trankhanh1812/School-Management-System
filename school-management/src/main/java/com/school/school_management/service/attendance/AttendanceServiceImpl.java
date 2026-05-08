@@ -3,6 +3,8 @@ package com.school.school_management.service.attendance;
 import com.school.school_management.dto.attendance.AttendanceResponse;
 import com.school.school_management.dto.attendance.AttendanceUpsertRequest;
 import com.school.school_management.dto.attendance.QRAttendanceRequest;
+import com.school.school_management.dto.attendance.QRConfirmRequest;
+import com.school.school_management.dto.attendance.QRConfirmResponse;
 import com.school.school_management.dto.system.SystemSettingResponse;
 import com.school.school_management.entity.Attendance;
 import com.school.school_management.entity.ClassSession;
@@ -32,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -59,6 +62,10 @@ public class AttendanceServiceImpl implements AttendanceService {
     private final SemesterRepository semesterRepository;
     private final SystemSettingService systemSettingService;
     private final NotificationAutomationService notificationAutomationService;
+    private final QRTokenService qrTokenService;
+
+    @Value("${app.url:http://localhost:3000}")
+    private String appUrl;
 
     public AttendanceServiceImpl(
             AttendanceRepository attendanceRepository,
@@ -70,7 +77,8 @@ public class AttendanceServiceImpl implements AttendanceService {
             SchoolClassRepository schoolClassRepository,
             SemesterRepository semesterRepository,
             SystemSettingService systemSettingService,
-            NotificationAutomationService notificationAutomationService) {
+            NotificationAutomationService notificationAutomationService,
+            QRTokenService qrTokenService) {
         this.attendanceRepository = attendanceRepository;
         this.classSessionRepository = classSessionRepository;
         this.studentRepository = studentRepository;
@@ -81,6 +89,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         this.semesterRepository = semesterRepository;
         this.systemSettingService = systemSettingService;
         this.notificationAutomationService = notificationAutomationService;
+        this.qrTokenService = qrTokenService;
     }
 
     @Override
@@ -165,16 +174,73 @@ public class AttendanceServiceImpl implements AttendanceService {
         ClassSession session = resolveSession(sessionId);
         assertCurrentUserCanCreateAttendanceForSession(session);
 
-        // QR expires in 15 minutes from now
-        long expiryTimestamp = System.currentTimeMillis() + (15 * 60 * 1000);
+        // Generate a short-lived JWT (15 min) encoding the sessionId
+        String qrToken = qrTokenService.generateToken(sessionId);
 
-        Map<String, Object> qrData = new HashMap<>();
-        qrData.put("sessionId", sessionId);
-        qrData.put("expiryTimestamp", expiryTimestamp);
+        // Return the deep-link URL that the student's phone will open when scanning
+        return appUrl + "/attend?token=" + qrToken;
+    }
 
-        // Encode as base64 JSON
-        String json = convertToJson(qrData);
-        return Base64.getEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
+    @Override
+    public QRConfirmResponse confirmQRAttendance(QRConfirmRequest request) {
+        // 1. Verify token and extract sessionId (throws 400 if expired/invalid)
+        String sessionId = qrTokenService.extractSessionId(request.getToken());
+
+        // 2. Resolve session
+        ClassSession session = resolveSession(sessionId);
+
+        // 3. Resolve the currently authenticated student
+        User currentUser = getCurrentUser();
+        Student student = studentRepository.findByUserAndDeletedAtIsNull(currentUser)
+                .orElseThrow(() -> new CustomException("Student profile not found for current user", 403));
+
+        // 4. Verify IP is in allowed school network
+        // IP is taken from the request context via X-Forwarded-For or RemoteAddr
+        // We pass it through the SecurityContext attribute set by the filter
+        SystemSettingResponse settings = systemSettingService.getSettings();
+        String clientIp = resolveClientIpFromContext();
+        verifyClientIP(clientIp, settings.getAllowedSchoolIps());
+
+        // 5. Idempotency: if already checked in, return success without error
+        if (attendanceRepository.findByStudentAndSession(student, session).isPresent()) {
+            throw new CustomException("Bạn đã điểm danh cho buổi học này rồi.", 409);
+        }
+
+        // 6. Create attendance record
+        Attendance attendance = Attendance.builder()
+                .student(student)
+                .session(session)
+                .status(PRESENT)
+                .method(QR)
+                .capturedBy(null)
+                .build();
+
+        Attendance saved = attendanceRepository.save(attendance);
+        pushAttendanceNotification(saved, "Điểm danh QR thành công", "Học sinh đã check-in bằng QR");
+
+        return QRConfirmResponse.builder()
+                .sessionId(sessionId)
+                .subjectName(session.getSubject().getName())
+                .className(session.getSchoolClass().getClassCode())
+                .status(PRESENT)
+                .method(QR)
+                .build();
+    }
+
+    /**
+     * Attempt to read the client IP from the current request stored in a thread-local
+     * attribute by the filter. Falls back to empty string (IP check will then fail
+     * unless allowedSchoolIps is empty/disabled).
+     */
+    private String resolveClientIpFromContext() {
+        try {
+            Object ip = org.springframework.web.context.request.RequestContextHolder
+                    .currentRequestAttributes()
+                    .getAttribute("clientIp", org.springframework.web.context.request.RequestAttributes.SCOPE_REQUEST);
+            return ip instanceof String s ? s : "";
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     @Override

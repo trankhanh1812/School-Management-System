@@ -59,8 +59,8 @@ const quickLinks = [
   {
     href: "/my-attendance/qr-scan",
     icon: "📷",
-    label: "Quét QR điểm danh",
-    description: "Điểm danh nhanh bằng mã QR trong lớp",
+    label: "Hướng dẫn QR",
+    description: "Cách điểm danh bằng camera điện thoại",
     color: "border-slate-200 bg-slate-50 hover:bg-slate-100",
     iconBg: "bg-slate-700",
   },

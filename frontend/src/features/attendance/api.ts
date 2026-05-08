@@ -14,13 +14,26 @@ export const attendanceApi = {
     }, { authenticated: true });
   },
 
-  // QR attendance scanning (STUDENT)
+  // QR attendance scanning (STUDENT) — legacy browser-camera flow
   recordQR(studentCode: string, qrData: string, clientIp?: string) {
     return apiClient.post<ApiResponse<AttendanceRecord>>("/attendance/qr", {
       studentCode,
       qrData,
       clientIp,
     }, { authenticated: true });
+  },
+
+  /**
+   * Confirm attendance via deep-link token.
+   * Called from the public /attend page after student opens the QR URL.
+   * Requires JWT auth (student must be logged in).
+   */
+  confirmQRToken(token: string) {
+    return apiClient.post<ApiResponse<{ sessionId: string; subjectName: string; className: string }>>(
+      "/attendance/qr/confirm",
+      { token },
+      { authenticated: true },
+    );
   },
 
   // Generate QR code for session (TEACHER/ADMIN)

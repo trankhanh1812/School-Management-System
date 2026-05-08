@@ -651,10 +651,10 @@ export default function ScoreExamsPage() {
                 <tr>
                   <th className="px-4 py-3 text-left">Tiêu đề</th>
                   <th className="px-4 py-3 text-left">Môn</th>
-                  <th className="px-4 py-3 text-left">Loại</th>
-                  <th className="px-4 py-3 text-left">Năm học</th>
-                  <th className="px-4 py-3 text-left">Học kỳ</th>
-                  <th className="px-4 py-3 text-left">Lớp áp dụng</th>
+                  <th className="hidden sm:table-cell px-4 py-3 text-left">Loại</th>
+                  <th className="hidden md:table-cell px-4 py-3 text-left">Năm học</th>
+                  <th className="hidden md:table-cell px-4 py-3 text-left">Học kỳ</th>
+                  <th className="hidden lg:table-cell px-4 py-3 text-left">Lớp áp dụng</th>
                   <th className="px-4 py-3 text-left">Trạng thái</th>
                   <th className="px-4 py-3 text-left">Thao tác</th>
                 </tr>
@@ -664,10 +664,10 @@ export default function ScoreExamsPage() {
                   <tr key={exam.examId} className="border-t border-slate-100">
                     <td className="px-4 py-3">{exam.title}</td>
                     <td className="px-4 py-3">{exam.subjectCode}</td>
-                    <td className="px-4 py-3">{exam.examTypeLabel || exam.examType}</td>
-                    <td className="px-4 py-3">{exam.academicYearCode}</td>
-                    <td className="px-4 py-3">{exam.semesterCode}</td>
-                    <td className="px-4 py-3">{exam.classCodes.join(", ")}</td>
+                    <td className="hidden sm:table-cell px-4 py-3">{exam.examTypeLabel || exam.examType}</td>
+                    <td className="hidden md:table-cell px-4 py-3">{exam.academicYearCode}</td>
+                    <td className="hidden md:table-cell px-4 py-3">{exam.semesterCode}</td>
+                    <td className="hidden lg:table-cell px-4 py-3">{exam.classCodes.join(", ")}</td>
                     <td className="px-4 py-3">{exam.status}</td>
                     <td className="px-4 py-3">
                       <ButtonLink href={`/scores/gradebook?examId=${encodeURIComponent(exam.examId)}`} tone="secondary" className="h-8 px-3 text-xs">

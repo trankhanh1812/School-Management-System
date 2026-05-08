@@ -314,10 +314,11 @@ export default function ScoreGradebookPage() {
       />
 
       <Panel className="p-5 sm:p-6">
-        <div className="mb-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <div className="grid gap-1.5">
-            <label className="text-sm font-semibold text-slate-700">Năm học</label>
-            <select value={yearScope} onChange={(event) => setYearScope(event.target.value)} className="h-10 rounded-xl border border-slate-200 px-3 text-sm">
+        {/* Row 1: scope filters — compact 2x2 grid */}
+        <div className="mb-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid gap-1">
+            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Năm học</label>
+            <select value={yearScope} onChange={(event) => setYearScope(event.target.value)} className="h-9 rounded-lg border border-slate-200 px-2 text-xs">
               <option value="all">Tất cả</option>
               {yearOptions.map((value) => (
                 <option key={`year-${value}`} value={value}>{value}</option>
@@ -325,9 +326,9 @@ export default function ScoreGradebookPage() {
             </select>
           </div>
 
-          <div className="grid gap-1.5">
-            <label className="text-sm font-semibold text-slate-700">Học kỳ</label>
-            <select value={semesterScope} onChange={(event) => setSemesterScope(event.target.value)} className="h-10 rounded-xl border border-slate-200 px-3 text-sm">
+          <div className="grid gap-1">
+            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Học kỳ</label>
+            <select value={semesterScope} onChange={(event) => setSemesterScope(event.target.value)} className="h-9 rounded-lg border border-slate-200 px-2 text-xs">
               <option value="all">Tất cả</option>
               {semesterOptions.map((value) => (
                 <option key={`semester-${value}`} value={value}>{value}</option>
@@ -335,31 +336,37 @@ export default function ScoreGradebookPage() {
             </select>
           </div>
 
-          <div className="grid gap-1.5">
-            <label className="text-sm font-semibold text-slate-700">Lớp áp dụng</label>
-            <select value={classScope} onChange={(event) => setClassScope(event.target.value)} className="h-10 rounded-xl border border-slate-200 px-3 text-sm">
+          <div className="grid gap-1">
+            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Lớp áp dụng</label>
+            <select value={classScope} onChange={(event) => setClassScope(event.target.value)} className="h-9 rounded-lg border border-slate-200 px-2 text-xs">
               <option value="all">Tất cả</option>
               {classScopeOptions.map((value) => (
                 <option key={`scope-class-${value}`} value={value}>{value}</option>
               ))}
             </select>
           </div>
+        </div>
 
-          <div className="grid gap-1.5">
-            <label className="text-sm font-semibold text-slate-700">Bài kiểm tra</label>
-            <select
-              value={selectedExamId}
-              onChange={(event) => setSelectedExamId(event.target.value)}
-              className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
-            >
-              <option value="">-- Chọn bài kiểm tra --</option>
-              {scopedExams.map((exam) => (
+        {/* Row 2: exam selector — full width to prevent overflow */}
+        <div className="mb-4 grid gap-1">
+          <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Bài kiểm tra</label>
+          <select
+            value={selectedExamId}
+            onChange={(event) => setSelectedExamId(event.target.value)}
+            className="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm"
+          >
+            <option value="">-- Chọn bài kiểm tra --</option>
+            {scopedExams.map((exam) => {
+              const classes = exam.classCodes.length > 3
+                ? `${exam.classCodes.slice(0, 3).join(", ")}…`
+                : exam.classCodes.join(", ");
+              return (
                 <option key={exam.examId} value={exam.examId}>
-                  {exam.title} ({exam.subjectCode} - {exam.classCodes.join(", ")})
+                  {exam.title} · {exam.subjectCode} · {classes}
                 </option>
-              ))}
-            </select>
-          </div>
+              );
+            })}
+          </select>
         </div>
 
         <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
@@ -459,10 +466,10 @@ export default function ScoreGradebookPage() {
                   <tr>
                     <th className="px-4 py-3 text-left">Học sinh</th>
                     <th className="px-4 py-3 text-left">Lớp</th>
-                    <th className="px-4 py-3 text-left">Loại điểm</th>
+                    <th className="hidden lg:table-cell px-4 py-3 text-left">Loại điểm</th>
                     <th className="px-4 py-3 text-left">Giá trị</th>
                     <th className="px-4 py-3 text-left">Trạng thái</th>
-                    <th className="px-4 py-3 text-left">Giáo viên</th>
+                    <th className="hidden lg:table-cell px-4 py-3 text-left">Giáo viên</th>
                     {isAdmin ? <th className="px-4 py-3 text-left">Duyệt</th> : null}
                   </tr>
                 </thead>
@@ -470,10 +477,11 @@ export default function ScoreGradebookPage() {
                   {filteredScores.map((score) => (
                     <tr key={score.scoreId} className="border-t border-slate-100">
                       <td className="px-4 py-3">
-                        {score.studentName} ({score.studentCode})
+                        <p className="font-medium">{score.studentName}</p>
+                        <p className="text-xs text-slate-500">{score.studentCode}</p>
                       </td>
                       <td className="px-4 py-3">{score.classCode}</td>
-                      <td className="px-4 py-3">{score.examType}</td>
+                      <td className="hidden lg:table-cell px-4 py-3">{score.examType}</td>
                       <td className="px-4 py-3">
                         <input
                           type="number"
@@ -483,11 +491,11 @@ export default function ScoreGradebookPage() {
                           defaultValue={score.scoreValue ?? 0}
                           disabled={!score.editable}
                           onBlur={(event) => void handleQuickUpdate(score, event.target.value)}
-                          className="h-9 w-24 rounded-lg border border-slate-200 px-2"
+                          className="h-9 w-20 rounded-lg border border-slate-200 px-2"
                         />
                       </td>
                       <td className="px-4 py-3">{score.status}</td>
-                      <td className="px-4 py-3">{score.teacherName}</td>
+                      <td className="hidden lg:table-cell px-4 py-3">{score.teacherName}</td>
                       {isAdmin ? (
                         <td className="px-4 py-3">
                           <Button
