@@ -1,0 +1,12 @@
+.git
+.github
+.venv
+.vscode
+tmp
+*.md
+*.xlsx
+frontend/.next
+frontend/node_modules
+school-management/target
+school-management/.idea
+school-management/.m2

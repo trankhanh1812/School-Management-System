@@ -10,15 +10,15 @@ const CONDUCT_LEVEL_CONFIG: Record<
   string,
   { label: string; className: string }
 > = {
-  EXCELLENT: { label: "Tốt", className: "bg-green-100 text-green-900" },
-  GOOD: { label: "Khá", className: "bg-blue-100 text-blue-900" },
-  AVERAGE: { label: "Trung bình", className: "bg-yellow-100 text-yellow-900" },
-  WEAK: { label: "Yếu", className: "bg-red-100 text-red-900" },
+  EXCELLENT: { label: "Tốt", className: "bg-emerald-50 text-emerald-700" },
+  GOOD: { label: "Khá", className: "bg-sky-50 text-sky-700" },
+  AVERAGE: { label: "Trung bình", className: "bg-amber-50 text-amber-700" },
+  WEAK: { label: "Yếu", className: "bg-rose-50 text-rose-600" },
   // Vietnamese fallbacks
-  Tốt: { label: "Tốt", className: "bg-green-100 text-green-900" },
-  Khá: { label: "Khá", className: "bg-blue-100 text-blue-900" },
-  "Trung bình": { label: "Trung bình", className: "bg-yellow-100 text-yellow-900" },
-  Yếu: { label: "Yếu", className: "bg-red-100 text-red-900" },
+  Tốt: { label: "Tốt", className: "bg-emerald-50 text-emerald-700" },
+  Khá: { label: "Khá", className: "bg-sky-50 text-sky-700" },
+  "Trung bình": { label: "Trung bình", className: "bg-amber-50 text-amber-700" },
+  Yếu: { label: "Yếu", className: "bg-rose-50 text-rose-600" },
 };
 
 function ConductBadge({ level }: { level?: string }) {
@@ -151,7 +151,7 @@ export function MyConductContent() {
         </div>
       )}
 
-      <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
         <p className="font-medium">Lưu ý:</p>
         <p className="mt-1">
           Hạnh kiểm được đánh giá cuối mỗi học kỳ bởi giáo viên chủ nhiệm. Nếu có thắc mắc,

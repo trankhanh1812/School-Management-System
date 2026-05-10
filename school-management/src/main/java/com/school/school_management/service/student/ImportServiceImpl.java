@@ -73,6 +73,7 @@ public class ImportServiceImpl implements ImportService {
                     .academicYear(row.getAcademicYear())
                     .status(row.getStatus())
                     .enrollmentDate(row.getEnrollmentDate())
+                    .nationalId(row.getNationalId())
                     .hasErrors(!rowErrors.isEmpty())
                     .fieldErrors(new ArrayList<>())
                     .build();
@@ -162,6 +163,7 @@ public class ImportServiceImpl implements ImportService {
                         .className(row.getClassName())
                         .academicYear(row.getAcademicYear())
                         .status(row.getStatus())
+                        .nationalId(row.getNationalId())
                         .build();
 
                     studentService.createStudent(upsert);

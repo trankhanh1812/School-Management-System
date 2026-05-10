@@ -23,13 +23,22 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Tìm user theo username trước (CCCD, phone, studentCode),
+     * nếu không tìm thấy thì fallback tìm theo email.
+     * Spring Security gọi method này với giá trị từ trường "username" của form.
+     */
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+    public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
+        String normalized = identifier == null ? "" : identifier.trim();
+
+        User user = userRepository.findByUsernameAndDeletedAtIsNull(normalized)
+            .or(() -> userRepository.findByEmail(normalized.toLowerCase(Locale.ROOT)))
+            .orElseThrow(() -> new UsernameNotFoundException(
+                "Không tìm thấy tài khoản: " + normalized));
 
         if (user.getDeletedAt() != null || !"ACTIVE".equalsIgnoreCase(user.getStatus())) {
-            throw new UsernameNotFoundException("User account is inactive: " + email);
+            throw new UsernameNotFoundException("Tài khoản không hoạt động: " + normalized);
         }
 
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
@@ -42,12 +51,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         }
 
         if (authorities.isEmpty()) {
-            log.warn("User {} has no roles assigned in database", email);
-            throw new UsernameNotFoundException("User has no assigned roles: " + email);
+            log.warn("User {} has no roles assigned", normalized);
+            throw new UsernameNotFoundException("Tài khoản chưa được gán vai trò: " + normalized);
         }
 
-        log.debug("Loaded auth details for {} with roles: {}", email, authorities);
+        log.debug("Loaded auth for {} with roles: {}", normalized, authorities);
 
+        // Spring Security dùng email làm principal (để JWT và SecurityContext nhất quán)
         return org.springframework.security.core.userdetails.User.builder()
             .username(user.getEmail())
             .password(user.getPasswordHash())

@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 import { MetricCard } from "@/features/dashboard/components/metric-card";
 import { PageIntro } from "@/features/dashboard/components/page-intro";
 import { DataTable } from "@/features/dashboard/components/data-table";
@@ -12,19 +11,13 @@ import { useEducationAnalytics } from "@/features/report/hooks";
 import { Panel } from "@/shared/ui/panel";
 import { Button, ButtonLink } from "@/shared/ui/button";
 import { useAuthSession } from "@/hooks";
+import { StudentDashboard } from "@/features/student/components/student-dashboard-content";
 
 export default function DashboardPage() {
-  const router = useRouter();
   const { session } = useAuthSession();
   const isStudent = session?.user.role === "STUDENT";
-  const { snapshot, isLoading, isRefreshing, error, refresh } = useEducationAnalytics();
-
-  // Student landing page is /my-profile — redirect immediately
-  useEffect(() => {
-    if (isStudent) {
-      router.replace("/my-profile");
-    }
-  }, [isStudent, router]);
+  const { snapshot, isLoading, isRefreshing, error, refresh } =
+    useEducationAnalytics();
 
   const riskTone = useMemo(
     () => ({
@@ -35,7 +28,9 @@ export default function DashboardPage() {
     [],
   );
 
-  if (isStudent) return null;
+  if (isStudent) {
+    return <StudentDashboard />;
+  }
 
   return (
     <div className="grid gap-4">
@@ -48,7 +43,11 @@ export default function DashboardPage() {
             <ButtonLink href="/reports" tone="secondary">
               Xem báo cáo
             </ButtonLink>
-            <Button tone="ghost" onClick={() => void refresh()} disabled={isLoading || isRefreshing}>
+            <Button
+              tone="ghost"
+              onClick={() => void refresh()}
+              disabled={isLoading || isRefreshing}
+            >
               {isRefreshing ? "Đang làm mới..." : "Làm mới dữ liệu"}
             </Button>
             <ButtonLink href="/notifications">Gửi thông báo</ButtonLink>
@@ -57,7 +56,9 @@ export default function DashboardPage() {
       />
 
       {error ? (
-        <Panel className="border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-900">{error}</Panel>
+        <Panel className="border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-900">
+          {error}
+        </Panel>
       ) : null}
 
       <section className="grid gap-4 xl:grid-cols-4">
@@ -66,7 +67,10 @@ export default function DashboardPage() {
         ))}
         {isLoading
           ? Array.from({ length: 4 }).map((_, index) => (
-              <Panel key={`metric-skeleton-${index}`} className="h-[152px] animate-pulse bg-slate-100/80">
+              <Panel
+                key={`metric-skeleton-${index}`}
+                className="h-[152px] animate-pulse bg-slate-100/80"
+              >
                 <div />
               </Panel>
             ))
@@ -82,7 +86,9 @@ export default function DashboardPage() {
         />
 
         <Panel className="p-5 sm:p-6">
-          <h3 className="text-xl font-semibold tracking-tight text-slate-950">Canh bao hoc vu uu tien</h3>
+          <h3 className="text-xl font-semibold tracking-tight text-slate-950">
+            Canh bao hoc vu uu tien
+          </h3>
           <div className="mt-5 grid gap-3">
             {snapshot.riskAlerts.map((item) => (
               <div
@@ -133,14 +139,16 @@ export default function DashboardPage() {
           title="Hieu suat lop hoc"
           description="So sanh quy mo lop, diem trung binh va ty le dat theo tung lop."
           columns={["Lop", "Nam hoc", "Si so", "Diem TB", "Ty le dat", "GVCN"]}
-          rows={snapshot.classPerformance.slice(0, 12).map((item) => [
-            item.className,
-            item.academicYear,
-            String(item.totalStudents),
-            item.averageScore,
-            item.passRate,
-            item.homeroomTeacher,
-          ])}
+          rows={snapshot.classPerformance
+            .slice(0, 12)
+            .map((item) => [
+              item.className,
+              item.academicYear,
+              String(item.totalStudents),
+              item.averageScore,
+              item.passRate,
+              item.homeroomTeacher,
+            ])}
         />
 
         <LineChart

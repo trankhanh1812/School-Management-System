@@ -1,4 +1,10 @@
-export const publicRoutes = ["/", "/login", "/register", "/forgot-password", "/reset-password", "/attend"] as const;
+export const publicRoutes = [
+  "/",
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+] as const;
 
 export const dashboardRoutes = [
   "/dashboard",

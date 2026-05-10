@@ -27,7 +27,10 @@ export function ConductListContent() {
         return false;
       }
 
-      if (normalizedSemester && !(item.semesterCode || "").toLowerCase().includes(normalizedSemester)) {
+      if (
+        normalizedSemester &&
+        !(item.semesterCode || "").toLowerCase().includes(normalizedSemester)
+      ) {
         return false;
       }
 
@@ -86,7 +89,9 @@ export function ConductListContent() {
   }, [filteredRecords]);
 
   async function handleDelete(id: string) {
-    const confirmed = window.confirm("Bạn có chắc chắn muốn xóa bản ghi hạnh kiểm này?");
+    const confirmed = window.confirm(
+      "Bạn có chắc chắn muốn xóa bản ghi hạnh kiểm này?",
+    );
     if (!confirmed) {
       return;
     }
@@ -97,7 +102,12 @@ export function ConductListContent() {
       await refresh();
       showToast("Đã xóa bản ghi hạnh kiểm.", "success");
     } catch (deleteError) {
-      showToast(deleteError instanceof Error ? deleteError.message : "Không thể xóa bản ghi hạnh kiểm.", "error");
+      showToast(
+        deleteError instanceof Error
+          ? deleteError.message
+          : "Không thể xóa bản ghi hạnh kiểm.",
+        "error",
+      );
     } finally {
       setDeletingId(null);
     }
@@ -121,24 +131,44 @@ export function ConductListContent() {
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <Panel className="border border-slate-200 p-4">
-          <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Tổng bản ghi</p>
-          <p className="mt-2 text-2xl font-semibold text-slate-950">{summary.total}</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-slate-500">
+            Tổng bản ghi
+          </p>
+          <p className="mt-2 text-2xl font-semibold text-slate-950">
+            {summary.total}
+          </p>
         </Panel>
         <Panel className="border border-emerald-200 bg-emerald-50 p-4">
-          <p className="text-xs uppercase tracking-[0.16em] text-emerald-700">Tốt</p>
-          <p className="mt-2 text-2xl font-semibold text-emerald-900">{summary.excellent}</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-emerald-700">
+            Tốt
+          </p>
+          <p className="mt-2 text-2xl font-semibold text-emerald-900">
+            {summary.excellent}
+          </p>
         </Panel>
         <Panel className="border border-cyan-200 bg-cyan-50 p-4">
-          <p className="text-xs uppercase tracking-[0.16em] text-cyan-700">Khá</p>
-          <p className="mt-2 text-2xl font-semibold text-cyan-900">{summary.good}</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-cyan-700">
+            Khá
+          </p>
+          <p className="mt-2 text-2xl font-semibold text-cyan-900">
+            {summary.good}
+          </p>
         </Panel>
         <Panel className="border border-amber-200 bg-amber-50 p-4">
-          <p className="text-xs uppercase tracking-[0.16em] text-amber-700">Trung bình</p>
-          <p className="mt-2 text-2xl font-semibold text-amber-900">{summary.average}</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-amber-700">
+            Trung bình
+          </p>
+          <p className="mt-2 text-2xl font-semibold text-amber-900">
+            {summary.average}
+          </p>
         </Panel>
         <Panel className="border border-rose-200 bg-rose-50 p-4">
-          <p className="text-xs uppercase tracking-[0.16em] text-rose-700">Yếu</p>
-          <p className="mt-2 text-2xl font-semibold text-rose-900">{summary.weak}</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-rose-700">
+            Yếu
+          </p>
+          <p className="mt-2 text-2xl font-semibold text-rose-900">
+            {summary.weak}
+          </p>
         </Panel>
       </section>
 
@@ -178,7 +208,9 @@ export function ConductListContent() {
       )}
 
       {isLoading ? (
-        <Panel className="p-4 text-sm text-slate-500">Đang tải danh sách hạnh kiểm...</Panel>
+        <Panel className="p-4 text-sm text-slate-500">
+          Đang tải danh sách hạnh kiểm...
+        </Panel>
       ) : (
         <DataTable
           title="Danh sách hạnh kiểm"

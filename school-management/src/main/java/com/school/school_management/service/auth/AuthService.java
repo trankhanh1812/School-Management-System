@@ -22,4 +22,10 @@ public interface AuthService {
     void resetPassword(ResetPasswordRequest resetPasswordRequest);
 
     void logout(String token);
+
+    /**
+     * Đổi mật khẩu lần đầu đăng nhập (khi forcePasswordChange = true).
+     * Sau khi đổi thành công, forcePasswordChange được set về false.
+     */
+    void changePasswordFirstLogin(String currentUserEmail, String newPassword);
 }

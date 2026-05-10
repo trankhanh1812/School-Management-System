@@ -11,23 +11,20 @@ type ChildSelectorProps = {
 function avatarLabel(child: LinkedChild) {
   if (child.avatarLabel) return child.avatarLabel;
   const parts = child.fullName.trim().split(/\s+/);
-  return parts
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? "")
-    .join("");
+  return parts.slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("");
 }
 
 export function ChildSelector({ children, selectedCode, onSelect }: ChildSelectorProps) {
   if (children.length === 0) {
     return (
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+      <p className="text-sm text-slate-500">
         Tài khoản chưa được liên kết với học sinh nào. Vui lòng liên hệ nhà trường.
-      </div>
+      </p>
     );
   }
 
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="flex flex-wrap gap-2">
       {children.map((child) => {
         const isSelected = child.studentCode === selectedCode;
         return (
@@ -35,27 +32,27 @@ export function ChildSelector({ children, selectedCode, onSelect }: ChildSelecto
             key={child.studentCode}
             type="button"
             onClick={() => onSelect(child.studentCode)}
-            className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition ${
+            className={`flex items-center gap-3 rounded-xl border px-4 py-2.5 text-left transition ${
               isSelected
-                ? "border-blue-400 bg-blue-600 text-white shadow-md"
-                : "border-slate-200 bg-white text-slate-800 hover:border-blue-300 hover:bg-blue-50"
+                ? "border-sky-200 bg-sky-50 text-sky-900"
+                : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
             }`}
           >
             <div
-              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold ${
-                isSelected ? "bg-white/20 text-white" : "bg-blue-100 text-blue-700"
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
+                isSelected ? "bg-sky-100 text-sky-700" : "bg-slate-100 text-slate-600"
               }`}
             >
               {avatarLabel(child)}
             </div>
             <div className="min-w-0">
-              <p className="font-semibold text-sm truncate">{child.fullName}</p>
-              <p className={`text-xs truncate ${isSelected ? "text-blue-100" : "text-slate-500"}`}>
+              <p className="text-sm font-semibold truncate">{child.fullName}</p>
+              <p className={`text-xs truncate ${isSelected ? "text-sky-600" : "text-slate-500"}`}>
                 {child.className ?? "—"} · {child.academicYear ?? "—"}
               </p>
             </div>
             {isSelected && (
-              <span className="ml-1 text-white text-xs font-bold">✓</span>
+              <span className="ml-1 text-sky-500 text-xs">✓</span>
             )}
           </button>
         );

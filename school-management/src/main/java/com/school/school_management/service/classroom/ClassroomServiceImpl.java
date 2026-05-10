@@ -12,8 +12,11 @@ import com.school.school_management.entity.StudentClass;
 import com.school.school_management.entity.Teacher;
 import com.school.school_management.entity.User;
 import com.school.school_management.exception.CustomException;
+import com.school.school_management.repository.AcademicRankRuleRepository;
 import com.school.school_management.repository.AcademicYearRepository;
+import com.school.school_management.repository.ConductRepository;
 import com.school.school_management.repository.SchoolClassRepository;
+import com.school.school_management.repository.SemesterRepository;
 import com.school.school_management.repository.StudentClassRepository;
 import com.school.school_management.repository.TeacherRepository;
 import com.school.school_management.repository.UserRepository;
@@ -38,18 +41,27 @@ public class ClassroomServiceImpl implements ClassroomService {
     private final AcademicYearRepository academicYearRepository;
     private final TeacherRepository teacherRepository;
     private final UserRepository userRepository;
+    private final ConductRepository conductRepository;
+    private final AcademicRankRuleRepository academicRankRuleRepository;
+    private final SemesterRepository semesterRepository;
 
     public ClassroomServiceImpl(
             SchoolClassRepository schoolClassRepository,
             StudentClassRepository studentClassRepository,
             AcademicYearRepository academicYearRepository,
             TeacherRepository teacherRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            ConductRepository conductRepository,
+            AcademicRankRuleRepository academicRankRuleRepository,
+            SemesterRepository semesterRepository) {
         this.schoolClassRepository = schoolClassRepository;
         this.studentClassRepository = studentClassRepository;
         this.academicYearRepository = academicYearRepository;
         this.teacherRepository = teacherRepository;
         this.userRepository = userRepository;
+        this.conductRepository = conductRepository;
+        this.academicRankRuleRepository = academicRankRuleRepository;
+        this.semesterRepository = semesterRepository;
     }
 
     @Override
@@ -461,5 +473,111 @@ public class ClassroomServiceImpl implements ClassroomService {
         } catch (NumberFormatException exception) {
             return 0.0;
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PromotionPlanResponse> autoCalculatePromotion(String classCode, String semesterCode) {
+        SchoolClass schoolClass = getClassEntity(classCode);
+        String nextAcademicYear = buildNextAcademicYear(schoolClass);
+
+        // Load academic rank rules sorted by minAverage desc
+        var rankRules = academicRankRuleRepository.findAllByOrderByCodeAsc().stream()
+            .filter(r -> r.getMinAverage() != null)
+            .sorted(Comparator.comparing(r -> r.getMinAverage().doubleValue(), Comparator.reverseOrder()))
+            .toList();
+
+        // Load semester if provided
+        var semesterOpt = (semesterCode != null && !semesterCode.isBlank())
+            ? semesterRepository.findAllByOrderByStartDateDesc().stream()
+                .filter(s -> semesterCode.equalsIgnoreCase(s.getCode()))
+                .findFirst()
+            : java.util.Optional.empty();
+
+        List<Student> students = studentClassRepository.findBySchoolClassAndEndDateIsNull(schoolClass)
+            .stream()
+            .map(StudentClass::getStudent)
+            .filter(s -> s != null && s.getDeletedAt() == null)
+            .toList();
+
+        return students.stream().map(student -> {
+            // Calculate score average
+            double avg = student.getScores().stream()
+                .filter(sc -> sc != null && sc.getDeletedAt() == null && sc.getScoreValue() != null
+                    && "PUBLISHED".equals(sc.getStatus()))
+                .mapToDouble(sc -> sc.getScoreValue().doubleValue())
+                .average().orElse(0.0);
+
+            // Get latest conduct for this semester/class
+            String conductLevel = conductRepository
+                .findByStudentOrderByIdDesc(student).stream()
+                .filter(c -> semesterOpt.isEmpty() || semesterOpt.get().equals(c.getSemester()))
+                .map(c -> c.getConductLevel())
+                .filter(l -> l != null && !l.isBlank())
+                .findFirst()
+                .orElse("Chưa cập nhật");
+
+            // Count failed subjects (score < 5.0)
+            long failedSubjects = student.getScores().stream()
+                .filter(sc -> sc != null && sc.getDeletedAt() == null && sc.getScoreValue() != null
+                    && "PUBLISHED".equals(sc.getStatus()))
+                .filter(sc -> sc.getScoreValue().doubleValue() < 5.0)
+                .count();
+
+            // Determine action
+            Short grade = schoolClass.getGradeLevel();
+            short gradeLevel = grade != null ? grade : 10;
+            String action;
+            String reason;
+
+            if (gradeLevel >= 12) {
+                action = avg >= 5.0 ? "graduate" : "repeat";
+                reason = avg >= 5.0
+                    ? "Đủ điều kiện tốt nghiệp."
+                    : String.format("Điểm TB %.1f < 5.0, chưa đủ điều kiện tốt nghiệp.", avg);
+            } else if (avg < 5.0 || failedSubjects > 2) {
+                action = "repeat";
+                reason = avg < 5.0
+                    ? String.format("Điểm TB %.1f < 5.0, cần lưu ban.", avg)
+                    : String.format("Có %d môn dưới 5.0, cần lưu ban.", failedSubjects);
+            } else {
+                // Check rank rules
+                boolean passesRankRule = rankRules.isEmpty() || rankRules.stream().anyMatch(r -> {
+                    boolean avgOk = avg >= r.getMinAverage().doubleValue();
+                    boolean failOk = r.getMaxFailedSubjects() == null || failedSubjects <= r.getMaxFailedSubjects();
+                    boolean conductOk = r.getMinConductLevel() == null
+                        || conductMeetsMinimum(conductLevel, r.getMinConductLevel());
+                    return avgOk && failOk && conductOk;
+                });
+                action = passesRankRule ? "promote" : "repeat";
+                reason = passesRankRule
+                    ? String.format("Điểm TB %.1f, hạnh kiểm %s — đủ điều kiện lên lớp.", avg, conductLevel)
+                    : String.format("Điểm TB %.1f, hạnh kiểm %s — chưa đủ điều kiện lên lớp.", avg, conductLevel);
+            }
+
+            String studentName = student.getUser() != null && !isBlank(student.getUser().getFullName())
+                ? student.getUser().getFullName()
+                : (safe(student.getLastName(), "") + " " + safe(student.getFirstName(), "")).trim();
+
+            return PromotionPlanResponse.builder()
+                .studentCode(student.getStudentCode())
+                .studentName(studentName)
+                .currentClass(safe(schoolClass.getClassName(), classCode))
+                .nextAcademicYear(nextAcademicYear)
+                .proposedClass(resolveProposedClass(schoolClass, action))
+                .action(action)
+                .reason(reason)
+                .status("draft")
+                .build();
+        }).toList();
+    }
+
+    /** So sánh mức hạnh kiểm: Tốt > Khá > Trung bình > Yếu */
+    private boolean conductMeetsMinimum(String actual, String minimum) {
+        var order = List.of("Yếu", "Trung bình", "Khá", "Tốt");
+        int actualIdx = order.indexOf(actual);
+        int minIdx = order.indexOf(minimum);
+        if (actualIdx < 0 || minIdx < 0) return true; // unknown → pass
+        return actualIdx >= minIdx;
     }
 }

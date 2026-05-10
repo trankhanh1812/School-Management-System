@@ -123,9 +123,9 @@ export function MyScoreHistoryContent() {
                         <span
                           className={`inline-block rounded-lg px-2 py-0.5 font-semibold ${
                             increased
-                              ? "bg-green-100 text-green-900"
+                              ? "bg-emerald-50 text-emerald-700"
                               : decreased
-                                ? "bg-red-100 text-red-900"
+                                ? "bg-rose-50 text-rose-600"
                                 : "bg-slate-100 text-slate-700"
                           }`}
                         >

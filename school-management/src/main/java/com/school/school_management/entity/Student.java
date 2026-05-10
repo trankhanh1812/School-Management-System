@@ -58,6 +58,10 @@ public class Student extends BaseEntity {
     @Column(length = 30)
     private String status;
 
+    /** Mã căn cước công dân / CMND — dùng làm username đăng nhập */
+    @Column(name = "national_id", length = 20)
+    private String nationalId;
+
     @Builder.Default
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

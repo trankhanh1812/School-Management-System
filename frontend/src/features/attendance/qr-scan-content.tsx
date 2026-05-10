@@ -54,7 +54,7 @@ export function QRScanContent() {
       {student && (
         <Panel className="p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-700">
               {student.fullName?.charAt(0) ?? "?"}
             </div>
             <div>
@@ -76,25 +76,25 @@ export function QRScanContent() {
               step: "1",
               title: "Giáo viên tạo mã QR",
               desc: "Giáo viên tạo mã QR cho buổi học và hiển thị trên bảng hoặc projector. Mã có hiệu lực 15 phút.",
-              color: "bg-blue-100 text-blue-700",
+              color: "bg-slate-100 text-slate-700",
             },
             {
               step: "2",
               title: "Kết nối WiFi trường",
               desc: "Đảm bảo điện thoại đang kết nối mạng nội bộ của trường. Điểm danh QR chỉ hoạt động trong mạng trường.",
-              color: "bg-sky-100 text-sky-700",
+              color: "bg-slate-100 text-slate-700",
             },
             {
               step: "3",
               title: "Quét mã bằng camera",
               desc: "Mở camera điện thoại (hoặc app quét mã bất kỳ), hướng vào mã QR. Điện thoại sẽ hiện thông báo mở link.",
-              color: "bg-indigo-100 text-indigo-700",
+              color: "bg-slate-100 text-slate-700",
             },
             {
               step: "4",
               title: "Xác nhận tự động",
               desc: "Nhấn mở link → hệ thống tự động ghi nhận điểm danh. Bạn sẽ thấy thông báo thành công ngay trên màn hình.",
-              color: "bg-green-100 text-green-700",
+              color: "bg-slate-100 text-slate-700",
             },
           ].map((item) => (
             <li key={item.step} className="flex items-start gap-4">
@@ -123,7 +123,7 @@ export function QRScanContent() {
       </Panel>
 
       {/* Notes */}
-      <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-900">
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
         <p className="font-medium">Lưu ý quan trọng:</p>
         <ul className="mt-2 list-inside list-disc space-y-1">
           <li>Phải kết nối WiFi nội bộ của trường khi quét.</li>

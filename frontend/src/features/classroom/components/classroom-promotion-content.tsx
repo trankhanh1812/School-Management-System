@@ -1,7 +1,10 @@
 "use client";
 
 import { useRef, useState, type ChangeEvent } from "react";
-import { classroomApi, type PromotionImportPreviewResponse } from "@/features/classroom/api";
+import {
+  classroomApi,
+  type PromotionImportPreviewResponse,
+} from "@/features/classroom/api";
 import { PageIntro } from "@/features/dashboard/components/page-intro";
 import { PromotionBoard } from "@/features/classroom/components/promotion-board";
 import { usePromotionBoardData } from "@/features/classroom/classroom-client-data";
@@ -17,7 +20,8 @@ export function ClassroomPromotionContent() {
   const { plans, isLoading, error, refresh } = usePromotionBoardData();
   const canImport = session?.user.role === "ADMIN";
   const [showImportPreview, setShowImportPreview] = useState(false);
-  const [importPreviewData, setImportPreviewData] = useState<PromotionImportPreviewResponse | null>(null);
+  const [importPreviewData, setImportPreviewData] =
+    useState<PromotionImportPreviewResponse | null>(null);
   const [isPreviewingImport, setIsPreviewingImport] = useState(false);
   const [pendingImportFile, setPendingImportFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
@@ -35,7 +39,12 @@ export function ClassroomPromotionContent() {
       anchor.remove();
       URL.revokeObjectURL(url);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Không tải được template xét lên lớp", "error");
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "Không tải được template xét lên lớp",
+        "error",
+      );
     }
   };
 
@@ -43,7 +52,9 @@ export function ClassroomPromotionContent() {
     importFileRef.current?.click();
   };
 
-  const handleImportFileChanged = async (event: ChangeEvent<HTMLInputElement>) => {
+  const handleImportFileChanged = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     event.target.value = "";
 
@@ -58,7 +69,12 @@ export function ClassroomPromotionContent() {
       setImportPreviewData(response.data ?? null);
       setShowImportPreview(true);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Không tạo được preview xét lên lớp", "error");
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "Không tạo được preview xét lên lớp",
+        "error",
+      );
     } finally {
       setIsPreviewingImport(false);
     }
@@ -81,7 +97,12 @@ export function ClassroomPromotionContent() {
       await refresh();
       handleCloseImportPreview();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Không import được xét lên lớp", "error");
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "Không import được xét lên lớp",
+        "error",
+      );
     } finally {
       setIsImporting(false);
     }
@@ -104,10 +125,17 @@ export function ClassroomPromotionContent() {
                   className="hidden"
                   onChange={handleImportFileChanged}
                 />
-                <Button tone="secondary" onClick={() => void handleDownloadImportTemplate()}>
+                <Button
+                  tone="secondary"
+                  onClick={() => void handleDownloadImportTemplate()}
+                >
                   Tải mẫu xét lên lớp
                 </Button>
-                <Button tone="secondary" onClick={handleSelectImportFile} disabled={isPreviewingImport || isImporting}>
+                <Button
+                  tone="secondary"
+                  onClick={handleSelectImportFile}
+                  disabled={isPreviewingImport || isImporting}
+                >
                   {isPreviewingImport ? "Đang xem trước..." : "Import Excel"}
                 </Button>
               </>
@@ -122,7 +150,16 @@ export function ClassroomPromotionContent() {
 
       <PromotionImportPreview
         open={showImportPreview && Boolean(importPreviewData)}
-        previewData={importPreviewData ?? { importId: "", totalRecords: 0, validRecords: 0, invalidRecords: 0, rows: [], issues: [] }}
+        previewData={
+          importPreviewData ?? {
+            importId: "",
+            totalRecords: 0,
+            validRecords: 0,
+            invalidRecords: 0,
+            rows: [],
+            issues: [],
+          }
+        }
         onImportComplete={handleImportFromPreview}
         onCancel={handleCloseImportPreview}
       />
@@ -134,7 +171,9 @@ export function ClassroomPromotionContent() {
       )}
 
       {isLoading ? (
-        <Panel className="p-4 text-sm text-slate-500">Đang tải dữ liệu xét lên lớp...</Panel>
+        <Panel className="p-4 text-sm text-slate-500">
+          Đang tải dữ liệu xét lên lớp...
+        </Panel>
       ) : (
         <PromotionBoard plans={plans} />
       )}

@@ -34,7 +34,7 @@ export function StudentDashboard() {
               </div>
               <div>
                 <p className="text-slate-600">Vai trò</p>
-                <p className="inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-900">
+                <p className="inline-block rounded-full bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700">
                   Học sinh
                 </p>
               </div>
@@ -63,7 +63,7 @@ export function StudentDashboard() {
           <div className="mt-4">
             <Link
               href="/my-scores"
-              className="inline-flex text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+              className="inline-flex text-sm font-medium text-sky-700 hover:text-sky-800 hover:underline"
             >
               Xem điểm số →
             </Link>
@@ -79,7 +79,7 @@ export function StudentDashboard() {
           <div className="mt-4">
             <Link
               href="/my-attendance"
-              className="inline-flex text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+              className="inline-flex text-sm font-medium text-sky-700 hover:text-sky-800 hover:underline"
             >
               Xem điểm danh →
             </Link>
@@ -95,7 +95,7 @@ export function StudentDashboard() {
           <div className="mt-4">
             <Link
               href="/my-schedule"
-              className="inline-flex text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+              className="inline-flex text-sm font-medium text-sky-700 hover:text-sky-800 hover:underline"
             >
               Xem thời khóa biểu →
             </Link>
@@ -108,7 +108,7 @@ export function StudentDashboard() {
         <h3 className="text-lg font-semibold text-slate-900">Thông báo gần đây</h3>
         <p className="mt-2 text-sm text-slate-600">
           Bạn không có thông báo mới. Hãy kiểm tra{" "}
-          <Link href="/notifications" className="font-medium text-blue-600 hover:underline">
+          <Link href="/notifications" className="font-medium text-sky-700 hover:underline">
             trang thông báo
           </Link>{" "}
           để xem tất cả.

@@ -15,6 +15,7 @@ type BackendAuthPayload = {
     departmentLevel?: number;
     departmentCode?: string;
     departmentName?: string;
+    forcePasswordChange?: boolean;
   };
 };
 
@@ -35,6 +36,7 @@ function mapAuthSession(payload: BackendAuthPayload): AuthSession {
       role: payload.user.role,
       departmentLevel: payload.user.departmentLevel,
       departmentCode: payload.user.departmentCode,
+      forcePasswordChange: payload.user.forcePasswordChange ?? false,
     },
     tokens: {
       accessToken: payload.accessToken,
@@ -47,7 +49,10 @@ function mapAuthSession(payload: BackendAuthPayload): AuthSession {
 
 export const authService = {
   async login(payload: LoginPayload): Promise<ApiResponse<AuthSession>> {
-    const response = await apiClient.post<ApiResponse<BackendAuthPayload>>("/auth/login", payload);
+    const response = await apiClient.post<ApiResponse<BackendAuthPayload>>(
+      "/auth/login",
+      payload,
+    );
 
     return {
       ...response,
@@ -57,7 +62,10 @@ export const authService = {
   },
 
   async register(payload: RegisterPayload): Promise<ApiResponse<AuthSession>> {
-    const response = await apiClient.post<ApiResponse<BackendAuthPayload>>("/auth/register", payload);
+    const response = await apiClient.post<ApiResponse<BackendAuthPayload>>(
+      "/auth/register",
+      payload,
+    );
 
     return {
       ...response,
@@ -73,7 +81,9 @@ export const authService = {
   },
 
   async me(): Promise<ApiResponse<AuthSession["user"]>> {
-    const response = await apiClient.get<ApiResponse<BackendAuthPayload["user"]>>("/auth/me", {
+    const response = await apiClient.get<
+      ApiResponse<BackendAuthPayload["user"]>
+    >("/auth/me", {
       authenticated: true,
     });
 
@@ -92,9 +102,12 @@ export const authService = {
   },
 
   forgotPassword(email: string) {
-    return apiClient.post<ApiResponse<{ token?: string }>>("/auth/forgot-password", {
-      email,
-    });
+    return apiClient.post<ApiResponse<{ token?: string }>>(
+      "/auth/forgot-password",
+      {
+        email,
+      },
+    );
   },
 
   resetPassword(payload: {
@@ -105,15 +118,28 @@ export const authService = {
     return apiClient.post<ApiResponse<null>>("/auth/reset-password", payload);
   },
 
-  async refreshToken(refreshToken: string): Promise<ApiResponse<AuthSession["tokens"]>> {
-    const response = await apiClient.post<ApiResponse<BackendAuthPayload>>("/auth/refresh-token", {
-      refreshToken,
-    });
+  async refreshToken(
+    refreshToken: string,
+  ): Promise<ApiResponse<AuthSession["tokens"]>> {
+    const response = await apiClient.post<ApiResponse<BackendAuthPayload>>(
+      "/auth/refresh-token",
+      {
+        refreshToken,
+      },
+    );
 
     return {
       ...response,
       success: response.success ?? true,
       data: mapAuthSession(response.data).tokens,
     };
+  },
+
+  changePasswordFirstLogin(newPassword: string) {
+    return apiClient.post<ApiResponse<null>>(
+      "/auth/change-password-first-login",
+      { newPassword },
+      { authenticated: true },
+    );
   },
 };

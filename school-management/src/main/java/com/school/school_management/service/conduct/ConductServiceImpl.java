@@ -17,8 +17,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Service;
 
 @Transactional
+@Service
 public class ConductServiceImpl implements ConductService {
 
     private final ConductRepository conductRepository;

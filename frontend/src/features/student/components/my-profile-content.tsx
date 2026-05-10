@@ -13,64 +13,48 @@ const quickLinks = [
     icon: "📊",
     label: "Điểm số",
     description: "Xem bảng điểm và chi tiết từng đầu điểm",
-    color: "border-blue-200 bg-blue-50 hover:bg-blue-100",
-    iconBg: "bg-blue-600",
   },
   {
     href: "/my-exams",
     icon: "📝",
     label: "Lịch thi",
     description: "Xem lịch thi sắp tới theo môn học",
-    color: "border-orange-200 bg-orange-50 hover:bg-orange-100",
-    iconBg: "bg-orange-500",
   },
   {
     href: "/my-transcript",
     icon: "🎓",
     label: "Học bạ",
     description: "Kết quả học tập qua các năm học",
-    color: "border-purple-200 bg-purple-50 hover:bg-purple-100",
-    iconBg: "bg-purple-600",
   },
   {
     href: "/my-conduct",
     icon: "⭐",
     label: "Hạnh kiểm",
     description: "Đánh giá hạnh kiểm theo từng học kỳ",
-    color: "border-yellow-200 bg-yellow-50 hover:bg-yellow-100",
-    iconBg: "bg-yellow-500",
   },
   {
     href: "/my-attendance",
     icon: "✅",
     label: "Điểm danh",
     description: "Lịch sử có mặt, vắng mặt và đến trễ",
-    color: "border-green-200 bg-green-50 hover:bg-green-100",
-    iconBg: "bg-green-600",
   },
   {
     href: "/my-schedule",
     icon: "📅",
     label: "Thời khóa biểu",
     description: "Lịch học theo tuần của lớp",
-    color: "border-cyan-200 bg-cyan-50 hover:bg-cyan-100",
-    iconBg: "bg-cyan-600",
   },
   {
     href: "/my-attendance/qr-scan",
     icon: "📷",
     label: "Hướng dẫn QR",
     description: "Cách điểm danh bằng camera điện thoại",
-    color: "border-slate-200 bg-slate-50 hover:bg-slate-100",
-    iconBg: "bg-slate-700",
   },
   {
     href: "/notifications",
     icon: "🔔",
     label: "Thông báo",
     description: "Thông báo từ nhà trường và giáo viên",
-    color: "border-red-200 bg-red-50 hover:bg-red-100",
-    iconBg: "bg-red-500",
   },
 ];
 
@@ -104,7 +88,7 @@ export function MyProfileContent() {
       <Panel className="p-5 sm:p-6">
         <div className="flex flex-wrap items-center gap-4">
           {/* Avatar */}
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-2xl font-bold text-white">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-sky-100 text-2xl font-bold text-sky-700">
             {student.avatarLabel}
           </div>
           <div className="flex-1 grid gap-1">
@@ -113,14 +97,14 @@ export function MyProfileContent() {
               {student.studentCode} · Lớp {student.className} · {student.academicYear}
             </p>
             <div className="flex flex-wrap gap-2 mt-1">
-              <span className="inline-block rounded-full bg-blue-100 px-3 py-0.5 text-xs font-medium text-blue-800">
+              <span className="inline-block rounded-full bg-sky-50 px-3 py-0.5 text-xs font-medium text-sky-700">
                 Học sinh
               </span>
               <span
                 className={`inline-block rounded-full px-3 py-0.5 text-xs font-medium ${
                   student.status === "ACTIVE" || student.status === "Đang học"
-                    ? "bg-green-100 text-green-800"
-                    : "bg-slate-100 text-slate-700"
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "bg-slate-100 text-slate-600"
                 }`}
               >
                 {student.status === "ACTIVE" ? "Đang học" : student.status}
@@ -136,11 +120,9 @@ export function MyProfileContent() {
           <Link
             key={link.href}
             href={link.href}
-            className={`flex items-center gap-3 rounded-2xl border p-4 transition ${link.color}`}
+            className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition hover:bg-slate-50"
           >
-            <div
-              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white text-lg ${link.iconBg}`}
-            >
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-lg">
               {link.icon}
             </div>
             <div className="min-w-0">

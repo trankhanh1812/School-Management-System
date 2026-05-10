@@ -15,4 +15,6 @@ public interface ExamClassRepository extends JpaRepository<ExamClass, UUID> {
     List<ExamClass> findByExam(Exam exam);
 
     Optional<ExamClass> findByExamAndSchoolClass(Exam exam, SchoolClass schoolClass);
+
+    List<ExamClass> findBySchoolClass_ClassCode(String classCode);
 }

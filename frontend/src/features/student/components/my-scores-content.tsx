@@ -9,10 +9,10 @@ import { EmptyState } from "@/shared/components/empty-state";
 import { Panel } from "@/shared/ui/panel";
 
 function scoreColor(value: number) {
-  if (value >= 8.5) return "bg-green-100 text-green-900";
-  if (value >= 7.5) return "bg-blue-100 text-blue-900";
-  if (value >= 6.5) return "bg-yellow-100 text-yellow-900";
-  return "bg-red-100 text-red-900";
+  if (value >= 8.5) return "bg-emerald-50 text-emerald-800";
+  if (value >= 7.5) return "bg-sky-50 text-sky-800";
+  if (value >= 6.5) return "bg-amber-50 text-amber-800";
+  return "bg-rose-50 text-rose-700";
 }
 
 function categoryLabel(category: string) {

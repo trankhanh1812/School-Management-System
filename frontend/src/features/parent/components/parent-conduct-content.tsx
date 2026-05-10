@@ -8,14 +8,14 @@ import { EmptyState } from "@/shared/components/empty-state";
 import { Panel } from "@/shared/ui/panel";
 
 const CONDUCT_CONFIG: Record<string, { label: string; cls: string }> = {
-  EXCELLENT: { label: "Tốt",        cls: "bg-green-100 text-green-900" },
-  GOOD:      { label: "Khá",        cls: "bg-blue-100 text-blue-900" },
-  AVERAGE:   { label: "Trung bình", cls: "bg-yellow-100 text-yellow-900" },
-  WEAK:      { label: "Yếu",        cls: "bg-red-100 text-red-900" },
-  Tốt:       { label: "Tốt",        cls: "bg-green-100 text-green-900" },
-  Khá:       { label: "Khá",        cls: "bg-blue-100 text-blue-900" },
-  "Trung bình": { label: "Trung bình", cls: "bg-yellow-100 text-yellow-900" },
-  Yếu:       { label: "Yếu",        cls: "bg-red-100 text-red-900" },
+  EXCELLENT:    { label: "Tốt",        cls: "bg-emerald-50 text-emerald-700" },
+  GOOD:         { label: "Khá",        cls: "bg-sky-50 text-sky-700" },
+  AVERAGE:      { label: "Trung bình", cls: "bg-amber-50 text-amber-700" },
+  WEAK:         { label: "Yếu",        cls: "bg-rose-50 text-rose-600" },
+  Tốt:          { label: "Tốt",        cls: "bg-emerald-50 text-emerald-700" },
+  Khá:          { label: "Khá",        cls: "bg-sky-50 text-sky-700" },
+  "Trung bình": { label: "Trung bình", cls: "bg-amber-50 text-amber-700" },
+  Yếu:          { label: "Yếu",        cls: "bg-rose-50 text-rose-600" },
 };
 
 function ConductBadge({ level }: { level?: string }) {

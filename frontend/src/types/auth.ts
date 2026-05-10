@@ -6,8 +6,10 @@ export type AuthUser = {
   email: string;
   role: UserRole;
   avatarUrl?: string;
-  departmentLevel?: number; // 1 = Head, 2 = Vice, 3 = Regular
+  departmentLevel?: number;
   departmentCode?: string;
+  /** Nếu true, user phải đổi mật khẩu trước khi vào dashboard */
+  forcePasswordChange?: boolean;
 };
 
 export type AuthTokens = {
@@ -23,7 +25,7 @@ export type AuthSession = {
 };
 
 export type LoginPayload = {
-  email: string;
+  username: string;
   password: string;
 };
 

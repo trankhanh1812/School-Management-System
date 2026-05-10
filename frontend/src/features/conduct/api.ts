@@ -44,9 +44,13 @@ export const conductApi = {
   },
 
   update(id: string, payload: ConductUpsertPayload) {
-    return apiClient.put<ApiResponse<ConductRecord>>(`/conducts/${id}`, payload, {
-      authenticated: true,
-    });
+    return apiClient.put<ApiResponse<ConductRecord>>(
+      `/conducts/${id}`,
+      payload,
+      {
+        authenticated: true,
+      },
+    );
   },
 
   delete(id: string) {
@@ -60,5 +64,23 @@ export const conductApi = {
     return apiClient.get<ApiResponse<ConductRecord[]>>("/conducts/me", {
       authenticated: true,
     });
+  },
+
+  // Teacher/Admin: view conduct by class
+  byClass(classCode: string, semesterCode?: string) {
+    const qs = semesterCode
+      ? `?classCode=${classCode}&semesterCode=${semesterCode}`
+      : `?classCode=${classCode}`;
+    return apiClient.get<ApiResponse<ConductRecord[]>>(`/conducts/by-class${qs}`, {
+      authenticated: true,
+    });
+  },
+
+  // View conduct by student code
+  byStudent(studentCode: string) {
+    return apiClient.get<ApiResponse<ConductRecord[]>>(
+      `/conducts/by-student/${studentCode}`,
+      { authenticated: true },
+    );
   },
 };

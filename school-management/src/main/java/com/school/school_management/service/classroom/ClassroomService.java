@@ -24,4 +24,11 @@ public interface ClassroomService {
     List<ClassStudentResponse> getStudentsByClassCode(String classCode);
 
     List<PromotionPlanResponse> getPromotionPlansByClassCode(String classCode);
+
+    /**
+     * Tự động tính toán phương án xét lên lớp dựa trên điểm số và hạnh kiểm.
+     * Kết quả trả về danh sách PromotionPlanResponse với action được tính toán.
+     * ADMIN xác nhận và lưu vào DB.
+     */
+    List<PromotionPlanResponse> autoCalculatePromotion(String classCode, String semesterCode);
 }

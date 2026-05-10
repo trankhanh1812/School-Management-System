@@ -10,11 +10,34 @@ import { useAuthSession } from "@/hooks";
 import { Button, ButtonLink } from "@/shared/ui/button";
 import { MetricCard } from "@/features/dashboard/components/metric-card";
 import { Panel } from "@/shared/ui/panel";
+import { env } from "@/lib/env";
+import { getStoredTokens } from "@/lib/auth/token-storage";
 
 export default function ReportsPage() {
   const { session } = useAuthSession();
   const isAdmin = session?.user.role === "ADMIN";
   const { snapshot, isLoading, isRefreshing, error, refresh } = useEducationAnalytics();
+
+  async function downloadReport(type: "students" | "teaching-assignments") {
+    const tokens = getStoredTokens();
+    const url = `${env.apiBaseUrl}/reports/export/${type}`;
+    try {
+      const res = await fetch(url, {
+        headers: { Authorization: tokens?.accessToken ? `Bearer ${tokens.accessToken}` : "" },
+      });
+      if (!res.ok) throw new Error("Không thể tải báo cáo");
+      const blob = await res.blob();
+      const filename = res.headers.get("Content-Disposition")?.match(/filename="(.+)"/)?.[1]
+        ?? `${type}_export.xlsx`;
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Lỗi tải báo cáo");
+    }
+  }
 
   return (
     <div className="grid gap-4">
@@ -33,6 +56,16 @@ export default function ReportsPage() {
             <ButtonLink href={isAdmin ? "/students" : "/teaching-assignments"}>
               {isAdmin ? "Mở dữ liệu nguồn" : "Xem dữ liệu giảng dạy"}
             </ButtonLink>
+            {isAdmin && (
+              <>
+                <Button tone="secondary" onClick={() => void downloadReport("students")}>
+                  Export học sinh
+                </Button>
+                <Button tone="secondary" onClick={() => void downloadReport("teaching-assignments")}>
+                  Export phân công
+                </Button>
+              </>
+            )}
           </>
         }
       />

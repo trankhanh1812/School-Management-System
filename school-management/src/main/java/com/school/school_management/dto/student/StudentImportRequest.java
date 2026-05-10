@@ -48,6 +48,9 @@ public class StudentImportRequest {
     @JsonProperty("enrollment_date")
     private String enrollmentDate; // YYYY-MM-DD format
 
+    @JsonProperty("national_id")
+    private String nationalId; // CCCD / CMND
+
     // Row number for error tracking
     private Integer rowNumber;
 }

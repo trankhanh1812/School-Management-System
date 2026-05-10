@@ -81,7 +81,9 @@ type ClassroomListQuery = {
   scope?: "current" | "all";
 };
 
-function buildQueryString(params?: Record<string, string | number | undefined>) {
+function buildQueryString(
+  params?: Record<string, string | number | undefined>,
+) {
   if (!params) {
     return "";
   }
@@ -106,27 +108,41 @@ export const classroomApi = {
       scope: query?.scope,
     });
 
-    return apiClient.get<ApiResponse<ClassroomApiRecord[]>>(`/classes${queryString}`, {
-      authenticated: true,
-    });
+    return apiClient.get<ApiResponse<ClassroomApiRecord[]>>(
+      `/classes${queryString}`,
+      {
+        authenticated: true,
+      },
+    );
   },
 
   detail(classCode: string) {
-    return apiClient.get<ApiResponse<ClassroomApiRecord>>(`/classes/${classCode}`, {
-      authenticated: true,
-    });
+    return apiClient.get<ApiResponse<ClassroomApiRecord>>(
+      `/classes/${classCode}`,
+      {
+        authenticated: true,
+      },
+    );
   },
 
   create(payload: ClassroomUpsertPayload) {
-    return apiClient.post<ApiResponse<ClassroomApiRecord>>("/classes", payload, {
-      authenticated: true,
-    });
+    return apiClient.post<ApiResponse<ClassroomApiRecord>>(
+      "/classes",
+      payload,
+      {
+        authenticated: true,
+      },
+    );
   },
 
   update(classCode: string, payload: ClassroomUpsertPayload) {
-    return apiClient.put<ApiResponse<ClassroomApiRecord>>(`/classes/${classCode}`, payload, {
-      authenticated: true,
-    });
+    return apiClient.put<ApiResponse<ClassroomApiRecord>>(
+      `/classes/${classCode}`,
+      payload,
+      {
+        authenticated: true,
+      },
+    );
   },
 
   delete(classCode: string) {
@@ -136,15 +152,21 @@ export const classroomApi = {
   },
 
   metrics() {
-    return apiClient.get<ApiResponse<ClassroomMetricApiRecord[]>>("/classes/metrics", {
-      authenticated: true,
-    });
+    return apiClient.get<ApiResponse<ClassroomMetricApiRecord[]>>(
+      "/classes/metrics",
+      {
+        authenticated: true,
+      },
+    );
   },
 
   students(classCode: string) {
-    return apiClient.get<ApiResponse<ClassStudentApiRecord[]>>(`/classes/${classCode}/students`, {
-      authenticated: true,
-    });
+    return apiClient.get<ApiResponse<ClassStudentApiRecord[]>>(
+      `/classes/${classCode}/students`,
+      {
+        authenticated: true,
+      },
+    );
   },
 
   promotionPlans(classCode: string) {
@@ -158,15 +180,22 @@ export const classroomApi = {
 
   allPromotionPlans() {
     return this.list().then(async (classesResponse) => {
-      const classes = Array.isArray(classesResponse.data) ? classesResponse.data : [];
+      const classes = Array.isArray(classesResponse.data)
+        ? classesResponse.data
+        : [];
       const plans = await Promise.all(
         classes
           .map((item) => item.classCode)
-          .filter((code): code is string => typeof code === "string" && code.length > 0)
+          .filter(
+            (code): code is string =>
+              typeof code === "string" && code.length > 0,
+          )
           .map((code) => this.promotionPlans(code)),
       );
 
-      return plans.flatMap((item) => (Array.isArray(item.data) ? item.data : []));
+      return plans.flatMap((item) =>
+        Array.isArray(item.data) ? item.data : [],
+      );
     });
   },
 
@@ -186,12 +215,17 @@ export const classroomApi = {
 
   async downloadPromotionImportTemplate() {
     const tokens = getStoredTokens();
-    const response = await fetch(`${env.apiBaseUrl}/classes/promotion/import/template`, {
-      method: "GET",
-      headers: {
-        Authorization: tokens?.accessToken ? `Bearer ${tokens.accessToken}` : "",
+    const response = await fetch(
+      `${env.apiBaseUrl}/classes/promotion/import/template`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: tokens?.accessToken
+            ? `Bearer ${tokens.accessToken}`
+            : "",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error("Khong the tai template xet len lop");
@@ -205,19 +239,25 @@ export const classroomApi = {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch(`${env.apiBaseUrl}/classes/promotion/import/preview`, {
-      method: "POST",
-      headers: {
-        Authorization: tokens?.accessToken ? `Bearer ${tokens.accessToken}` : "",
+    const response = await fetch(
+      `${env.apiBaseUrl}/classes/promotion/import/preview`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: tokens?.accessToken
+            ? `Bearer ${tokens.accessToken}`
+            : "",
+        },
+        body: formData,
       },
-      body: formData,
-    });
+    );
 
     if (!response.ok) {
       throw new Error("Khong the tao preview xet len lop");
     }
 
-    const payload = (await response.json()) as ApiResponse<PromotionImportPreviewResponse>;
+    const payload =
+      (await response.json()) as ApiResponse<PromotionImportPreviewResponse>;
     return payload;
   },
 
@@ -229,7 +269,9 @@ export const classroomApi = {
     const response = await fetch(`${env.apiBaseUrl}/classes/promotion/import`, {
       method: "POST",
       headers: {
-        Authorization: tokens?.accessToken ? `Bearer ${tokens.accessToken}` : "",
+        Authorization: tokens?.accessToken
+          ? `Bearer ${tokens.accessToken}`
+          : "",
       },
       body: formData,
     });
@@ -238,7 +280,8 @@ export const classroomApi = {
       throw new Error("Import xet len lop that bai");
     }
 
-    const payload = (await response.json()) as ApiResponse<PromotionImportPreviewResponse>;
+    const payload =
+      (await response.json()) as ApiResponse<PromotionImportPreviewResponse>;
     return payload;
   },
 };
