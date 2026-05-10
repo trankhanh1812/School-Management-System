@@ -284,4 +284,12 @@ export const classroomApi = {
       (await response.json()) as ApiResponse<PromotionImportPreviewResponse>;
     return payload;
   },
+
+  autoCalculatePromotion(classCode: string, semesterCode?: string) {
+    const qs = semesterCode ? `?semesterCode=${encodeURIComponent(semesterCode)}` : "";
+    return apiClient.get<ApiResponse<PromotionPlanApiRecord[]>>(
+      `/classes/${encodeURIComponent(classCode)}/promotion/auto-calculate${qs}`,
+      { authenticated: true },
+    );
+  },
 };

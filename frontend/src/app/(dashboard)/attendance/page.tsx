@@ -278,15 +278,21 @@ export default function AttendancePage() {
         targetYear,
       );
 
-      const mappedSemesters = semestersInTargetYear.map((value) => ({
+      // Fallback for ADMIN who may have no teaching assignments
+      const effectiveSemesters =
+        semestersInTargetYear.length > 0
+          ? semestersInTargetYear
+          : ["HK1", "HK2"];
+
+      const mappedSemesters = effectiveSemesters.map((value) => ({
         value,
         label: value,
       }));
       setSemesterOptions(mappedSemesters);
 
       const semesterDefault =
-        chooseCurrentSemester(semestersInTargetYear) ??
-        semestersInTargetYear[0] ??
+        chooseCurrentSemester(effectiveSemesters) ??
+        effectiveSemesters[0] ??
         "";
       if (semesterDefault) {
         setSemesterCode(semesterDefault);
@@ -339,12 +345,21 @@ export default function AttendancePage() {
       return;
     }
 
-    const semesters = getSemestersByYear(teachingAssignments, academicYearCode);
+    // For ADMIN: teaching assignments may be empty — derive semesters from classrooms or use fallback
+    let semesters = getSemestersByYear(teachingAssignments, academicYearCode);
+
+    // Fallback: if no semesters from assignments (e.g. ADMIN with no assignments),
+    // use standard semester codes
+    if (semesters.length === 0) {
+      semesters = ["HK1", "HK2"];
+    }
+
     const mappedSemesters = semesters.map((value) => ({ value, label: value }));
     setSemesterOptions(mappedSemesters);
 
     if (!semesters.includes(semesterCode)) {
-      setSemesterCode(chooseCurrentSemester(semesters) ?? semesters[0] ?? "");
+      const next = chooseCurrentSemester(semesters) ?? semesters[0] ?? "";
+      setSemesterCode(next);
     }
 
     const mappedClasses = getClassOptionsByYear(
@@ -353,10 +368,12 @@ export default function AttendancePage() {
       academicYearCode,
       isTeacher,
     );
-    setClassOptions(mappedClasses);
-    if (!mappedClasses.some((item) => item.value === classCode)) {
-      setClassCode(mappedClasses[0]?.value ?? "");
+    const deduped = dedupOptions(mappedClasses);
+    setClassOptions(deduped);
+    if (!deduped.some((item) => item.value === classCode)) {
+      setClassCode(deduped[0]?.value ?? "");
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [academicYearCode, teachingAssignments, classroomRecords]);
 
   async function handleFetchSessions() {
@@ -826,7 +843,7 @@ export default function AttendancePage() {
               <select
                 value={semesterCode}
                 onChange={(event) => setSemesterCode(event.target.value)}
-                disabled={loadingOptions || semesterOptions.length === 0 || (isTeacher && Boolean(teacherCurrentSlot?.hasCurrentSlot))}
+                disabled={loadingOptions || (isTeacher && Boolean(teacherCurrentSlot?.hasCurrentSlot))}
                 className="h-9 rounded-lg border border-slate-200 px-2 text-xs"
               >
                 <option value="">Chọn kỳ</option>
