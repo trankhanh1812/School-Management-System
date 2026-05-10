@@ -128,6 +128,7 @@ export type StudentPreviewItem = {
   academic_year?: string;
   status?: string;
   enrollment_date?: string;
+  national_id?: string;
   has_errors: boolean;
   errors: string[];
 };

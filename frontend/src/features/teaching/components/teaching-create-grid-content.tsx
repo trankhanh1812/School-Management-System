@@ -413,6 +413,10 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
 
   const handleImportFileChanged = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    // Reset input immediately before any await — currentTarget is nullified after async
+    if (importFileInputRef.current) {
+      importFileInputRef.current.value = "";
+    }
     if (!file) {
       return;
     }
@@ -428,7 +432,6 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
       showToast(error instanceof Error ? error.message : "Không thể preview file import", "error");
     } finally {
       setIsPreviewingImport(false);
-      event.currentTarget.value = "";
     }
   };
 
