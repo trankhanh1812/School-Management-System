@@ -225,11 +225,11 @@ export function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
             title={collapsed ? item.label : undefined}
             className={`group rounded-2xl border text-sm font-medium transition ${
               isActive
-                ? "border-sky-200 bg-sky-500 text-white shadow-[0_16px_35px_rgba(59,130,246,0.22)]"
+                ? "border-sky-200 bg-sky-500 text-white"
                 : "border-transparent bg-transparent text-slate-600 hover:border-sky-100 hover:bg-sky-50 hover:text-sky-900"
             } ${
               collapsed
-                ? "flex min-h-14 items-center justify-center px-3 py-3"
+                ? "flex min-h-14 items-center justify-center px-2 py-2"
                 : "flex items-center gap-3 px-4 py-3.5"
             }`}
           >
@@ -242,13 +242,19 @@ export function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
                     : "bg-white text-sky-700 ring-1 ring-sky-100 group-hover:bg-sky-100"
                 }`}
               >
-                {Icon ? <Icon className="h-5 w-5" /> : <span className="text-sm font-bold">•</span>}
+                {Icon ? (
+                  <Icon className="h-5 w-5" />
+                ) : (
+                  <span className="text-sm font-bold">•</span>
+                )}
               </span>
               {/* Badge — absolute top-right of icon, never affects layout */}
               {item.href === "/notifications" && unreadCount > 0 ? (
                 <span
                   className={`absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none ${
-                    isActive ? "bg-white text-sky-700" : "bg-rose-500 text-white"
+                    isActive
+                      ? "bg-white text-sky-700"
+                      : "bg-rose-500 text-white"
                   }`}
                 >
                   {unreadCount > 99 ? "99+" : unreadCount}

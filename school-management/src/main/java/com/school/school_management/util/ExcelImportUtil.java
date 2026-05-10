@@ -6,6 +6,7 @@ import com.school.school_management.dto.student.ParentImportRequest;
 import com.school.school_management.dto.student.StudentImportRequest;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -35,14 +36,14 @@ public class ExcelImportUtil {
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
 
     public ByteArrayInputStream generateTemplate() {
-        try (XSSFWorkbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            createStudentSheet(workbook);
-            createParentSheet(workbook);
-            createInstructionSheet(workbook);
-            workbook.write(out);
-            return new ByteArrayInputStream(out.toByteArray());
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to generate import template", e);
+        try {
+            ClassPathResource resource = new ClassPathResource("templates/student_import_template_vn 1.xlsx");
+            try (InputStream inputStream = resource.getInputStream(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                inputStream.transferTo(out);
+                return new ByteArrayInputStream(out.toByteArray());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load import template from resources", e);
         }
     }
 
