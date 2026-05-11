@@ -140,6 +140,16 @@ public class ChatController {
         return ResponseEntity.ok(ApiResponse.success(null, "Student members added to group"));
     }
 
+    @PostMapping("/groups/{groupId}/members/auto-add")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<ApiResponse<Void>> autoAddMembers(
+        @PathVariable UUID groupId,
+        @RequestBody com.school.school_management.dto.chat.AutoAddMembersRequest request
+    ) {
+        chatGroupService.autoAddMembers(groupId, request);
+        return ResponseEntity.ok(ApiResponse.success(null, "Members auto-added to group"));
+    }
+
     @DeleteMapping("/groups/{groupId}/members/{userId}")
     public ResponseEntity<ApiResponse<Void>> removeMemberFromGroup(
         @PathVariable UUID groupId,

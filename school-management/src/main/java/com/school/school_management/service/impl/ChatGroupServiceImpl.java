@@ -3,6 +3,7 @@ package com.school.school_management.service.impl;
 import com.school.school_management.dto.chat.ChatGroupResponse;
 import com.school.school_management.dto.chat.CreateChatGroupRequest;
 import com.school.school_management.dto.chat.AddStudentMembersRequest;
+import com.school.school_management.dto.chat.AutoAddMembersRequest;
 import com.school.school_management.entity.ChatGroup;
 import com.school.school_management.entity.ChatGroupMember;
 import com.school.school_management.entity.Role;
@@ -20,6 +21,8 @@ import com.school.school_management.repository.ChatMessageRepository;
 import com.school.school_management.repository.SchoolClassRepository;
 import com.school.school_management.repository.SubjectRepository;
 import com.school.school_management.repository.DepartmentRepository;
+import com.school.school_management.repository.ParentRepository;
+import com.school.school_management.repository.ParentStudentRepository;
 import com.school.school_management.repository.TeacherRepository;
 import com.school.school_management.repository.TeachingAssignmentRepository;
 import com.school.school_management.repository.StudentRepository;
@@ -51,6 +54,8 @@ public class ChatGroupServiceImpl implements ChatGroupService {
     private final TeacherRepository teacherRepository;
     private final TeachingAssignmentRepository teachingAssignmentRepository;
     private final StudentRepository studentRepository;
+    private final ParentRepository parentRepository;
+    private final ParentStudentRepository parentStudentRepository;
 
     public ChatGroupServiceImpl(
         ChatGroupRepository chatGroupRepository,
@@ -62,7 +67,9 @@ public class ChatGroupServiceImpl implements ChatGroupService {
         UserRepository userRepository,
         TeacherRepository teacherRepository,
         TeachingAssignmentRepository teachingAssignmentRepository,
-        StudentRepository studentRepository
+        StudentRepository studentRepository,
+        ParentRepository parentRepository,
+        ParentStudentRepository parentStudentRepository
     ) {
         this.chatGroupRepository = chatGroupRepository;
         this.chatGroupMemberRepository = chatGroupMemberRepository;
@@ -74,6 +81,8 @@ public class ChatGroupServiceImpl implements ChatGroupService {
         this.teacherRepository = teacherRepository;
         this.teachingAssignmentRepository = teachingAssignmentRepository;
         this.studentRepository = studentRepository;
+        this.parentRepository = parentRepository;
+        this.parentStudentRepository = parentStudentRepository;
     }
 
     @Override
@@ -372,6 +381,85 @@ public class ChatGroupServiceImpl implements ChatGroupService {
                     .joinedAt(OffsetDateTime.now())
                     .build();
                 chatGroupMemberRepository.save(member);
+            }
+        }
+    }
+
+    @Override
+    public void autoAddMembers(UUID groupId, AutoAddMembersRequest request) {
+        ChatGroup group = chatGroupRepository
+            .findByIdAndDeletedAtIsNull(groupId)
+            .orElseThrow(() -> new ResourceNotFoundException("Chat group not found"));
+
+        String scope = request.getScope() == null ? "" : request.getScope().trim().toUpperCase(Locale.ROOT);
+        List<User> usersToAdd = new java.util.ArrayList<>();
+
+        switch (scope) {
+            case "ROLE_GROUP_TEACHER" -> {
+                // All active teachers
+                teacherRepository.findAllByDeletedAtIsNullOrderByTeacherCodeAsc()
+                    .stream()
+                    .map(Teacher::getUser)
+                    .filter(u -> u != null)
+                    .forEach(usersToAdd::add);
+            }
+            case "ROLE_GROUP_PARENT" -> {
+                // All active parents
+                parentRepository.findAll()
+                    .stream()
+                    .map(com.school.school_management.entity.Parent::getUser)
+                    .filter(u -> u != null)
+                    .forEach(usersToAdd::add);
+            }
+            case "DEPARTMENT_GROUP" -> {
+                // All teachers in the given department
+                if (request.getDepartmentCode() == null || request.getDepartmentCode().isBlank()) {
+                    throw new CustomException("departmentCode is required for DEPARTMENT_GROUP scope", 400);
+                }
+                Department dept = departmentRepository.findByCode(request.getDepartmentCode().trim())
+                    .orElseThrow(() -> new ResourceNotFoundException("Department not found: " + request.getDepartmentCode()));
+                teacherRepository.findAllByDeletedAtIsNullOrderByTeacherCodeAsc()
+                    .stream()
+                    .filter(t -> t.getDepartment() != null && t.getDepartment().getId().equals(dept.getId()))
+                    .map(Teacher::getUser)
+                    .filter(u -> u != null)
+                    .forEach(usersToAdd::add);
+            }
+            case "HOMEROOM_CLASS_GROUP_STUDENT" -> {
+                // All students in the given class
+                if (request.getClassCode() == null || request.getClassCode().isBlank()) {
+                    throw new CustomException("classCode is required for class-based scope", 400);
+                }
+                studentRepository.findByClass(request.getClassCode())
+                    .stream()
+                    .map(Student::getUser)
+                    .filter(u -> u != null)
+                    .forEach(usersToAdd::add);
+            }
+            case "HOMEROOM_CLASS_GROUP_PARENT" -> {
+                // All parents of students in the given class
+                if (request.getClassCode() == null || request.getClassCode().isBlank()) {
+                    throw new CustomException("classCode is required for class-based scope", 400);
+                }
+                List<Student> classStudents = studentRepository.findByClass(request.getClassCode());
+                parentStudentRepository.findByStudentIn(classStudents)
+                    .stream()
+                    .map(ps -> ps.getParent())
+                    .filter(p -> p != null && p.getUser() != null)
+                    .map(p -> p.getUser())
+                    .forEach(usersToAdd::add);
+            }
+            default -> throw new CustomException("Unknown auto-add scope: " + scope, 400);
+        }
+
+        // Bulk add — skip duplicates
+        for (User user : usersToAdd) {
+            if (!chatGroupMemberRepository.existsByChatGroupIdAndUserId(groupId, user.getId())) {
+                chatGroupMemberRepository.save(ChatGroupMember.builder()
+                    .chatGroup(group)
+                    .user(user)
+                    .joinedAt(OffsetDateTime.now())
+                    .build());
             }
         }
     }

@@ -130,6 +130,15 @@ const chatApi = {
     return response.data;
   },
 
+  async autoAddMembers(groupId: string, scope: string, departmentCode?: string, classCode?: string) {
+    const response = await apiClient.post<ApiResponse<void>>(
+      `/chat/groups/${groupId}/members/auto-add`,
+      { scope, departmentCode, classCode },
+      { authenticated: true }
+    );
+    return response.data;
+  },
+
   async removeMember(groupId: string, userId: string) {
     const response = await apiClient.delete<ApiResponse<void>>(
       `/chat/groups/${groupId}/members/${userId}`,

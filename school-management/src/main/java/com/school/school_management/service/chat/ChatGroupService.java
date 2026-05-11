@@ -24,6 +24,8 @@ public interface ChatGroupService {
 
     void addStudentMembersToGroup(UUID groupId, AddStudentMembersRequest request);
 
+    void autoAddMembers(UUID groupId, com.school.school_management.dto.chat.AutoAddMembersRequest request);
+
     void removeMemberFromGroup(UUID groupId, UUID userId);
 
     boolean isMemberOfGroup(UUID groupId, UUID userId);
