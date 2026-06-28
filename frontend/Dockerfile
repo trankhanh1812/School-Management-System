@@ -4,7 +4,7 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --omit=dev
 
 # ─────────────────────────────────────────────
@@ -14,10 +14,10 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy toàn bộ deps (bao gồm devDeps để build)
-COPY package.json package-lock.json ./
+COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 
-COPY . .
+COPY frontend/ .
 
 # Biến môi trường build-time (NEXT_PUBLIC_* phải có lúc build)
 ARG NEXT_PUBLIC_APP_NAME="SMS Frontend"
