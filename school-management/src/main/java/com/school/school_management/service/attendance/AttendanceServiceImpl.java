@@ -8,8 +8,8 @@ import com.school.school_management.dto.attendance.QRConfirmResponse;
 import com.school.school_management.dto.system.SystemSettingResponse;
 import com.school.school_management.entity.Attendance;
 import com.school.school_management.entity.ClassSession;
-import com.school.school_management.entity.ParentStudent;
 import com.school.school_management.entity.Parent;
+import com.school.school_management.entity.ParentStudent;
 import com.school.school_management.entity.SchoolClass;
 import com.school.school_management.entity.Semester;
 import com.school.school_management.entity.Student;
@@ -17,8 +17,8 @@ import com.school.school_management.entity.User;
 import com.school.school_management.exception.CustomException;
 import com.school.school_management.repository.AttendanceRepository;
 import com.school.school_management.repository.ClassSessionRepository;
-import com.school.school_management.repository.ParentStudentRepository;
 import com.school.school_management.repository.ParentRepository;
+import com.school.school_management.repository.ParentStudentRepository;
 import com.school.school_management.repository.SchoolClassRepository;
 import com.school.school_management.repository.SemesterRepository;
 import com.school.school_management.repository.StudentRepository;
@@ -174,16 +174,14 @@ public class AttendanceServiceImpl implements AttendanceService {
         ClassSession session = resolveSession(sessionId);
         assertCurrentUserCanCreateAttendanceForSession(session);
 
-        // Generate a short-lived JWT (15 min) encoding the sessionId
+        // Generate short-lived JWT token and return deep-link URL
         String qrToken = qrTokenService.generateToken(sessionId);
-
-        // Return the deep-link URL that the student's phone will open when scanning
         return appUrl + "/attend?token=" + qrToken;
     }
 
     @Override
     public QRConfirmResponse confirmQRAttendance(QRConfirmRequest request) {
-        // 1. Verify token and extract sessionId (throws 400 if expired/invalid)
+        // 1. Verify token and extract sessionId
         String sessionId = qrTokenService.extractSessionId(request.getToken());
 
         // 2. Resolve session
@@ -192,51 +190,44 @@ public class AttendanceServiceImpl implements AttendanceService {
         // 3. Resolve the currently authenticated student
         User currentUser = getCurrentUser();
         Student student = studentRepository.findByUserAndDeletedAtIsNull(currentUser)
-                .orElseThrow(() -> new CustomException("Student profile not found for current user", 403));
+            .orElseThrow(() -> new CustomException("Student profile not found for current user", 403));
 
         // 4. Verify IP is in allowed school network
-        // IP is taken from the request context via X-Forwarded-For or RemoteAddr
-        // We pass it through the SecurityContext attribute set by the filter
         SystemSettingResponse settings = systemSettingService.getSettings();
         String clientIp = resolveClientIpFromContext();
         verifyClientIP(clientIp, settings.getAllowedSchoolIps());
 
-        // 5. Idempotency: if already checked in, return success without error
+        // 5. Check already checked in
         if (attendanceRepository.findByStudentAndSession(student, session).isPresent()) {
             throw new CustomException("Bạn đã điểm danh cho buổi học này rồi.", 409);
         }
 
         // 6. Create attendance record
         Attendance attendance = Attendance.builder()
-                .student(student)
-                .session(session)
-                .status(PRESENT)
-                .method(QR)
-                .capturedBy(null)
-                .build();
+            .student(student)
+            .session(session)
+            .status(PRESENT)
+            .method(QR)
+            .capturedBy(null)
+            .build();
 
         Attendance saved = attendanceRepository.save(attendance);
         pushAttendanceNotification(saved, "Điểm danh QR thành công", "Học sinh đã check-in bằng QR");
 
         return QRConfirmResponse.builder()
-                .sessionId(sessionId)
-                .subjectName(session.getSubject().getName())
-                .className(session.getSchoolClass().getClassCode())
-                .status(PRESENT)
-                .method(QR)
-                .build();
+            .sessionId(sessionId)
+            .subjectName(session.getSubject().getName())
+            .className(session.getSchoolClass().getClassCode())
+            .status(PRESENT)
+            .method(QR)
+            .build();
     }
 
-    /**
-     * Attempt to read the client IP from the current request stored in a thread-local
-     * attribute by the filter. Falls back to empty string (IP check will then fail
-     * unless allowedSchoolIps is empty/disabled).
-     */
     private String resolveClientIpFromContext() {
         try {
             Object ip = org.springframework.web.context.request.RequestContextHolder
-                    .currentRequestAttributes()
-                    .getAttribute("clientIp", org.springframework.web.context.request.RequestAttributes.SCOPE_REQUEST);
+                .currentRequestAttributes()
+                .getAttribute("clientIp", org.springframework.web.context.request.RequestAttributes.SCOPE_REQUEST);
             return ip instanceof String s ? s : "";
         } catch (Exception e) {
             return "";

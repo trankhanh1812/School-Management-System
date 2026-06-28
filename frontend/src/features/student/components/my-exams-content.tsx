@@ -8,9 +8,9 @@ import { Panel } from "@/shared/ui/panel";
 
 const EXAM_STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   DRAFT: { label: "Nháp", className: "bg-slate-100 text-slate-600" },
-  SUBMITTED: { label: "Chờ duyệt", className: "bg-yellow-100 text-yellow-800" },
-  APPROVED: { label: "Đã duyệt", className: "bg-blue-100 text-blue-800" },
-  PUBLISHED: { label: "Đã công bố", className: "bg-green-100 text-green-800" },
+  SUBMITTED: { label: "Chờ duyệt", className: "bg-amber-50 text-amber-700" },
+  APPROVED: { label: "Đã duyệt", className: "bg-sky-50 text-sky-700" },
+  PUBLISHED: { label: "Đã công bố", className: "bg-emerald-50 text-emerald-700" },
   LOCKED: { label: "Đã khóa", className: "bg-slate-200 text-slate-700" },
 };
 
@@ -171,7 +171,7 @@ export function MyExamsContent() {
               return (
                 <Panel
                   key={exam.examId}
-                  className={`p-4 ${isToday ? "border-orange-300 bg-orange-50" : isSoon ? "border-yellow-200 bg-yellow-50" : ""}`}
+                  className={`p-4 ${isToday ? "border-rose-200 bg-rose-50" : isSoon ? "border-amber-200 bg-amber-50" : ""}`}
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="flex-1">
@@ -179,12 +179,12 @@ export function MyExamsContent() {
                         <p className="font-semibold text-slate-900">{exam.title}</p>
                         <ExamStatusBadge status={exam.status} />
                         {isToday && (
-                          <span className="inline-block rounded-full bg-orange-500 px-2 py-0.5 text-xs font-bold text-white">
+                          <span className="inline-block rounded-full bg-rose-600 px-2 py-0.5 text-xs font-bold text-white">
                             Hôm nay
                           </span>
                         )}
                         {isSoon && !isToday && (
-                          <span className="inline-block rounded-full bg-yellow-500 px-2 py-0.5 text-xs font-bold text-white">
+                          <span className="inline-block rounded-full bg-amber-700 px-2 py-0.5 text-xs font-bold text-white">
                             {days} ngày nữa
                           </span>
                         )}
@@ -245,7 +245,7 @@ export function MyExamsContent() {
         </div>
       )}
 
-      <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
         <p className="font-medium">Lưu ý:</p>
         <p className="mt-1">
           Lịch thi có thể thay đổi. Theo dõi thông báo từ nhà trường để cập nhật kịp thời.

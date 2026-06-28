@@ -75,6 +75,24 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.of(null, "Password reset successful", 200));
     }
 
+    /**
+     * Đổi mật khẩu lần đầu đăng nhập.
+     * Chỉ hoạt động khi forcePasswordChange = true trên tài khoản.
+     */
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/change-password-first-login")
+    public ResponseEntity<ApiResponse<Void>> changePasswordFirstLogin(
+            @RequestBody Map<String, String> body) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        String newPassword = body.get("newPassword");
+        if (newPassword == null || newPassword.isBlank()) {
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.of(null, "newPassword is required", 400));
+        }
+        authService.changePasswordFirstLogin(email, newPassword);
+        return ResponseEntity.ok(ApiResponse.of(null, "Password changed successfully", 200));
+    }
+
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(

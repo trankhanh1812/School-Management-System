@@ -28,16 +28,22 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
       return;
     }
 
+    // Bắt buộc đổi mật khẩu trước khi vào dashboard
+    if (session?.user.forcePasswordChange) {
+      router.replace("/change-password-first-login");
+      return;
+    }
+
     if (!hasRouteAccess) {
       router.replace(getRoleHomeRoute(role));
     }
-  }, [hasRouteAccess, isAuthHydrated, isAuthenticated, pathname, role, router]);
+  }, [hasRouteAccess, isAuthHydrated, isAuthenticated, pathname, role, router, session?.user.forcePasswordChange]);
 
   if (!isAuthHydrated) {
     return null;
   }
 
-  if (!isAuthenticated || !hasRouteAccess) {
+  if (!isAuthenticated || !hasRouteAccess || session?.user.forcePasswordChange) {
     return null;
   }
 

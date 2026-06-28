@@ -10,10 +10,10 @@ import { Panel } from "@/shared/ui/panel";
 
 const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
   DRAFT:     { label: "Nháp",       cls: "bg-slate-100 text-slate-600" },
-  SUBMITTED: { label: "Chờ duyệt",  cls: "bg-yellow-100 text-yellow-800" },
-  APPROVED:  { label: "Đã duyệt",   cls: "bg-blue-100 text-blue-800" },
-  PUBLISHED: { label: "Đã công bố", cls: "bg-green-100 text-green-800" },
-  LOCKED:    { label: "Đã khóa",    cls: "bg-slate-200 text-slate-700" },
+  SUBMITTED: { label: "Chờ duyệt",  cls: "bg-amber-50 text-amber-700" },
+  APPROVED:  { label: "Đã duyệt",   cls: "bg-sky-50 text-sky-700" },
+  PUBLISHED: { label: "Đã công bố", cls: "bg-emerald-50 text-emerald-700" },
+  LOCKED:    { label: "Đã khóa",    cls: "bg-slate-100 text-slate-500" },
 };
 
 function formatDate(d: string) {
@@ -93,14 +93,14 @@ export function ParentExamsContent() {
             const isSoon = days !== null && days > 0 && days <= 7;
             const cfg = STATUS_CONFIG[exam.status] ?? { label: exam.status, cls: "bg-slate-100 text-slate-600" };
             return (
-              <Panel key={exam.examId} className={`p-4 ${isToday ? "border-orange-300 bg-orange-50" : isSoon ? "border-yellow-200 bg-yellow-50" : ""}`}>
+              <Panel key={exam.examId} className="p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-semibold text-slate-900">{exam.title}</p>
                       <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${cfg.cls}`}>{cfg.label}</span>
-                      {isToday && <span className="inline-block rounded-full bg-orange-500 px-2 py-0.5 text-xs font-bold text-white">Hôm nay</span>}
-                      {isSoon && !isToday && <span className="inline-block rounded-full bg-yellow-500 px-2 py-0.5 text-xs font-bold text-white">{days} ngày nữa</span>}
+                      {isToday && <span className="inline-block rounded-full bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-700">Hôm nay</span>}
+                      {isSoon && !isToday && <span className="inline-block rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">{days} ngày nữa</span>}
                     </div>
                     <p className="mt-1 text-sm text-slate-600">{exam.subjectName} · {exam.examTypeLabel ?? exam.examType}{exam.weight ? ` · Hệ số ${exam.weight}` : ""}</p>
                   </div>

@@ -57,7 +57,7 @@ export function MyTranscriptContent() {
           </div>
           <div>
             <p className="text-sm font-medium text-slate-600">Trạng thái</p>
-            <p className="mt-1 inline-block rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-900">
+            <p className="mt-1 inline-block rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
               {student.status}
             </p>
           </div>
@@ -69,17 +69,17 @@ export function MyTranscriptContent() {
         <Panel key={semester.academicYear} className="p-5 sm:p-6">
           <h3 className="text-lg font-semibold text-slate-900">{semester.academicYear}</h3>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
-              <p className="text-sm font-medium text-blue-600">GPA</p>
-              <p className="mt-2 text-3xl font-bold text-blue-900">{semester.yearAverage}</p>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-medium text-slate-600">GPA</p>
+              <p className="mt-2 text-3xl font-bold text-slate-900">{semester.yearAverage}</p>
             </div>
-            <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4">
-              <p className="text-sm font-medium text-cyan-600">Lớp</p>
-              <p className="mt-2 text-3xl font-bold text-cyan-900">{semester.className}</p>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-medium text-slate-600">Lớp</p>
+              <p className="mt-2 text-3xl font-bold text-slate-900">{semester.className}</p>
             </div>
-            <div className="rounded-2xl border border-green-200 bg-green-50 p-4">
-              <p className="text-sm font-medium text-green-600">Kết quả</p>
-              <p className="mt-2 font-bold text-green-900">{semester.academicRank}</p>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-medium text-slate-600">Kết quả</p>
+              <p className="mt-2 font-bold text-slate-900">{semester.academicRank}</p>
             </div>
           </div>
         </Panel>

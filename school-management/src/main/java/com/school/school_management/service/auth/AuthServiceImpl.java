@@ -62,11 +62,12 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
-        log.debug("Login attempt for email: {}", loginRequest.getEmail());
+        String identifier = loginRequest.getUsername();
+        log.debug("Login attempt for identifier: {}", identifier);
 
         try {
             Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
+                new UsernamePasswordAuthenticationToken(identifier, loginRequest.getPassword())
             );
 
             User user = getActiveUserByEmail(authentication.getName());
@@ -75,8 +76,8 @@ public class AuthServiceImpl implements AuthService {
 
             return buildLoginResponse(user, accessToken, refreshToken);
         } catch (AuthenticationException ex) {
-            log.warn("Login failed for email: {}", loginRequest.getEmail());
-            throw new CustomException("Invalid email or password", 401);
+            log.warn("Login failed for identifier: {}", identifier);
+            throw new CustomException("Tên người dùng hoặc mật khẩu không đúng", 401);
         }
     }
 
@@ -102,27 +103,19 @@ public class AuthServiceImpl implements AuthService {
             .status(ACTIVE_STATUS)
             .build();
 
-        UserRole userRole = UserRole.builder()
-            .user(user)
-            .role(role)
-            .build();
-        user.getUserRoles().add(userRole);
-
+        user.getUserRoles().add(UserRole.builder().user(user).role(role).build());
         User savedUser = userRepository.save(user);
-        
-        // Authenticate the user after registration to ensure roles are properly loaded
+
         try {
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(registerRequest.getEmail(), registerRequest.getPassword())
             );
             String accessToken = jwtProvider.generateAccessToken(authentication);
             String refreshToken = jwtProvider.generateRefreshToken(savedUser.getEmail());
-
             log.info("User {} registered successfully", savedUser.getEmail());
             return buildLoginResponse(savedUser, accessToken, refreshToken);
         } catch (AuthenticationException ex) {
-            // Fallback: generate token directly from email if authentication fails
-            log.warn("Authentication failed after registration for {}, generating token from email", registerRequest.getEmail());
+            log.warn("Auth failed after registration for {}", registerRequest.getEmail());
             String accessToken = jwtProvider.generateAccessToken(savedUser.getEmail());
             String refreshToken = jwtProvider.generateRefreshToken(savedUser.getEmail());
             return buildLoginResponse(savedUser, accessToken, refreshToken);
@@ -132,14 +125,11 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
         String refreshToken = refreshTokenRequest.getRefreshToken();
-
         if (!jwtProvider.validateToken(refreshToken)) {
             throw new CustomException("Invalid or expired refresh token", 401);
         }
-
         User user = getActiveUserByEmail(jwtProvider.getEmailFromToken(refreshToken));
         String newAccessToken = jwtProvider.generateAccessToken(user.getEmail());
-
         return buildLoginResponse(user, newAccessToken, refreshToken);
     }
 
@@ -152,24 +142,15 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String forgotPassword(ForgotPasswordRequest forgotPasswordRequest) {
         String email = forgotPasswordRequest.getEmail().trim().toLowerCase(Locale.ROOT);
-        User user = userRepository.findByEmail(email)
-            .filter(this::isActiveUser)
-            .orElse(null);
-
-        if (user == null) {
-            return null;
-        }
+        User user = userRepository.findByEmail(email).filter(this::isActiveUser).orElse(null);
+        if (user == null) return null;
 
         passwordResetTokenRepository.deleteByUser_Id(user.getId());
-
         String token = UUID.randomUUID().toString().replace("-", "");
-        PasswordResetToken resetToken = PasswordResetToken.builder()
-            .user(user)
-            .token(token)
+        passwordResetTokenRepository.save(PasswordResetToken.builder()
+            .user(user).token(token)
             .expiresAt(OffsetDateTime.now().plusMinutes(30))
-            .build();
-
-        passwordResetTokenRepository.save(resetToken);
+            .build());
         log.info("Created password reset token for {}", email);
         return token;
     }
@@ -179,23 +160,15 @@ public class AuthServiceImpl implements AuthService {
         if (!resetPasswordRequest.getPassword().equals(resetPasswordRequest.getConfirmPassword())) {
             throw new CustomException("Passwords do not match", 400);
         }
-
         PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(resetPasswordRequest.getToken())
             .orElseThrow(() -> new CustomException("Reset token is invalid", 400));
-
-        if (resetToken.getUsedAt() != null) {
-            throw new CustomException("Reset token has already been used", 400);
-        }
-
-        if (resetToken.getExpiresAt().isBefore(OffsetDateTime.now())) {
-            throw new CustomException("Reset token has expired", 400);
-        }
+        if (resetToken.getUsedAt() != null) throw new CustomException("Reset token has already been used", 400);
+        if (resetToken.getExpiresAt().isBefore(OffsetDateTime.now())) throw new CustomException("Reset token has expired", 400);
 
         User user = resetToken.getUser();
         user.setPasswordHash(passwordEncoder.encode(resetPasswordRequest.getPassword()));
         user.setStatus(ACTIVE_STATUS);
         resetToken.setUsedAt(OffsetDateTime.now());
-
         userRepository.save(user);
         passwordResetTokenRepository.save(resetToken);
         log.info("Password reset successful for {}", user.getEmail());
@@ -207,6 +180,23 @@ public class AuthServiceImpl implements AuthService {
             log.info("User {} logged out", jwtProvider.getEmailFromToken(token));
         }
     }
+
+    @Override
+    public void changePasswordFirstLogin(String currentUserEmail, String newPassword) {
+        if (newPassword == null || newPassword.trim().length() < 6) {
+            throw new CustomException("Mật khẩu mới phải có ít nhất 6 ký tự", 400);
+        }
+        User user = getActiveUserByEmail(currentUserEmail);
+        if (!user.isForcePasswordChange()) {
+            throw new CustomException("Tài khoản không yêu cầu đổi mật khẩu lần đầu", 400);
+        }
+        user.setPasswordHash(passwordEncoder.encode(newPassword.trim()));
+        user.setForcePasswordChange(false);
+        userRepository.save(user);
+        log.info("First-login password changed for {}", currentUserEmail);
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
 
     private LoginResponse buildLoginResponse(User user, String accessToken, String refreshToken) {
         return LoginResponse.builder()
@@ -221,46 +211,39 @@ public class AuthServiceImpl implements AuthService {
     private LoginResponse.UserInfo buildUserInfo(User user) {
         List<String> roles = user.getUserRoles().stream()
             .map(UserRole::getRole)
-            .filter(role -> role != null && role.getCode() != null)
+            .filter(r -> r != null && r.getCode() != null)
             .map(Role::getCode)
-            .map(code -> code.toUpperCase(Locale.ROOT))
-            .distinct()
-            .sorted()
-            .collect(Collectors.toList());
+            .map(c -> c.toUpperCase(Locale.ROOT))
+            .distinct().sorted().collect(Collectors.toList());
 
         String primaryRole = roles.stream()
             .min(Comparator.comparingInt(this::rolePriority))
             .orElse("STUDENT");
 
-        var userInfoBuilder = LoginResponse.UserInfo.builder()
+        var builder = LoginResponse.UserInfo.builder()
             .id(user.getId())
             .email(user.getEmail())
             .fullName(user.getFullName())
             .role(primaryRole)
             .roles(roles.isEmpty() ? List.of("STUDENT") : roles)
             .active(isActiveUser(user))
-            .createdAt(user.getCreatedAt());
-        
-        // Add teacher-specific information
+            .createdAt(user.getCreatedAt())
+            .forcePasswordChange(user.isForcePasswordChange());
+
         if ("TEACHER".equals(primaryRole) && user.getTeacher() != null) {
             Teacher teacher = user.getTeacher();
-            userInfoBuilder
-                .departmentLevel(teacher.getDepartmentLevel())
+            builder.departmentLevel(teacher.getDepartmentLevel())
                 .departmentCode(teacher.getDepartment() != null ? teacher.getDepartment().getCode() : null)
                 .departmentName(teacher.getDepartment() != null ? teacher.getDepartment().getName() : null);
         }
-        
-        return userInfoBuilder.build();
+
+        return builder.build();
     }
 
     private User getActiveUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new CustomException("User not found", 404));
-
-        if (!isActiveUser(user)) {
-            throw new CustomException("User account is inactive", 403);
-        }
-
+        if (!isActiveUser(user)) throw new CustomException("User account is inactive", 403);
         return user;
     }
 
@@ -271,14 +254,9 @@ public class AuthServiceImpl implements AuthService {
     private Role getOrCreateRole(com.school.school_management.enums.UserRole requestedRole) {
         String code = requestedRole.name();
         return roleRepository.findByCode(code).orElseGet(() ->
-            roleRepository.save(
-                Role.builder()
-                    .code(code)
-                    .name(requestedRole.getDisplayName())
-                    .description("System role " + code)
-                    .build()
-            )
-        );
+            roleRepository.save(Role.builder()
+                .code(code).name(requestedRole.getDisplayName())
+                .description("System role " + code).build()));
     }
 
     private String buildUsername(String email) {
@@ -288,10 +266,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private int rolePriority(String roleCode) {
-        try {
-            return com.school.school_management.enums.UserRole.fromString(roleCode).getPriority();
-        } catch (Exception ex) {
-            return Integer.MAX_VALUE;
-        }
+        try { return com.school.school_management.enums.UserRole.fromString(roleCode).getPriority(); }
+        catch (Exception ex) { return Integer.MAX_VALUE; }
     }
 }

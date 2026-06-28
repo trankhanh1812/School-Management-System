@@ -43,6 +43,14 @@ public class User extends BaseEntity {
     @Column(name = "last_login_at")
     private OffsetDateTime lastLoginAt;
 
+    /**
+     * Khi true, user phải đổi mật khẩu ngay sau lần đăng nhập đầu tiên.
+     * Áp dụng cho tài khoản học sinh và phụ huynh được tạo tự động.
+     */
+    @Builder.Default
+    @Column(name = "force_password_change", nullable = false, columnDefinition = "boolean default false")
+    private boolean forcePasswordChange = false;
+
     @Builder.Default
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

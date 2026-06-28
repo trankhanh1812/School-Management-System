@@ -83,15 +83,15 @@ export function ParentAttendanceContent() {
       {loaded && stats && (
         <section className="grid gap-3 sm:grid-cols-5">
           {[
-            { label: "Tổng buổi học", value: stats.totalSessions, color: "text-slate-900" },
-            { label: "Có mặt", value: stats.presentCount, color: "text-green-700" },
-            { label: "Vắng mặt", value: stats.absentCount, color: "text-red-700" },
-            { label: "Đến trễ", value: stats.lateCount, color: "text-yellow-700" },
-            { label: "Tỷ lệ có mặt", value: `${attendanceRate}%`, color: "text-blue-700" },
+            { label: "Tổng buổi học", value: stats.totalSessions,  cls: "text-slate-900" },
+            { label: "Có mặt",        value: stats.presentCount,   cls: "text-emerald-700" },
+            { label: "Vắng mặt",      value: stats.absentCount,    cls: "text-rose-600" },
+            { label: "Đến trễ",       value: stats.lateCount,      cls: "text-amber-700" },
+            { label: "Tỷ lệ có mặt",  value: `${attendanceRate}%`, cls: "text-sky-700" },
           ].map((stat) => (
             <Panel key={stat.label} className="p-4 text-center">
               <p className="text-xs text-slate-500">{stat.label}</p>
-              <p className={`mt-1 text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+              <p className={`mt-1 text-2xl font-bold ${stat.cls}`}>{stat.value}</p>
             </Panel>
           ))}
         </section>

@@ -10,42 +10,33 @@ import { authService } from "@/services/auth.service";
 import { Button } from "@/shared/ui/button";
 import { TextField } from "@/shared/ui/text-field";
 
-function isValidEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-}
-
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { signIn } = useAuthSession();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  const emailIsValid = isValidEmail(email);
+  const usernameIsValid = username.trim().length > 0;
   const passwordIsValid = password.length >= authValidation.passwordMinLength;
-  const emailError =
-    submitted || email.length > 0
-      ? !email.trim()
-        ? "Vui lòng nhập email."
-        : !emailIsValid
-          ? "Email chưa đúng định dạng."
-          : undefined
-      : undefined;
+
+  const usernameError =
+    submitted && !usernameIsValid ? "Vui lòng nhập tên người dùng." : undefined;
+
   const passwordError =
-    submitted || password.length > 0
+    submitted && !passwordIsValid
       ? !password
         ? "Vui lòng nhập mật khẩu."
-        : !passwordIsValid
-          ? `Mật khẩu phải có ít nhất ${authValidation.passwordMinLength} ký tự.`
-          : undefined
+        : `Mật khẩu phải có ít nhất ${authValidation.passwordMinLength} ký tự.`
       : undefined;
+
   const canSubmit = useMemo(
-    () => emailIsValid && passwordIsValid,
-    [emailIsValid, passwordIsValid],
+    () => usernameIsValid && passwordIsValid,
+    [usernameIsValid, passwordIsValid],
   );
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -53,31 +44,22 @@ export function LoginForm() {
     setError("");
     setSubmitted(true);
 
-    if (!email.trim() || !password) {
-      setError("Vui lòng nhập đầy đủ email và mật khẩu.");
-      return;
-    }
-
-    if (!emailIsValid) {
-      setError("Email chưa đúng định dạng.");
-      return;
-    }
-
-    if (!passwordIsValid) {
-      setError(
-        `Mật khẩu phải có ít nhất ${authValidation.passwordMinLength} ký tự.`,
-      );
-      return;
-    }
+    if (!usernameIsValid || !passwordIsValid) return;
 
     setIsSubmitting(true);
 
     try {
       const response = await authService.login({
-        email: email.trim(),
+        username: username.trim(),
         password,
       });
       signIn(response.data, rememberMe);
+
+      // Nếu tài khoản yêu cầu đổi mật khẩu lần đầu → redirect bắt buộc
+      if (response.data.user.forcePasswordChange) {
+        router.replace("/change-password-first-login");
+        return;
+      }
 
       const redirectTo = searchParams.get("redirectTo") || "/dashboard";
       router.replace(redirectTo);
@@ -95,16 +77,19 @@ export function LoginForm() {
   return (
     <form className="grid gap-4" onSubmit={handleSubmit}>
       {error ? <AuthStatus tone="error" message={error} /> : null}
+
       <TextField
-        id="email"
-        label="Email"
-        type="email"
-        placeholder="admin@sms.edu.vn"
-        value={email}
-        onChange={(event) => setEmail(event.target.value)}
-        error={emailError}
+        id="username"
+        label="Tên người dùng"
+        type="text"
+        placeholder="CCCD, số điện thoại hoặc mã học sinh"
+        value={username}
+        onChange={(event) => setUsername(event.target.value)}
+        error={usernameError}
+        autoComplete="username"
         required
       />
+
       <TextField
         id="password"
         label="Mật khẩu"
@@ -113,8 +98,10 @@ export function LoginForm() {
         value={password}
         onChange={(event) => setPassword(event.target.value)}
         error={passwordError}
+        autoComplete="current-password"
         required
       />
+
       <div className="flex items-center justify-between gap-4 text-sm">
         <label className="flex items-center gap-2 text-slate-600">
           <input
@@ -129,20 +116,13 @@ export function LoginForm() {
           Quên mật khẩu?
         </Link>
       </div>
-      {!canSubmit ? (
-        <p className="text-xs text-slate-500">
-          Điền đúng email và mật khẩu hợp lệ để mở nút đăng nhập.
-        </p>
-      ) : null}
+
       <Button
         type="submit"
         className="mt-2 h-12"
         disabled={!canSubmit || isSubmitting}
       >
         {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
-      </Button>
-      <Button type="button" tone="secondary" className="h-12" disabled>
-        Đăng nhập với Google
       </Button>
     </form>
   );

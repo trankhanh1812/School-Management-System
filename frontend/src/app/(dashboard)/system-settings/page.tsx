@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { PageIntro } from "@/features/dashboard/components/page-intro";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { systemConfigApi } from "@/features/system-config/api";
+import { apiClient } from "@/lib/api/api-client";
 import type { SystemSettingsRecord } from "@/features/system-config/types";
+import type { ApiResponse } from "@/types/api";
 import { Button } from "@/shared/ui/button";
 import { Panel } from "@/shared/ui/panel";
 import { Modal } from "@/shared/ui/modal";
@@ -284,6 +286,8 @@ export default function SystemSettingsPage() {
           </span>
         </label>
       </Modal>
+
+      <AcademicRankRulesSection />
     </div>
   );
 }
@@ -391,5 +395,245 @@ function WeightInput({
         className="h-10 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-sky-400"
       />
     </div>
+  );
+}
+
+// ─── Academic Rank Rules Section ─────────────────────────────────────────────
+
+type RankRule = {
+  id: string;
+  code: string;
+  name: string;
+  minAverage: number;
+  maxFailedSubjects: number;
+  minConductLevel: string;
+  appliesToGrade: number;
+};
+
+const EMPTY_RULE: Omit<RankRule, "id"> = {
+  code: "",
+  name: "",
+  minAverage: 5.0,
+  maxFailedSubjects: 0,
+  minConductLevel: "",
+  appliesToGrade: 0,
+};
+
+const CONDUCT_LEVELS = ["", "Yếu", "Trung bình", "Khá", "Tốt"];
+
+function AcademicRankRulesSection() {
+  const { session } = useAuthSession();
+  const { showToast } = useToast();
+  const isAdmin = session?.user.role === "ADMIN";
+
+  const [rules, setRules] = useState<RankRule[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState<Omit<RankRule, "id">>(EMPTY_RULE);
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await apiClient.get<ApiResponse<RankRule[]>>("/academic-rank-rules", { authenticated: true });
+      setRules(Array.isArray(res.data) ? res.data : []);
+    } catch {/* ignore */}
+    finally { setIsLoading(false); }
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
+
+  function startEdit(rule: RankRule) {
+    setEditingId(rule.id);
+    setForm({
+      code: rule.code,
+      name: rule.name,
+      minAverage: rule.minAverage,
+      maxFailedSubjects: rule.maxFailedSubjects,
+      minConductLevel: rule.minConductLevel,
+      appliesToGrade: rule.appliesToGrade,
+    });
+  }
+
+  function startCreate() {
+    setEditingId("new");
+    setForm(EMPTY_RULE);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setForm(EMPTY_RULE);
+  }
+
+  async function handleSave() {
+    if (!form.code.trim() || !form.name.trim()) {
+      showToast("Vui lòng nhập mã và tên quy tắc.", "error");
+      return;
+    }
+    setSaving(true);
+    try {
+      const payload = {
+        code: form.code.trim().toUpperCase(),
+        name: form.name.trim(),
+        minAverage: form.minAverage,
+        maxFailedSubjects: form.maxFailedSubjects || 0,
+        minConductLevel: form.minConductLevel || null,
+        appliesToGrade: form.appliesToGrade || null,
+      };
+      if (editingId === "new") {
+        await apiClient.post("/academic-rank-rules", payload, { authenticated: true });
+        showToast("Đã tạo quy tắc xếp loại.", "success");
+      } else {
+        await apiClient.put(`/academic-rank-rules/${editingId}`, payload, { authenticated: true });
+        showToast("Đã cập nhật quy tắc xếp loại.", "success");
+      }
+      cancelEdit();
+      await load();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Không thể lưu.", "error");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!window.confirm("Xóa quy tắc xếp loại này?")) return;
+    setDeletingId(id);
+    try {
+      await apiClient.delete(`/academic-rank-rules/${id}`, { authenticated: true });
+      showToast("Đã xóa quy tắc.", "success");
+      await load();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Không thể xóa.", "error");
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  return (
+    <Panel className="p-5 sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div>
+          <h3 className="text-base font-semibold text-slate-900">Quy tắc xếp loại học lực</h3>
+          <p className="text-sm text-slate-500">
+            Định nghĩa điều kiện xếp loại Giỏi/Khá/Trung bình/Yếu. Dùng trong tính toán xét lên lớp tự động.
+          </p>
+        </div>
+        {isAdmin && (
+          <Button tone="secondary" onClick={startCreate} disabled={editingId !== null}>
+            + Thêm quy tắc
+          </Button>
+        )}
+      </div>
+
+      {isLoading ? (
+        <p className="text-sm text-slate-500">Đang tải...</p>
+      ) : (
+        <div className="grid gap-3">
+          {/* Edit / Create form */}
+          {editingId !== null && (
+            <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4 grid gap-3">
+              <p className="text-sm font-semibold text-sky-800">
+                {editingId === "new" ? "Thêm quy tắc mới" : "Chỉnh sửa quy tắc"}
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-1">
+                  <label className="text-xs font-semibold text-slate-600">Mã *</label>
+                  <input value={form.code} onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
+                    placeholder="VD: GIOI" className="h-9 rounded-lg border border-slate-200 px-3 text-sm" />
+                </div>
+                <div className="grid gap-1">
+                  <label className="text-xs font-semibold text-slate-600">Tên *</label>
+                  <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                    placeholder="VD: Giỏi" className="h-9 rounded-lg border border-slate-200 px-3 text-sm" />
+                </div>
+                <div className="grid gap-1">
+                  <label className="text-xs font-semibold text-slate-600">Điểm TB tối thiểu</label>
+                  <input type="number" min={0} max={10} step={0.1} value={form.minAverage}
+                    onChange={(e) => setForm((f) => ({ ...f, minAverage: Number(e.target.value) }))}
+                    className="h-9 rounded-lg border border-slate-200 px-3 text-sm" />
+                </div>
+                <div className="grid gap-1">
+                  <label className="text-xs font-semibold text-slate-600">Số môn dưới 5 tối đa</label>
+                  <input type="number" min={0} value={form.maxFailedSubjects}
+                    onChange={(e) => setForm((f) => ({ ...f, maxFailedSubjects: Number(e.target.value) }))}
+                    className="h-9 rounded-lg border border-slate-200 px-3 text-sm" />
+                </div>
+                <div className="grid gap-1">
+                  <label className="text-xs font-semibold text-slate-600">Hạnh kiểm tối thiểu</label>
+                  <select value={form.minConductLevel}
+                    onChange={(e) => setForm((f) => ({ ...f, minConductLevel: e.target.value }))}
+                    className="h-9 rounded-lg border border-slate-200 px-3 text-sm">
+                    {CONDUCT_LEVELS.map((l) => (
+                      <option key={l} value={l}>{l || "Không yêu cầu"}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid gap-1">
+                  <label className="text-xs font-semibold text-slate-600">Áp dụng khối (0 = tất cả)</label>
+                  <input type="number" min={0} max={12} value={form.appliesToGrade}
+                    onChange={(e) => setForm((f) => ({ ...f, appliesToGrade: Number(e.target.value) }))}
+                    className="h-9 rounded-lg border border-slate-200 px-3 text-sm" />
+                </div>
+              </div>
+              <div className="flex gap-2 mt-1">
+                <Button onClick={() => void handleSave()} disabled={saving}>
+                  {saving ? "Đang lưu..." : "Lưu"}
+                </Button>
+                <Button tone="secondary" onClick={cancelEdit} disabled={saving}>Hủy</Button>
+              </div>
+            </div>
+          )}
+
+          {/* Rules table */}
+          {rules.length === 0 ? (
+            <p className="text-sm text-slate-500">Chưa có quy tắc nào. Thêm quy tắc để hệ thống tự động xếp loại học lực.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50">
+                    <th className="px-3 py-2 text-left font-semibold text-slate-700">Mã</th>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-700">Tên</th>
+                    <th className="px-3 py-2 text-right font-semibold text-slate-700">TB tối thiểu</th>
+                    <th className="px-3 py-2 text-right font-semibold text-slate-700">Môn dưới 5 tối đa</th>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-700">HK tối thiểu</th>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-700">Khối</th>
+                    {isAdmin && <th className="px-3 py-2 text-left font-semibold text-slate-700">Thao tác</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rules.map((r) => (
+                    <tr key={r.id} className="border-b border-slate-100 hover:bg-slate-50">
+                      <td className="px-3 py-2 font-mono text-xs text-slate-700">{r.code}</td>
+                      <td className="px-3 py-2 font-medium text-slate-900">{r.name}</td>
+                      <td className="px-3 py-2 text-right text-slate-700">{r.minAverage}</td>
+                      <td className="px-3 py-2 text-right text-slate-700">{r.maxFailedSubjects}</td>
+                      <td className="px-3 py-2 text-slate-600">{r.minConductLevel || "—"}</td>
+                      <td className="px-3 py-2 text-slate-600">{r.appliesToGrade ? `Khối ${r.appliesToGrade}` : "Tất cả"}</td>
+                      {isAdmin && (
+                        <td className="px-3 py-2">
+                          <div className="flex items-center gap-2">
+                            <button type="button" onClick={() => startEdit(r)} disabled={editingId !== null}
+                              className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 transition disabled:opacity-40">
+                              Sửa
+                            </button>
+                            <button type="button" onClick={() => void handleDelete(r.id)} disabled={deletingId === r.id}
+                              className="rounded-lg border border-rose-200 px-3 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50 transition disabled:opacity-40">
+                              {deletingId === r.id ? "..." : "Xóa"}
+                            </button>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+    </Panel>
   );
 }

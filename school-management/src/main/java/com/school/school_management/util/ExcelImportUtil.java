@@ -6,6 +6,7 @@ import com.school.school_management.dto.student.ParentImportRequest;
 import com.school.school_management.dto.student.StudentImportRequest;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -114,6 +115,9 @@ public class ExcelImportUtil {
                 errors.add(error(s, "status", "status must be studying/transferred/dropout"));
             }
         }
+        if (!isBlank(s.getNationalId()) && (s.getNationalId().length() < 9 || s.getNationalId().length() > 12 || !s.getNationalId().matches("\\d+"))) {
+            errors.add(error(s, "national_id", "national_id must be 9-12 digits"));
+        }
         return errors;
     }
 
@@ -150,7 +154,7 @@ public class ExcelImportUtil {
 
     private void createStudentSheet(XSSFWorkbook workbook) {
         XSSFSheet sheet = workbook.createSheet(STUDENT_SHEET);
-        String[] headers = {"student_code", "full_name", "date_of_birth", "gender", "phone", "email", "address", "class_name", "academic_year", "status", "enrollment_date"};
+        String[] headers = {"student_code", "full_name", "date_of_birth", "gender", "phone", "email", "address", "class_name", "academic_year", "status", "enrollment_date", "national_id"};
         var row = sheet.createRow(0);
         CellStyle style = createHeaderStyle(workbook);
         for (int i = 0; i < headers.length; i++) {
@@ -187,7 +191,8 @@ public class ExcelImportUtil {
             "4. Academic Year example: 2024-2025",
             "5. Class must exist in system",
             "6. Use class_name + academic_year mapping",
-            "7. Do not input id or uuid"
+            "7. Do not input id or uuid",
+            "8. National_id (CCCD) must be 9-12 digits, optional but recommended for login"
         };
         for (int i = 0; i < lines.length; i++) {
             var row = sheet.createRow(i);
@@ -200,7 +205,7 @@ public class ExcelImportUtil {
         List<StudentImportRequest> result = new ArrayList<>();
         for (int i = 1; i <= sheet.getLastRowNum(); i++) {
             var row = sheet.getRow(i);
-            if (row == null || isRowEmpty(row, 11)) {
+            if (row == null || isRowEmpty(row, 12)) {
                 continue;
             }
             result.add(StudentImportRequest.builder()
@@ -215,6 +220,7 @@ public class ExcelImportUtil {
                 .academicYear(getCellValue(row, 8))
                 .status(getCellValue(row, 9))
                 .enrollmentDate(getCellValue(row, 10))
+                .nationalId(getCellValue(row, 11))
                 .rowNumber(i + 1)
                 .build());
         }

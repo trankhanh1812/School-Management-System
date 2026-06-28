@@ -1,6 +1,7 @@
 package com.school.school_management.dto.student;
 
 import jakarta.validation.constraints.NotBlank;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,4 +28,30 @@ public class StudentUpsertRequest {
     private String className;
     private String status;
     private String conduct;
+
+    /**
+     * Mã căn cước công dân / CMND.
+     * Nếu có, sẽ được dùng làm username đăng nhập thay cho studentCode.
+     */
+    private String nationalId;
+
+    /**
+     * Danh sách phụ huynh cần upsert khi tạo/sửa học sinh qua UI.
+     * Nếu null hoặc rỗng thì bỏ qua.
+     */
+    private List<ParentUpsertRequest> parents;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class ParentUpsertRequest {
+        private String fullName;
+        /** Phone dùng làm username đăng nhập của phụ huynh */
+        private String phone;
+        private String email;
+        /** father / mother / guardian */
+        private String relation;
+        private boolean isPrimaryContact;
+    }
 }

@@ -177,12 +177,21 @@ public class StudentServiceImpl implements StudentService {
         String email = normalizeEmail(request.getEmail(), studentCode);
         ensureEmailAvailable(email, null);
 
+        // Username: nationalId (CCCD) if provided, else studentCode
+        String nationalId = normalizeOptionalText(request.getNationalId());
+        String username = !isBlank(nationalId) ? nationalId : studentCode.toLowerCase(Locale.ROOT);
+        // If nationalId provided → auto-created account, force password change on first login
+        boolean forcePasswordChange = !isBlank(nationalId);
+        // Initial password = nationalId if provided, else studentCode
+        String initialPassword = !isBlank(nationalId) ? nationalId : studentCode;
+
         User user = User.builder()
-            .username(buildUsername(studentCode, email))
+            .username(username)
             .email(email)
-            .passwordHash(passwordEncoder.encode(studentCode))
+            .passwordHash(passwordEncoder.encode(initialPassword))
             .fullName(normalizeText(request.getFullName()))
             .status(ACTIVE_STATUS)
+            .forcePasswordChange(forcePasswordChange)
             .build();
 
         Role role = getOrCreateStudentRole();
@@ -198,6 +207,7 @@ public class StudentServiceImpl implements StudentService {
         Student student = Student.builder()
             .user(savedUser)
             .studentCode(studentCode)
+            .nationalId(nationalId)
             .firstName(nameParts.firstName())
             .lastName(nameParts.lastName())
             .dateOfBirth(parseDate(request.getDateOfBirth()))
@@ -226,8 +236,12 @@ public class StudentServiceImpl implements StudentService {
         String email = normalizeEmail(request.getEmail(), nextStudentCode);
         ensureEmailAvailable(email, student.getUser().getId());
 
+        String nationalId = normalizeOptionalText(request.getNationalId());
+        String username = !isBlank(nationalId) ? nationalId : nextStudentCode.toLowerCase(Locale.ROOT);
+
         NameParts nameParts = splitFullName(request.getFullName());
         student.setStudentCode(nextStudentCode);
+        student.setNationalId(nationalId);
         student.setFirstName(nameParts.firstName());
         student.setLastName(nameParts.lastName());
         student.setDateOfBirth(parseDate(request.getDateOfBirth()));
@@ -238,9 +252,18 @@ public class StudentServiceImpl implements StudentService {
 
         User user = student.getUser();
         user.setEmail(email);
-        user.setUsername(buildUsername(nextStudentCode, email));
+        user.setUsername(username);
         user.setFullName(normalizeText(request.getFullName()));
         user.setStatus(ACTIVE_STATUS);
+        // If nationalId newly provided and account hasn't changed password yet, keep forcePasswordChange
+        if (!isBlank(nationalId) && !user.isForcePasswordChange()) {
+            // Only set forcePasswordChange if username is being changed to nationalId for the first time
+            // (i.e., previous username was studentCode-based)
+            String prevUsername = user.getUsername();
+            if (prevUsername == null || prevUsername.equalsIgnoreCase(nextStudentCode)) {
+                user.setForcePasswordChange(true);
+            }
+        }
 
         Student savedStudent = studentRepository.save(student);
         upsertCurrentClass(savedStudent, request);

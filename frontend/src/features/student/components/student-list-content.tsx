@@ -60,6 +60,10 @@ export function StudentListContent() {
 
   const handleFileChanged = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    // Reset input immediately before any await — currentTarget is valid here
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
     if (!file) {
       return;
     }
@@ -71,13 +75,12 @@ export function StudentListContent() {
       const preview = response.data;
       setPreviewData(preview);
       setShowingPreview(true);
-      showToast("Da tai preview du lieu", "success");
+      showToast("Đã tải preview dữ liệu", "success");
     } catch (error) {
-      showToast("Khong the tao preview", "error");
+      showToast("Không thể tạo preview", "error");
       console.error(error);
     } finally {
       setImporting(false);
-      event.currentTarget.value = "";
     }
   };
 

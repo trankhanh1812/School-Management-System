@@ -4,7 +4,11 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { PageIntro } from "@/features/dashboard/components/page-intro";
 import { examApi, type ExamRecord } from "@/features/exam/api";
-import { scoreApi, type ScoreImportPreviewResponse, type ScoreRecord } from "@/features/score/api";
+import {
+  scoreApi,
+  type ScoreImportPreviewResponse,
+  type ScoreRecord,
+} from "@/features/score/api";
 import { ScoreImportPreview } from "@/features/score/components/score-import-preview";
 import { ScoreModuleTabs } from "@/features/score/components/score-module-tabs";
 import { useAuthSession } from "@/hooks";
@@ -17,7 +21,8 @@ export default function ScoreGradebookPage() {
   const { showToast } = useToast();
   const searchParams = useSearchParams();
   const isAdmin = session?.user.role === "ADMIN";
-  const canManage = session?.user.role === "ADMIN" || session?.user.role === "TEACHER";
+  const canManage =
+    session?.user.role === "ADMIN" || session?.user.role === "TEACHER";
 
   const [exams, setExams] = useState<ExamRecord[]>([]);
   const [scores, setScores] = useState<ScoreRecord[]>([]);
@@ -34,7 +39,8 @@ export default function ScoreGradebookPage() {
   const [classFilter, setClassFilter] = useState("all");
   const [showEditableOnly, setShowEditableOnly] = useState(false);
   const [showImportPreview, setShowImportPreview] = useState(false);
-  const [importPreviewData, setImportPreviewData] = useState<ScoreImportPreviewResponse | null>(null);
+  const [importPreviewData, setImportPreviewData] =
+    useState<ScoreImportPreviewResponse | null>(null);
   const [isPreviewingImport, setIsPreviewingImport] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [pendingImportFile, setPendingImportFile] = useState<File | null>(null);
@@ -46,41 +52,65 @@ export default function ScoreGradebookPage() {
   );
 
   const yearOptions = useMemo(
-    () => Array.from(new Set(exams.map((item) => item.academicYearCode))).filter(Boolean).sort((a, b) => b.localeCompare(a)),
+    () =>
+      Array.from(new Set(exams.map((item) => item.academicYearCode)))
+        .filter(Boolean)
+        .sort((a, b) => b.localeCompare(a)),
     [exams],
   );
 
   const semesterOptions = useMemo(
-    () => Array.from(new Set(exams.map((item) => item.semesterCode))).filter(Boolean).sort((a, b) => a.localeCompare(b)),
+    () =>
+      Array.from(new Set(exams.map((item) => item.semesterCode)))
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b)),
     [exams],
   );
 
   const classScopeOptions = useMemo(
-    () => Array.from(new Set(exams.flatMap((item) => item.classCodes))).filter(Boolean).sort((a, b) => a.localeCompare(b)),
+    () =>
+      Array.from(new Set(exams.flatMap((item) => item.classCodes)))
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b)),
     [exams],
   );
 
   const scopedExams = useMemo(
     () =>
       exams
-        .filter((item) => (yearScope === "all" ? true : item.academicYearCode === yearScope))
-        .filter((item) => (semesterScope === "all" ? true : item.semesterCode === semesterScope))
-        .filter((item) => (classScope === "all" ? true : item.classCodes.includes(classScope))),
+        .filter((item) =>
+          yearScope === "all" ? true : item.academicYearCode === yearScope,
+        )
+        .filter((item) =>
+          semesterScope === "all" ? true : item.semesterCode === semesterScope,
+        )
+        .filter((item) =>
+          classScope === "all" ? true : item.classCodes.includes(classScope),
+        ),
     [exams, yearScope, semesterScope, classScope],
   );
 
   const scoreStatusOptions = useMemo(
-    () => Array.from(new Set(scores.map((item) => item.status))).filter(Boolean).sort((a, b) => a.localeCompare(b)),
+    () =>
+      Array.from(new Set(scores.map((item) => item.status)))
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b)),
     [scores],
   );
 
   const teacherOptions = useMemo(
-    () => Array.from(new Set(scores.map((item) => item.teacherName))).filter(Boolean).sort((a, b) => a.localeCompare(b)),
+    () =>
+      Array.from(new Set(scores.map((item) => item.teacherName)))
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b)),
     [scores],
   );
 
   const classOptions = useMemo(
-    () => Array.from(new Set(scores.map((item) => item.classCode))).filter(Boolean).sort((a, b) => a.localeCompare(b)),
+    () =>
+      Array.from(new Set(scores.map((item) => item.classCode)))
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b)),
     [scores],
   );
 
@@ -88,21 +118,40 @@ export default function ScoreGradebookPage() {
     const normalizedKeyword = studentKeyword.trim().toLowerCase();
 
     return scores
-      .filter((item) => (statusFilter === "all" ? true : item.status === statusFilter))
-      .filter((item) => (teacherFilter === "all" ? true : item.teacherName === teacherFilter))
-      .filter((item) => (classFilter === "all" ? true : item.classCode === classFilter))
+      .filter((item) =>
+        statusFilter === "all" ? true : item.status === statusFilter,
+      )
+      .filter((item) =>
+        teacherFilter === "all" ? true : item.teacherName === teacherFilter,
+      )
+      .filter((item) =>
+        classFilter === "all" ? true : item.classCode === classFilter,
+      )
       .filter((item) => (showEditableOnly ? item.editable : true))
       .filter((item) => {
         if (!normalizedKeyword) {
           return true;
         }
 
-        const haystack = [item.studentName, item.studentCode, item.classCode, item.examType, item.teacherName]
+        const haystack = [
+          item.studentName,
+          item.studentCode,
+          item.classCode,
+          item.examType,
+          item.teacherName,
+        ]
           .join(" ")
           .toLowerCase();
         return haystack.includes(normalizedKeyword);
       });
-  }, [scores, statusFilter, teacherFilter, classFilter, showEditableOnly, studentKeyword]);
+  }, [
+    scores,
+    statusFilter,
+    teacherFilter,
+    classFilter,
+    showEditableOnly,
+    studentKeyword,
+  ]);
 
   async function loadData(initialExamId?: string) {
     setIsLoading(true);
@@ -111,7 +160,8 @@ export default function ScoreGradebookPage() {
       const examData = examResponse.data ?? [];
       setExams(examData);
 
-      const nextExamId = initialExamId ?? selectedExamId ?? examData[0]?.examId ?? "";
+      const nextExamId =
+        initialExamId ?? selectedExamId ?? examData[0]?.examId ?? "";
       setSelectedExamId(nextExamId);
 
       if (nextExamId) {
@@ -121,7 +171,10 @@ export default function ScoreGradebookPage() {
         setScores([]);
       }
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Không tải được dữ liệu điểm", "error");
+      showToast(
+        error instanceof Error ? error.message : "Không tải được dữ liệu điểm",
+        "error",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -143,7 +196,10 @@ export default function ScoreGradebookPage() {
         const response = await scoreApi.list(selectedExamId);
         setScores(response.data ?? []);
       } catch (error) {
-        showToast(error instanceof Error ? error.message : "Không tải được điểm", "error");
+        showToast(
+          error instanceof Error ? error.message : "Không tải được điểm",
+          "error",
+        );
       }
     }
 
@@ -159,7 +215,10 @@ export default function ScoreGradebookPage() {
       showToast("Đã submit điểm để chờ duyệt", "success");
       await loadData(selectedExamId);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Không submit được điểm", "error");
+      showToast(
+        error instanceof Error ? error.message : "Không submit được điểm",
+        "error",
+      );
     }
   }
 
@@ -169,7 +228,10 @@ export default function ScoreGradebookPage() {
       showToast("Đã phê duyệt điểm", "success");
       await loadData(selectedExamId);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Không phê duyệt được", "error");
+      showToast(
+        error instanceof Error ? error.message : "Không phê duyệt được",
+        "error",
+      );
     }
   }
 
@@ -182,7 +244,10 @@ export default function ScoreGradebookPage() {
       showToast("Đã công bố điểm", "success");
       await loadData(selectedExamId);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Không công bố được", "error");
+      showToast(
+        error instanceof Error ? error.message : "Không công bố được",
+        "error",
+      );
     }
   }
 
@@ -199,7 +264,10 @@ export default function ScoreGradebookPage() {
       });
       await loadData(selectedExamId);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Không cập nhật được điểm", "error");
+      showToast(
+        error instanceof Error ? error.message : "Không cập nhật được điểm",
+        "error",
+      );
     }
   }
 
@@ -215,7 +283,12 @@ export default function ScoreGradebookPage() {
       anchor.remove();
       URL.revokeObjectURL(url);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Không tải được template import điểm", "error");
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "Không tải được template import điểm",
+        "error",
+      );
     }
   }
 
@@ -238,7 +311,12 @@ export default function ScoreGradebookPage() {
       setImportPreviewData(response.data ?? null);
       setShowImportPreview(true);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Không tạo được preview import điểm", "error");
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "Không tạo được preview import điểm",
+        "error",
+      );
     } finally {
       setIsPreviewingImport(false);
     }
@@ -261,7 +339,10 @@ export default function ScoreGradebookPage() {
       await loadData(selectedExamId);
       handleCloseImportPreview();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Không import được điểm", "error");
+      showToast(
+        error instanceof Error ? error.message : "Không import được điểm",
+        "error",
+      );
     } finally {
       setIsImporting(false);
     }
@@ -296,7 +377,11 @@ export default function ScoreGradebookPage() {
             <Button tone="secondary" onClick={handleDownloadImportTemplate}>
               Download template import điểm
             </Button>
-            <Button tone="secondary" onClick={handleSelectImportFile} disabled={isPreviewingImport || isImporting}>
+            <Button
+              tone="secondary"
+              onClick={handleSelectImportFile}
+              disabled={isPreviewingImport || isImporting}
+            >
               {isPreviewingImport ? "Đang preview..." : "Import Excel"}
             </Button>
             <ButtonLink href="/students">Mở hồ sơ học sinh</ButtonLink>
@@ -308,7 +393,16 @@ export default function ScoreGradebookPage() {
 
       <ScoreImportPreview
         open={showImportPreview && Boolean(importPreviewData)}
-        previewData={importPreviewData ?? { importId: "", totalRecords: 0, validRecords: 0, invalidRecords: 0, rows: [], issues: [] }}
+        previewData={
+          importPreviewData ?? {
+            importId: "",
+            totalRecords: 0,
+            validRecords: 0,
+            invalidRecords: 0,
+            rows: [],
+            issues: [],
+          }
+        }
         onImportComplete={handleImportFromPreview}
         onCancel={handleCloseImportPreview}
       />
@@ -371,7 +465,9 @@ export default function ScoreGradebookPage() {
 
         <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
           <div className="grid gap-1.5">
-            <label className="text-sm font-semibold text-slate-700">Tìm học sinh</label>
+            <label className="text-sm font-semibold text-slate-700">
+              Tìm học sinh
+            </label>
             <input
               value={studentKeyword}
               onChange={(event) => setStudentKeyword(event.target.value)}
@@ -381,11 +477,19 @@ export default function ScoreGradebookPage() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button tone="secondary" onClick={handleSubmitScores} disabled={!selectedExamId || isLoading}>
+            <Button
+              tone="secondary"
+              onClick={handleSubmitScores}
+              disabled={!selectedExamId || isLoading}
+            >
               Submit
             </Button>
             {isAdmin ? (
-              <Button tone="primary" onClick={handlePublishScores} disabled={!selectedExamId || isLoading}>
+              <Button
+                tone="primary"
+                onClick={handlePublishScores}
+                disabled={!selectedExamId || isLoading}
+              >
                 Publish
               </Button>
             ) : null}
@@ -394,31 +498,53 @@ export default function ScoreGradebookPage() {
 
         <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
           <div className="grid gap-1.5">
-            <label className="text-sm font-semibold text-slate-700">Trạng thái điểm</label>
-            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="h-10 rounded-xl border border-slate-200 px-3 text-sm">
+            <label className="text-sm font-semibold text-slate-700">
+              Trạng thái điểm
+            </label>
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+              className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
+            >
               <option value="all">Tất cả</option>
               {scoreStatusOptions.map((value) => (
-                <option key={`score-status-${value}`} value={value}>{value}</option>
+                <option key={`score-status-${value}`} value={value}>
+                  {value}
+                </option>
               ))}
             </select>
           </div>
 
           <div className="grid gap-1.5">
-            <label className="text-sm font-semibold text-slate-700">Giáo viên</label>
-            <select value={teacherFilter} onChange={(event) => setTeacherFilter(event.target.value)} className="h-10 rounded-xl border border-slate-200 px-3 text-sm">
+            <label className="text-sm font-semibold text-slate-700">
+              Giáo viên
+            </label>
+            <select
+              value={teacherFilter}
+              onChange={(event) => setTeacherFilter(event.target.value)}
+              className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
+            >
               <option value="all">Tất cả</option>
               {teacherOptions.map((value) => (
-                <option key={`teacher-${value}`} value={value}>{value}</option>
+                <option key={`teacher-${value}`} value={value}>
+                  {value}
+                </option>
               ))}
             </select>
           </div>
 
           <div className="grid gap-1.5">
             <label className="text-sm font-semibold text-slate-700">Lớp</label>
-            <select value={classFilter} onChange={(event) => setClassFilter(event.target.value)} className="h-10 rounded-xl border border-slate-200 px-3 text-sm">
+            <select
+              value={classFilter}
+              onChange={(event) => setClassFilter(event.target.value)}
+              className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
+            >
               <option value="all">Tất cả</option>
               {classOptions.map((value) => (
-                <option key={`class-${value}`} value={value}>{value}</option>
+                <option key={`class-${value}`} value={value}>
+                  {value}
+                </option>
               ))}
             </select>
           </div>
@@ -451,7 +577,11 @@ export default function ScoreGradebookPage() {
         </div>
 
         <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
-          Kết quả: <span className="font-semibold text-slate-900">{filteredScores.length}</span> / {scores.length} bản ghi điểm.
+          Kết quả:{" "}
+          <span className="font-semibold text-slate-900">
+            {filteredScores.length}
+          </span>{" "}
+          / {scores.length} bản ghi điểm.
         </div>
       </Panel>
 
@@ -466,22 +596,26 @@ export default function ScoreGradebookPage() {
                   <tr>
                     <th className="px-4 py-3 text-left">Học sinh</th>
                     <th className="px-4 py-3 text-left">Lớp</th>
-                    <th className="hidden lg:table-cell px-4 py-3 text-left">Loại điểm</th>
+                    <th className="px-4 py-3 text-left">Loại điểm</th>
                     <th className="px-4 py-3 text-left">Giá trị</th>
                     <th className="px-4 py-3 text-left">Trạng thái</th>
-                    <th className="hidden lg:table-cell px-4 py-3 text-left">Giáo viên</th>
-                    {isAdmin ? <th className="px-4 py-3 text-left">Duyệt</th> : null}
+                    <th className="px-4 py-3 text-left">Giáo viên</th>
+                    {isAdmin ? (
+                      <th className="px-4 py-3 text-left">Duyệt</th>
+                    ) : null}
                   </tr>
                 </thead>
                 <tbody>
                   {filteredScores.map((score) => (
-                    <tr key={score.scoreId} className="border-t border-slate-100">
+                    <tr
+                      key={score.scoreId}
+                      className="border-t border-slate-100"
+                    >
                       <td className="px-4 py-3">
-                        <p className="font-medium">{score.studentName}</p>
-                        <p className="text-xs text-slate-500">{score.studentCode}</p>
+                        {score.studentName} ({score.studentCode})
                       </td>
                       <td className="px-4 py-3">{score.classCode}</td>
-                      <td className="hidden lg:table-cell px-4 py-3">{score.examType}</td>
+                      <td className="px-4 py-3">{score.examType}</td>
                       <td className="px-4 py-3">
                         <input
                           type="number"
@@ -490,19 +624,27 @@ export default function ScoreGradebookPage() {
                           step={0.1}
                           defaultValue={score.scoreValue ?? 0}
                           disabled={!score.editable}
-                          onBlur={(event) => void handleQuickUpdate(score, event.target.value)}
-                          className="h-9 w-20 rounded-lg border border-slate-200 px-2"
+                          onBlur={(event) =>
+                            void handleQuickUpdate(score, event.target.value)
+                          }
+                          className="h-9 w-24 rounded-lg border border-slate-200 px-2"
                         />
                       </td>
                       <td className="px-4 py-3">{score.status}</td>
-                      <td className="hidden lg:table-cell px-4 py-3">{score.teacherName}</td>
+                      <td className="px-4 py-3">{score.teacherName}</td>
                       {isAdmin ? (
                         <td className="px-4 py-3">
                           <Button
                             tone="secondary"
                             className="h-8 px-3 text-xs"
-                            onClick={() => void handleApproveScore(score.scoreId)}
-                            disabled={score.status === "APPROVED" || score.status === "PUBLISHED" || score.status === "LOCKED"}
+                            onClick={() =>
+                              void handleApproveScore(score.scoreId)
+                            }
+                            disabled={
+                              score.status === "APPROVED" ||
+                              score.status === "PUBLISHED" ||
+                              score.status === "LOCKED"
+                            }
                           >
                             Approve
                           </Button>
@@ -512,7 +654,10 @@ export default function ScoreGradebookPage() {
                   ))}
                   {filteredScores.length === 0 ? (
                     <tr>
-                      <td className="px-4 py-6 text-slate-500" colSpan={isAdmin ? 7 : 6}>
+                      <td
+                        className="px-4 py-6 text-slate-500"
+                        colSpan={isAdmin ? 7 : 6}
+                      >
                         {selectedExam
                           ? scores.length === 0
                             ? "Không có dữ liệu điểm cho bài kiểm tra đã chọn"
@@ -536,25 +681,46 @@ export default function ScoreGradebookPage() {
                 </div>
               ) : (
                 filteredScores.map((score) => (
-                  <div key={`mobile-${score.scoreId}`} className="rounded-xl border border-slate-200 bg-white p-4">
-                    <p className="text-sm font-semibold text-slate-900">{score.studentName}</p>
-                    <p className="text-xs text-slate-500">{score.studentCode} • {score.classCode}</p>
+                  <div
+                    key={`mobile-${score.scoreId}`}
+                    className="rounded-xl border border-slate-200 bg-white p-4"
+                  >
+                    <p className="text-sm font-semibold text-slate-900">
+                      {score.studentName}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {score.studentCode} • {score.classCode}
+                    </p>
 
                     <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
                       <div>
-                        <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Loại điểm</p>
-                        <p className="font-medium text-slate-800">{score.examType}</p>
+                        <p className="text-xs uppercase tracking-[0.08em] text-slate-500">
+                          Loại điểm
+                        </p>
+                        <p className="font-medium text-slate-800">
+                          {score.examType}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Trạng thái</p>
-                        <p className="font-medium text-slate-800">{score.status}</p>
+                        <p className="text-xs uppercase tracking-[0.08em] text-slate-500">
+                          Trạng thái
+                        </p>
+                        <p className="font-medium text-slate-800">
+                          {score.status}
+                        </p>
                       </div>
                       <div className="col-span-2">
-                        <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Giáo viên</p>
-                        <p className="font-medium text-slate-800">{score.teacherName}</p>
+                        <p className="text-xs uppercase tracking-[0.08em] text-slate-500">
+                          Giáo viên
+                        </p>
+                        <p className="font-medium text-slate-800">
+                          {score.teacherName}
+                        </p>
                       </div>
                       <div className="col-span-2">
-                        <p className="mb-1 text-xs uppercase tracking-[0.08em] text-slate-500">Giá trị</p>
+                        <p className="mb-1 text-xs uppercase tracking-[0.08em] text-slate-500">
+                          Giá trị
+                        </p>
                         <input
                           type="number"
                           min={0}
@@ -562,7 +728,9 @@ export default function ScoreGradebookPage() {
                           step={0.1}
                           defaultValue={score.scoreValue ?? 0}
                           disabled={!score.editable}
-                          onBlur={(event) => void handleQuickUpdate(score, event.target.value)}
+                          onBlur={(event) =>
+                            void handleQuickUpdate(score, event.target.value)
+                          }
                           className="h-9 w-full rounded-lg border border-slate-200 px-3"
                         />
                       </div>
@@ -574,7 +742,11 @@ export default function ScoreGradebookPage() {
                           tone="secondary"
                           className="h-8 px-3 text-xs"
                           onClick={() => void handleApproveScore(score.scoreId)}
-                          disabled={score.status === "APPROVED" || score.status === "PUBLISHED" || score.status === "LOCKED"}
+                          disabled={
+                            score.status === "APPROVED" ||
+                            score.status === "PUBLISHED" ||
+                            score.status === "LOCKED"
+                          }
                         >
                           Approve
                         </Button>

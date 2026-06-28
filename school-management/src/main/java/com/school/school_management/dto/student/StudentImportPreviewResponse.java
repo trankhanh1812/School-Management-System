@@ -80,6 +80,9 @@ public class StudentImportPreviewResponse {
         @JsonProperty("enrollment_date")
         private String enrollmentDate;
 
+        @JsonProperty("national_id")
+        private String nationalId;
+
         @JsonProperty("has_errors")
         private Boolean hasErrors;
 

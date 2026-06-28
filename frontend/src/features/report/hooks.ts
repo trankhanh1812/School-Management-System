@@ -698,34 +698,105 @@ function buildSnapshot(payload: {
   };
 }
 
+const CACHE_KEY = "edu_analytics_snapshot_v1";
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+type CachedSnapshot = {
+  snapshot: EducationAnalyticsSnapshot;
+  cachedAt: number;
+};
+
+function readCache(): EducationAnalyticsSnapshot | null {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as CachedSnapshot;
+    if (Date.now() - parsed.cachedAt > CACHE_TTL_MS) {
+      sessionStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+    return parsed.snapshot;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(snapshot: EducationAnalyticsSnapshot) {
+  try {
+    const payload: CachedSnapshot = { snapshot, cachedAt: Date.now() };
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify(payload));
+  } catch {
+    // sessionStorage quota exceeded — ignore
+  }
+}
+
+function clearCache() {
+  try {
+    sessionStorage.removeItem(CACHE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 export function useEducationAnalytics() {
-  const [snapshot, setSnapshot] = useState<EducationAnalyticsSnapshot>(emptySnapshot());
-  const [isLoading, setIsLoading] = useState(true);
+  const cached = useMemo(() => readCache(), []);
+
+  const [snapshot, setSnapshot] = useState<EducationAnalyticsSnapshot>(
+    cached ?? emptySnapshot(),
+  );
+  // Always start as not-loading — load is triggered explicitly via triggerLoad/refresh
+  const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // hasLoaded = true means we already have data (from cache or a completed fetch)
+  const [hasLoaded, setHasLoaded] = useState(Boolean(cached));
 
   const load = useCallback(async (isManualRefresh = false) => {
     if (isManualRefresh) {
       setIsRefreshing(true);
+      clearCache();
     } else {
       setIsLoading(true);
     }
     setError(null);
+    setHasLoaded(true);
 
     try {
+      // Phase 1: lightweight — students, teachers, classes (render metrics fast)
+      const [studentResult, teacherResult, classResult] =
+        await Promise.allSettled([
+          studentApi.list({ scope: "all" }),
+          teacherApi.list(),
+          classroomApi.list({ scope: "all" }),
+        ]);
+
+      const students = mapStudents(settleData(studentResult, []));
+      const teachers = mapTeachers(settleData(teacherResult, []));
+      const classes = mapClasses(settleData(classResult, []));
+
+      // Render partial snapshot immediately so metrics appear fast
+      setSnapshot(
+        buildSnapshot({
+          students,
+          teachers,
+          classes,
+          subjects: [],
+          assignments: [],
+          scores: [],
+          attendance: [],
+          exams: [],
+        }),
+      );
+      setIsLoading(false);
+
+      // Priority 2: heavier data — scores, exams, attendance, assignments, subjects
       const [
-        studentResult,
-        teacherResult,
-        classResult,
         subjectResult,
         assignmentResult,
         scoreResult,
         attendanceResult,
         examResult,
       ] = await Promise.allSettled([
-        studentApi.list({ scope: "all" }),
-        teacherApi.list(),
-        classroomApi.list({ scope: "all" }),
         subjectApi.list(),
         teachingApi.list(),
         scoreApi.list(),
@@ -733,27 +804,25 @@ export function useEducationAnalytics() {
         examApi.list(),
       ]);
 
-      const students = mapStudents(settleData(studentResult, []));
-      const teachers = mapTeachers(settleData(teacherResult, []));
-      const classes = mapClasses(settleData(classResult, []));
       const subjects = mapSubjects(settleData(subjectResult, []));
       const assignments = mapAssignments(settleData(assignmentResult, []));
       const scores = mapScores(settleData(scoreResult, []));
       const attendance = mapAttendance(settleData(attendanceResult, []));
       const exams = mapExams(settleData(examResult, []));
 
-      setSnapshot(
-        buildSnapshot({
-          students,
-          teachers,
-          classes,
-          subjects,
-          assignments,
-          scores,
-          attendance,
-          exams,
-        }),
-      );
+      const fullSnapshot = buildSnapshot({
+        students,
+        teachers,
+        classes,
+        subjects,
+        assignments,
+        scores,
+        attendance,
+        exams,
+      });
+
+      setSnapshot(fullSnapshot);
+      writeCache(fullSnapshot);
 
       const rejectedCount = [
         studentResult,
@@ -767,10 +836,16 @@ export function useEducationAnalytics() {
       ].filter((item) => item.status === "rejected").length;
 
       if (rejectedCount > 0) {
-        setError(`Mot so nguon du lieu khong truy cap duoc (${rejectedCount}/8). He thong da hien thi phan du lieu co san.`);
+        setError(
+          `Một số nguồn dữ liệu không truy cập được (${rejectedCount}/8). Hệ thống đã hiển thị phần dữ liệu có sẵn.`,
+        );
       }
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Khong tai duoc dashboard bao cao");
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : "Không tải được dữ liệu dashboard",
+      );
       setSnapshot(emptySnapshot());
     } finally {
       setIsLoading(false);
@@ -778,18 +853,25 @@ export function useEducationAnalytics() {
     }
   }, []);
 
-  useEffect(() => {
-    void load(false);
-  }, [load]);
+  // Do NOT auto-load on mount — let the page decide when to trigger
+  // (page calls triggerLoad on first render if desired)
+
+  const triggerLoad = useCallback(() => {
+    if (!hasLoaded) {
+      void load(false);
+    }
+  }, [hasLoaded, load]);
 
   return useMemo(
     () => ({
       snapshot,
       isLoading,
       isRefreshing,
+      hasLoaded,
       error,
       refresh: () => load(true),
+      triggerLoad,
     }),
-    [error, isLoading, isRefreshing, load, snapshot],
+    [error, hasLoaded, isLoading, isRefreshing, load, snapshot, triggerLoad],
   );
 }

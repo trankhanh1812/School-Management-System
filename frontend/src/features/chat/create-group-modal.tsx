@@ -1,390 +1,318 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import chatApi from "@/features/chat/api";
-import { classroomApi } from "@/features/classroom/api";
-import { teachingApi } from "@/features/teaching/api";
 import { useAuthSession } from "@/hooks/use-auth-session";
+import { classroomApi } from "@/features/classroom/api";
+import chatApi from "./api";
+import { Button } from "@/shared/ui/button";
+import { Modal } from "@/shared/ui/modal";
 
 interface CreateGroupModalProps {
   onClose: () => void;
   onSuccess: () => void;
 }
 
-// ─── Types allowed per role ────────────────────────────────────────────────────
-
 type GroupTypeOption = {
   value: string;
   label: string;
   description: string;
+  /** Whether this type auto-adds members (shows sub-options) */
+  autoAdd: boolean;
 };
 
-function getAllowedGroupTypes(
-  role: string,
-  departmentLevel?: number,
-): GroupTypeOption[] {
+function getGroupTypeOptions(role: string, departmentLevel?: number): GroupTypeOption[] {
+  const custom: GroupTypeOption = {
+    value: "CUSTOM_GROUP",
+    label: "Nhóm tùy chỉnh",
+    description: "Nhóm tự do, thêm thành viên bất kỳ sau khi tạo",
+    autoAdd: false,
+  };
+  const subjectClass: GroupTypeOption = {
+    value: "SUBJECT_CLASS_GROUP",
+    label: "Nhóm môn-lớp",
+    description: "Nhóm cho môn học bạn đang dạy — thêm thành viên sau khi tạo",
+    autoAdd: false,
+  };
+
   if (role === "ADMIN") {
     return [
-      {
-        value: "ROLE_GROUP",
-        label: "Nhóm toàn bộ giáo viên",
-        description: "Tất cả giáo viên trong trường",
-      },
-      {
-        value: "ROLE_GROUP_PARENT",
-        label: "Nhóm toàn bộ phụ huynh",
-        description: "Tất cả phụ huynh trong trường",
-      },
+      { value: "ROLE_GROUP", label: "Nhóm theo vai trò", description: "Tự động thêm toàn bộ giáo viên hoặc phụ huynh trong trường", autoAdd: true },
+      { value: "DEPARTMENT_GROUP", label: "Nhóm tổ chuyên môn", description: "Tự động thêm toàn bộ giáo viên trong một tổ bộ môn", autoAdd: true },
+      { value: "CLASS_GROUP", label: "Nhóm lớp", description: "Tự động thêm học sinh hoặc phụ huynh của một lớp", autoAdd: true },
+      subjectClass,
+      custom,
     ];
   }
 
   if (role === "TEACHER") {
-    const types: GroupTypeOption[] = [];
-
-    // Department Head / Vice Head only
+    const opts: GroupTypeOption[] = [];
     if (departmentLevel === 1 || departmentLevel === 2) {
-      types.push({
-        value: "DEPARTMENT_GROUP",
-        label: "Nhóm tổ chuyên môn",
-        description: "Toàn bộ giáo viên trong bộ môn của bạn",
-      });
+      opts.push({ value: "DEPARTMENT_GROUP", label: "Nhóm tổ chuyên môn", description: "Tự động thêm toàn bộ giáo viên trong tổ bộ môn của bạn", autoAdd: true });
     }
-
-    // All teachers — homeroom class group
-    types.push({
-      value: "CLASS_GROUP",
-      label: "Nhóm lớp chủ nhiệm",
-      description: "Lớp chủ nhiệm + phụ huynh của lớp",
-    });
-
-    // All teachers — subject-class group
-    types.push({
-      value: "SUBJECT_CLASS_GROUP",
-      label: "Nhóm môn học – lớp",
-      description: "Giáo viên dạy môn + học sinh của lớp đó",
-    });
-
-    return types;
+    opts.push(
+      { value: "CLASS_GROUP", label: "Nhóm lớp chủ nhiệm", description: "Tự động thêm học sinh hoặc phụ huynh của lớp bạn chủ nhiệm", autoAdd: true },
+      subjectClass,
+      custom,
+    );
+    return opts;
   }
 
-  // STUDENT / PARENT: cannot create groups
   return [];
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
-export default function CreateGroupModal({
-  onClose,
-  onSuccess,
-}: CreateGroupModalProps) {
+export default function CreateGroupModal({ onClose, onSuccess }: CreateGroupModalProps) {
   const { session } = useAuthSession();
-  const role = session?.user.role ?? "STUDENT";
+  const role = session?.user.role ?? "";
   const departmentLevel = session?.user.departmentLevel;
   const departmentCode = session?.user.departmentCode;
 
-  const allowedTypes = getAllowedGroupTypes(role, departmentLevel);
+  const typeOptions = getGroupTypeOptions(role, departmentLevel);
 
   const [loading, setLoading] = useState(false);
-  const [loadingContext, setLoadingContext] = useState(false);
   const [error, setError] = useState("");
-
   const [groupName, setGroupName] = useState("");
-  const [groupType, setGroupType] = useState(allowedTypes[0]?.value ?? "");
+  const [groupType, setGroupType] = useState(typeOptions[0]?.value ?? "CUSTOM_GROUP");
   const [description, setDescription] = useState("");
 
-  // Context selectors depending on group type
-  const [classOptions, setClassOptions] = useState<{ code: string; name: string }[]>([]);
-  const [subjectOptions, setSubjectOptions] = useState<{ code: string; name: string; classCode: string }[]>([]);
+  // Sub-options for auto-add types
+  const [roleScope, setRoleScope] = useState<"ROLE_GROUP_TEACHER" | "ROLE_GROUP_PARENT">("ROLE_GROUP_TEACHER");
+  const [classScope, setClassScope] = useState<"HOMEROOM_CLASS_GROUP_STUDENT" | "HOMEROOM_CLASS_GROUP_PARENT">("HOMEROOM_CLASS_GROUP_STUDENT");
   const [selectedClassCode, setSelectedClassCode] = useState("");
-  const [selectedSubjectKey, setSelectedSubjectKey] = useState(""); // "subjectCode|classCode"
+  const [selectedDeptCode, setSelectedDeptCode] = useState(departmentCode ?? "");
+  const [classOptions, setClassOptions] = useState<{ value: string; label: string }[]>([]);
+  const [loadingClasses, setLoadingClasses] = useState(false);
 
-  // Load context data when groupType changes
+  const selectedOption = typeOptions.find((o) => o.value === groupType);
+  const isAutoAdd = selectedOption?.autoAdd ?? false;
+
+  // Load class list when CLASS_GROUP is selected
   useEffect(() => {
-    if (!groupType) return;
-    setSelectedClassCode("");
-    setSelectedSubjectKey("");
-    setClassOptions([]);
-    setSubjectOptions([]);
-
-    if (groupType === "CLASS_GROUP") {
-      // Load homeroom classes for this teacher
-      setLoadingContext(true);
-      classroomApi
-        .list({ scope: "current" })
-        .then((res) => {
-          const all = res.data ?? [];
-          // Filter to classes where this teacher is homeroom
-          const homeroom = all.filter(
-            (c) =>
-              c.homeroomTeacher &&
-              session?.user.fullName &&
-              c.homeroomTeacher
-                .toLowerCase()
-                .includes(session.user.fullName.toLowerCase()),
-          );
-          // If no homeroom match, show all (admin or fallback)
-          const list = homeroom.length > 0 ? homeroom : all;
-          setClassOptions(
-            list.map((c) => ({
-              code: c.classCode ?? "",
-              name: c.className ?? c.classCode ?? "",
-            })),
-          );
-          if (list[0]?.classCode) setSelectedClassCode(list[0].classCode);
-        })
-        .catch(() => {/* ignore */})
-        .finally(() => setLoadingContext(false));
-    }
-
-    if (groupType === "SUBJECT_CLASS_GROUP") {
-      // Load teacher's own assignments
-      setLoadingContext(true);
-      teachingApi
-        .listMine()
-        .then((res) => {
-          const assignments = res.data ?? [];
-          const opts = assignments
-            .filter((a) => a.subjectCode && a.classCode)
-            .map((a) => ({
-              code: a.subjectCode ?? "",
-              name: a.subjectName ?? a.subjectCode ?? "",
-              classCode: a.classCode ?? "",
-            }));
-          setSubjectOptions(opts);
-          if (opts[0]) {
-            setSelectedSubjectKey(`${opts[0].code}|${opts[0].classCode}`);
-          }
-        })
-        .catch(() => {/* ignore */})
-        .finally(() => setLoadingContext(false));
-    }
-  }, [groupType, session?.user.fullName]);
-
-  // STUDENT / PARENT: show blocked message
-  if (allowedTypes.length === 0) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-        <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl mx-4">
-          <h2 className="text-base font-bold text-slate-900">Không có quyền tạo nhóm</h2>
-          <p className="mt-2 text-sm text-slate-600">
-            Học sinh và phụ huynh chỉ có thể tham gia các nhóm được tạo bởi giáo viên hoặc quản trị viên.
-          </p>
-          <button
-            type="button"
-            onClick={onClose}
-            className="mt-4 w-full rounded-xl border border-slate-200 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition"
-          >
-            Đóng
-          </button>
-        </div>
-      </div>
-    );
-  }
+    if (groupType !== "CLASS_GROUP") return;
+    if (classOptions.length > 0) return;
+    setLoadingClasses(true);
+    classroomApi.list({ scope: "all", limit: 500 })
+      .then((res) => {
+        const opts = (res.data ?? [])
+          .filter((r) => r.classCode)
+          .map((r) => ({
+            value: r.classCode!,
+            label: `${r.classCode}${r.className && r.className !== r.classCode ? ` — ${r.className}` : ""}${r.academicYear ? ` (${r.academicYear})` : ""}`,
+          }));
+        setClassOptions(opts);
+        if (opts.length > 0 && !selectedClassCode) setSelectedClassCode(opts[0].value);
+      })
+      .catch(() => {})
+      .finally(() => setLoadingClasses(false));
+  }, [groupType]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!groupName.trim()) return;
     setError("");
-
-    if (!groupName.trim()) {
-      setError("Vui lòng nhập tên nhóm.");
-      return;
-    }
-
-    // Build payload based on group type
-    let scope = "";
-    let classCode: string | undefined;
-    let subjectCode: string | undefined;
-    let classMemberCode: string | undefined;
-
-    if (groupType === "ROLE_GROUP") {
-      scope = "role_group_teacher";
-    } else if (groupType === "ROLE_GROUP_PARENT") {
-      scope = "role_group_parent";
-    } else if (groupType === "DEPARTMENT_GROUP") {
-      scope = `department_group_${departmentCode ?? ""}`;
-    } else if (groupType === "CLASS_GROUP") {
-      if (!selectedClassCode) {
-        setError("Vui lòng chọn lớp chủ nhiệm.");
-        return;
-      }
-      scope = `homeroom_class_group_${selectedClassCode}`;
-      classCode = selectedClassCode;
-    } else if (groupType === "SUBJECT_CLASS_GROUP") {
-      if (!selectedSubjectKey) {
-        setError("Vui lòng chọn môn học và lớp.");
-        return;
-      }
-      const [sc, cc] = selectedSubjectKey.split("|");
-      scope = `subject_class_group_${sc}_${cc}`;
-      subjectCode = sc;
-      classMemberCode = cc;
-    }
-
-    // Normalize groupType for ROLE_GROUP_PARENT → backend expects ROLE_GROUP
-    const backendGroupType =
-      groupType === "ROLE_GROUP_PARENT" ? "ROLE_GROUP" : groupType;
-
     setLoading(true);
+
     try {
-      await chatApi.createGroup({
+      // Determine scope string for backend
+      let scope = "custom";
+      if (groupType === "ROLE_GROUP") scope = roleScope.toLowerCase();
+      else if (groupType === "DEPARTMENT_GROUP") scope = "department_group";
+      else if (groupType === "CLASS_GROUP") scope = classScope.toLowerCase();
+      else if (groupType === "SUBJECT_CLASS_GROUP") scope = "subject_class_group";
+
+      const group = await chatApi.createGroup({
         groupName: groupName.trim(),
-        groupType: backendGroupType,
+        groupType,
         scope,
         description: description.trim() || undefined,
-        classId: classCode,
-        subjectId: subjectCode,
-        departmentId: departmentCode,
       });
+
+      if (!group?.id) throw new Error("Không nhận được ID nhóm từ server");
+
+      // Auto-add members for applicable types
+      if (isAutoAdd) {
+        let autoScope = "";
+        let deptCode: string | undefined;
+        let classCode: string | undefined;
+
+        if (groupType === "ROLE_GROUP") {
+          autoScope = roleScope;
+        } else if (groupType === "DEPARTMENT_GROUP") {
+          autoScope = "DEPARTMENT_GROUP";
+          deptCode = selectedDeptCode || departmentCode;
+        } else if (groupType === "CLASS_GROUP") {
+          autoScope = classScope;
+          classCode = selectedClassCode;
+        }
+
+        if (autoScope) {
+          await chatApi.autoAddMembers(group.id, autoScope, deptCode, classCode);
+        }
+      }
+
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Không thể tạo nhóm. Vui lòng thử lại.");
+      setError(err instanceof Error ? err.message : "Không thể tạo nhóm");
     } finally {
       setLoading(false);
     }
   };
 
-  const selectedTypeInfo = allowedTypes.find((t) => t.value === groupType);
+  if (typeOptions.length === 0) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-xl mx-4">
-        {/* Header */}
-        <div className="border-b border-slate-200 px-6 py-4">
-          <h2 className="text-base font-bold text-slate-900">Tạo nhóm chat mới</h2>
-          <p className="mt-0.5 text-xs text-slate-500">
-            Chỉ hiển thị các loại nhóm bạn có quyền tạo.
-          </p>
+    <Modal
+      open
+      title="Tạo nhóm chat mới"
+      onClose={onClose}
+      footer={
+        <>
+          <Button tone="ghost" onClick={onClose} disabled={loading}>Hủy</Button>
+          <Button onClick={(e) => void handleSubmit(e as unknown as React.FormEvent)} disabled={loading || !groupName.trim()}>
+            {loading ? "Đang tạo..." : "Tạo nhóm"}
+          </Button>
+        </>
+      }
+    >
+      <form onSubmit={(e) => void handleSubmit(e)} className="grid gap-4">
+        {error ? (
+          <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>
+        ) : null}
+
+        {/* Tên nhóm */}
+        <div className="grid gap-1.5">
+          <label className="text-sm font-semibold text-slate-700">
+            Tên nhóm <span className="text-rose-500">*</span>
+          </label>
+          <input
+            type="text"
+            value={groupName}
+            onChange={(e) => setGroupName(e.target.value)}
+            required
+            autoFocus
+            placeholder="Nhập tên nhóm..."
+            className="h-10 rounded-xl border border-slate-200 px-3 text-sm focus:border-sky-400 focus:outline-none"
+          />
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
+        {/* Loại nhóm */}
+        <div className="grid gap-1.5">
+          <label className="text-sm font-semibold text-slate-700">
+            Loại nhóm <span className="text-rose-500">*</span>
+          </label>
+          <div className="grid gap-2">
+            {typeOptions.map((opt) => (
+              <label
+                key={opt.value}
+                className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition ${
+                  groupType === opt.value
+                    ? "border-sky-300 bg-sky-50"
+                    : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="groupType"
+                  value={opt.value}
+                  checked={groupType === opt.value}
+                  onChange={() => setGroupType(opt.value)}
+                  className="mt-0.5 h-4 w-4 accent-sky-600"
+                />
+                <div>
+                  <p className="text-sm font-medium text-slate-900">{opt.label}</p>
+                  <p className="text-xs text-slate-500">{opt.description}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>
 
-          {/* Group type */}
-          <div className="grid gap-1.5">
-            <label className="text-sm font-semibold text-slate-700">Loại nhóm *</label>
-            <select
-              value={groupType}
-              onChange={(e) => setGroupType(e.target.value)}
-              className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
-            >
-              {allowedTypes.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
+        {/* Sub-options: ROLE_GROUP */}
+        {groupType === "ROLE_GROUP" ? (
+          <div className="grid gap-1.5 rounded-xl border border-sky-100 bg-sky-50/60 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-sky-700">Thêm ai vào nhóm?</p>
+            <div className="flex gap-4">
+              {(["ROLE_GROUP_TEACHER", "ROLE_GROUP_PARENT"] as const).map((s) => (
+                <label key={s} className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="roleScope"
+                    value={s}
+                    checked={roleScope === s}
+                    onChange={() => setRoleScope(s)}
+                    className="h-4 w-4 accent-sky-600"
+                  />
+                  {s === "ROLE_GROUP_TEACHER" ? "Toàn bộ giáo viên" : "Toàn bộ phụ huynh"}
+                </label>
               ))}
-            </select>
-            {selectedTypeInfo && (
-              <p className="text-xs text-slate-500">{selectedTypeInfo.description}</p>
-            )}
+            </div>
           </div>
+        ) : null}
 
-          {/* Context selector: CLASS_GROUP → pick homeroom class */}
-          {groupType === "CLASS_GROUP" && (
-            <div className="grid gap-1.5">
-              <label className="text-sm font-semibold text-slate-700">Lớp chủ nhiệm *</label>
-              {loadingContext ? (
-                <p className="text-xs text-slate-500">Đang tải danh sách lớp...</p>
-              ) : classOptions.length === 0 ? (
-                <p className="text-xs text-amber-700 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2">
-                  Không tìm thấy lớp chủ nhiệm. Bạn cần được phân công làm GVCN để tạo loại nhóm này.
-                </p>
-              ) : (
-                <select
-                  value={selectedClassCode}
-                  onChange={(e) => setSelectedClassCode(e.target.value)}
-                  className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
-                >
-                  {classOptions.map((c) => (
-                    <option key={c.code} value={c.code}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-          )}
-
-          {/* Context selector: SUBJECT_CLASS_GROUP → pick subject + class */}
-          {groupType === "SUBJECT_CLASS_GROUP" && (
-            <div className="grid gap-1.5">
-              <label className="text-sm font-semibold text-slate-700">Môn học – Lớp *</label>
-              {loadingContext ? (
-                <p className="text-xs text-slate-500">Đang tải phân công giảng dạy...</p>
-              ) : subjectOptions.length === 0 ? (
-                <p className="text-xs text-amber-700 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2">
-                  Không tìm thấy phân công giảng dạy. Bạn cần được phân công dạy môn để tạo loại nhóm này.
-                </p>
-              ) : (
-                <select
-                  value={selectedSubjectKey}
-                  onChange={(e) => setSelectedSubjectKey(e.target.value)}
-                  className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
-                >
-                  {subjectOptions.map((s) => (
-                    <option key={`${s.code}|${s.classCode}`} value={`${s.code}|${s.classCode}`}>
-                      {s.name} – {s.classCode}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-          )}
-
-          {/* DEPARTMENT_GROUP: show which department */}
-          {groupType === "DEPARTMENT_GROUP" && departmentCode && (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
-              Bộ môn: <span className="font-semibold">{departmentCode}</span>
-            </div>
-          )}
-
-          {/* Group name */}
-          <div className="grid gap-1.5">
-            <label className="text-sm font-semibold text-slate-700">Tên nhóm *</label>
+        {/* Sub-options: DEPARTMENT_GROUP (ADMIN only — teacher uses own dept) */}
+        {groupType === "DEPARTMENT_GROUP" && role === "ADMIN" ? (
+          <div className="grid gap-1.5 rounded-xl border border-sky-100 bg-sky-50/60 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-sky-700">Mã tổ bộ môn</p>
             <input
-              type="text"
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-              required
-              placeholder="Nhập tên nhóm"
-              className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
+              value={selectedDeptCode}
+              onChange={(e) => setSelectedDeptCode(e.target.value)}
+              placeholder="Ví dụ: TOAN, LY, HOA..."
+              className="h-9 rounded-lg border border-slate-200 px-3 text-sm focus:border-sky-400 focus:outline-none"
             />
           </div>
+        ) : null}
 
-          {/* Description */}
-          <div className="grid gap-1.5">
-            <label className="text-sm font-semibold text-slate-700">Mô tả (tuỳ chọn)</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={2}
-              placeholder="Mô tả mục đích nhóm"
-              className="rounded-xl border border-slate-200 px-3 py-2 text-sm resize-none"
-            />
+        {/* Sub-options: CLASS_GROUP */}
+        {groupType === "CLASS_GROUP" ? (
+          <div className="grid gap-3 rounded-xl border border-sky-100 bg-sky-50/60 p-3">
+            <div className="grid gap-1.5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-sky-700">Thêm ai vào nhóm?</p>
+              <div className="flex gap-4">
+                {(["HOMEROOM_CLASS_GROUP_STUDENT", "HOMEROOM_CLASS_GROUP_PARENT"] as const).map((s) => (
+                  <label key={s} className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="classScope"
+                      value={s}
+                      checked={classScope === s}
+                      onChange={() => setClassScope(s)}
+                      className="h-4 w-4 accent-sky-600"
+                    />
+                    {s === "HOMEROOM_CLASS_GROUP_STUDENT" ? "Học sinh" : "Phụ huynh"}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="grid gap-1.5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-sky-700">Lớp học</p>
+              <select
+                value={selectedClassCode}
+                onChange={(e) => setSelectedClassCode(e.target.value)}
+                disabled={loadingClasses}
+                className="h-9 rounded-lg border border-slate-200 px-2 text-sm focus:border-sky-400 focus:outline-none"
+              >
+                <option value="">{loadingClasses ? "Đang tải..." : "Chọn lớp"}</option>
+                {classOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
+        ) : null}
 
-          {/* Actions */}
-          <div className="flex gap-2 pt-2 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 rounded-xl border border-slate-200 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition"
-            >
-              Hủy
-            </button>
-            <button
-              type="submit"
-              disabled={loading || !groupName.trim() || loadingContext}
-              className="flex-1 rounded-xl bg-sky-600 py-2.5 text-sm font-semibold text-white hover:bg-sky-700 transition disabled:opacity-50"
-            >
-              {loading ? "Đang tạo..." : "Tạo nhóm"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        {/* Mô tả */}
+        <div className="grid gap-1.5">
+          <label className="text-sm font-semibold text-slate-700">
+            Mô tả <span className="text-slate-400 font-normal">(tuỳ chọn)</span>
+          </label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={2}
+            placeholder="Mô tả mục đích nhóm..."
+            className="rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none resize-none"
+          />
+        </div>
+      </form>
+    </Modal>
   );
 }

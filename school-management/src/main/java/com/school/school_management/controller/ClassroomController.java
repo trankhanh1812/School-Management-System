@@ -7,9 +7,9 @@ import com.school.school_management.dto.classroom.ClassroomResponse;
 import com.school.school_management.dto.classroom.ClassroomUpsertRequest;
 import com.school.school_management.dto.classroom.PromotionImportPreviewResponse;
 import com.school.school_management.dto.classroom.PromotionPlanResponse;
-import jakarta.validation.Valid;
 import com.school.school_management.service.classroom.ClassroomService;
 import com.school.school_management.service.classroom.PromotionImportService;
+import jakarta.validation.Valid;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.List;
@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
@@ -51,9 +50,7 @@ public class ClassroomController {
             @RequestParam(required = false, defaultValue = "current") String scope) {
         return ResponseEntity.ok(ApiResponse.of(
             classroomService.getClassrooms(academicYearCode, search, limit, scope),
-            "Classes fetched successfully",
-            200
-        ));
+            "Classes fetched successfully", 200));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT', 'PARENT')")
@@ -129,5 +126,15 @@ public class ClassroomController {
     @PostMapping(value = "/promotion/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<PromotionImportPreviewResponse>> importPromotion(@RequestParam("file") MultipartFile file) {
         return ResponseEntity.ok(ApiResponse.of(promotionImportService.processImport(file), "Promotion import completed", 200));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/{classCode}/promotion/auto-calculate")
+    public ResponseEntity<ApiResponse<List<PromotionPlanResponse>>> autoCalculatePromotion(
+            @PathVariable String classCode,
+            @RequestParam(required = false) String semesterCode) {
+        return ResponseEntity.ok(ApiResponse.of(
+            classroomService.autoCalculatePromotion(classCode, semesterCode),
+            "Auto-calculated promotion plans", 200));
     }
 }

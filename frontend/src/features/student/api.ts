@@ -87,6 +87,16 @@ export type StudentUpsertPayload = {
   className?: string;
   status?: string;
   conduct?: string;
+  /** Mã CCCD/CMND — dùng làm username đăng nhập */
+  nationalId?: string;
+  /** Danh sách phụ huynh cần upsert */
+  parents?: Array<{
+    fullName?: string;
+    phone?: string;
+    email?: string;
+    relation?: string;
+    isPrimaryContact?: boolean;
+  }>;
 };
 
 export type ImportErrorRecord = {
@@ -118,6 +128,7 @@ export type StudentPreviewItem = {
   academic_year?: string;
   status?: string;
   enrollment_date?: string;
+  national_id?: string;
   has_errors: boolean;
   errors: string[];
 };
@@ -254,9 +265,12 @@ export const studentApi = {
   },
 
   scoreHistory(studentCode: string) {
-    return apiClient.get<ApiResponse<ScoreHistoryApiRecord>>(`/students/${studentCode}/score-history`, {
-      authenticated: true,
-    });
+    return apiClient.get<ApiResponse<ScoreHistoryApiRecord>>(
+      `/students/${studentCode}/score-history`,
+      {
+        authenticated: true,
+      },
+    );
   },
 
   create(payload: StudentUpsertPayload) {

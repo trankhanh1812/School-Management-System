@@ -131,19 +131,19 @@ const iconMap: Record<string, (props: IconProps) => ReactElement> = {
   "/my-conduct": (props) => (
     <NavIcon
       {...props}
-      path="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5z"
+      path="M12 2l3.09 6.26L22 9.27l-5 4.87l1.18 6.88L12 17.77l-6.18 3.25L7 14.14L2 9.27l6.91-1.01z"
     />
   ),
   "/my-exams": (props) => (
     <NavIcon
       {...props}
-      path="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m-6 9l2 2 4-4"
+      path="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m-6 9l2 2l4-4"
     />
   ),
   "/chat": (props) => (
     <NavIcon
       {...props}
-      path="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 0 1-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+      path="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
     />
   ),
 };
@@ -229,7 +229,7 @@ export function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
                 : "border-transparent bg-transparent text-slate-600 hover:border-sky-100 hover:bg-sky-50 hover:text-sky-900"
             } ${
               collapsed
-                ? "flex min-h-14 items-center justify-center px-1 py-1"
+                ? "flex min-h-14 items-center justify-center px-2 py-2"
                 : "flex items-center gap-3 px-4 py-3.5"
             }`}
           >
@@ -261,11 +261,7 @@ export function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
                 </span>
               ) : null}
             </span>
-
             {!collapsed ? <span>{item.label}</span> : null}
-            <span className={collapsed ? "sr-only" : "hidden"}>
-              {item.label}
-            </span>
           </Link>
         );
       })}

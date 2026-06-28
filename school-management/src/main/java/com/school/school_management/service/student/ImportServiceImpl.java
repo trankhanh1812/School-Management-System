@@ -73,6 +73,7 @@ public class ImportServiceImpl implements ImportService {
                     .academicYear(row.getAcademicYear())
                     .status(row.getStatus())
                     .enrollmentDate(row.getEnrollmentDate())
+                    .nationalId(row.getNationalId())
                     .hasErrors(!rowErrors.isEmpty())
                     .fieldErrors(new ArrayList<>())
                     .build();
@@ -162,6 +163,7 @@ public class ImportServiceImpl implements ImportService {
                         .className(row.getClassName())
                         .academicYear(row.getAcademicYear())
                         .status(row.getStatus())
+                        .nationalId(row.getNationalId())
                         .build();
 
                     studentService.createStudent(upsert);
@@ -243,31 +245,46 @@ public class ImportServiceImpl implements ImportService {
     }
 
     private void createParentAndLink(Student student, ParentImportRequest row) {
-        String email = isBlank(row.getParentEmail()) ? buildSyntheticEmail(generateParentCode()) : row.getParentEmail().trim().toLowerCase();
-        User user = User.builder()
-            .username(generateParentCode())
-            .email(email)
-            .passwordHash(passwordEncoder.encode("Parent@123"))
-            .fullName(row.getParentName())
-            .status("ACTIVE")
-            .build();
+        String phone = row.getParentPhone() != null ? row.getParentPhone().trim() : null;
+        String email = isBlank(row.getParentEmail()) ? buildSyntheticEmail(phone != null ? phone : generateParentCode()) : row.getParentEmail().trim().toLowerCase();
 
-        Role parentRole = roleRepository.findByCode("PARENT").orElseThrow(() -> new RuntimeException("PARENT role missing"));
-        user.getUserRoles().add(UserRole.builder().user(user).role(parentRole).build());
-        User savedUser = userRepository.save(user);
+        // Check if a user with this phone (username) already exists — reuse if so
+        User existingUser = isBlank(phone) ? null : userRepository.findByUsername(phone).orElse(null);
+        User savedUser;
+        if (existingUser != null) {
+            savedUser = existingUser;
+        } else {
+            String username = !isBlank(phone) ? phone : generateParentCode();
+            // Initial password = phone; forcePasswordChange = true so parent must change on first login
+            User user = User.builder()
+                .username(username)
+                .email(email)
+                .passwordHash(passwordEncoder.encode(!isBlank(phone) ? phone : username))
+                .fullName(row.getParentName())
+                .status("ACTIVE")
+                .forcePasswordChange(true)
+                .build();
 
-        Parent parent = Parent.builder()
-            .user(savedUser)
-            .parentCode(generateParentCode())
-            .fullName(row.getParentName())
-            .phone(row.getParentPhone())
-            .build();
-        Parent savedParent = parentRepository.save(parent);
+            Role parentRole = roleRepository.findByCode("PARENT").orElseThrow(() -> new RuntimeException("PARENT role missing"));
+            user.getUserRoles().add(UserRole.builder().user(user).role(parentRole).build());
+            savedUser = userRepository.save(user);
+        }
 
-        Optional<ParentStudent> existing = parentStudentRepository.findByParentAndStudent(savedParent, student);
+        // Check if parent profile already exists for this user
+        Parent parent = parentRepository.findByUser(savedUser).orElseGet(() -> {
+            Parent newParent = Parent.builder()
+                .user(savedUser)
+                .parentCode(generateParentCode())
+                .fullName(row.getParentName())
+                .phone(phone)
+                .build();
+            return parentRepository.save(newParent);
+        });
+
+        Optional<ParentStudent> existing = parentStudentRepository.findByParentAndStudent(parent, student);
         if (existing.isEmpty()) {
             ParentStudent relation = ParentStudent.builder()
-                .parent(savedParent)
+                .parent(parent)
                 .student(student)
                 .isPrimaryContact("father".equalsIgnoreCase(row.getRelation()) || "mother".equalsIgnoreCase(row.getRelation()))
                 .canViewScore(true)

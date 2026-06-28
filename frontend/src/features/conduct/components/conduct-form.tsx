@@ -10,7 +10,13 @@ import { useToast } from "@/shared/components/toast-provider";
 
 type ConductFormMode = "create" | "edit";
 
-export function ConductForm({ mode, conduct }: { mode: ConductFormMode; conduct?: ConductRecord }) {
+export function ConductForm({
+  mode,
+  conduct,
+}: {
+  mode: ConductFormMode;
+  conduct?: ConductRecord;
+}) {
   const router = useRouter();
   const { showToast } = useToast();
   const isEdit = mode === "edit";
@@ -30,7 +36,13 @@ export function ConductForm({ mode, conduct }: { mode: ConductFormMode; conduct?
     event.preventDefault();
     setError("");
 
-    if (!form.studentCode.trim() || !form.semesterCode.trim() || !form.classCode.trim() || !form.conductLevel.trim() || !form.assessedByTeacherCode.trim()) {
+    if (
+      !form.studentCode.trim() ||
+      !form.semesterCode.trim() ||
+      !form.classCode.trim() ||
+      !form.conductLevel.trim() ||
+      !form.assessedByTeacherCode.trim()
+    ) {
       setError("Vui lòng nhập đầy đủ thông tin hạnh kiểm.");
       showToast("Vui lòng nhập đầy đủ thông tin hạnh kiểm.", "error");
       return;
@@ -57,7 +69,10 @@ export function ConductForm({ mode, conduct }: { mode: ConductFormMode; conduct?
       router.push("/students/conduct");
       router.refresh();
     } catch (submitError) {
-      const message = submitError instanceof Error ? submitError.message : "Không thể lưu hạnh kiểm.";
+      const message =
+        submitError instanceof Error
+          ? submitError.message
+          : "Không thể lưu hạnh kiểm.";
       setError(message);
       showToast(message, "error");
       setIsSubmitting(false);
@@ -71,27 +86,49 @@ export function ConductForm({ mode, conduct }: { mode: ConductFormMode; conduct?
           <FormInput
             label="Mã học sinh"
             value={form.studentCode}
-            onChange={(event) => setForm((prev) => ({ ...prev, studentCode: event.target.value.toUpperCase() }))}
+            onChange={(event) =>
+              setForm((prev) => ({
+                ...prev,
+                studentCode: event.target.value.toUpperCase(),
+              }))
+            }
           />
           <FormInput
             label="Mã học kỳ"
             value={form.semesterCode}
-            onChange={(event) => setForm((prev) => ({ ...prev, semesterCode: event.target.value.toUpperCase() }))}
+            onChange={(event) =>
+              setForm((prev) => ({
+                ...prev,
+                semesterCode: event.target.value.toUpperCase(),
+              }))
+            }
           />
           <FormInput
             label="Mã lớp"
             value={form.classCode}
-            onChange={(event) => setForm((prev) => ({ ...prev, classCode: event.target.value.toUpperCase() }))}
+            onChange={(event) =>
+              setForm((prev) => ({
+                ...prev,
+                classCode: event.target.value.toUpperCase(),
+              }))
+            }
           />
           <FormInput
             label="Mã giáo viên đánh giá"
             value={form.assessedByTeacherCode}
-            onChange={(event) => setForm((prev) => ({ ...prev, assessedByTeacherCode: event.target.value.toUpperCase() }))}
+            onChange={(event) =>
+              setForm((prev) => ({
+                ...prev,
+                assessedByTeacherCode: event.target.value.toUpperCase(),
+              }))
+            }
           />
           <FormSelect
             label="Hạnh kiểm"
             value={form.conductLevel}
-            onChange={(event) => setForm((prev) => ({ ...prev, conductLevel: event.target.value }))}
+            onChange={(event) =>
+              setForm((prev) => ({ ...prev, conductLevel: event.target.value }))
+            }
           >
             <option value="Tốt">Tốt</option>
             <option value="Khá">Khá</option>
@@ -101,7 +138,9 @@ export function ConductForm({ mode, conduct }: { mode: ConductFormMode; conduct?
           <FormTextarea
             label="Ghi chú"
             value={form.remarks}
-            onChange={(event) => setForm((prev) => ({ ...prev, remarks: event.target.value }))}
+            onChange={(event) =>
+              setForm((prev) => ({ ...prev, remarks: event.target.value }))
+            }
             className="md:col-span-2"
             rows={4}
           />
@@ -112,7 +151,11 @@ export function ConductForm({ mode, conduct }: { mode: ConductFormMode; conduct?
 
       <div className="flex flex-wrap gap-3">
         <Button className="h-11 px-5" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Đang lưu..." : isEdit ? "Lưu thay đổi" : "Tạo hạnh kiểm"}
+          {isSubmitting
+            ? "Đang lưu..."
+            : isEdit
+              ? "Lưu thay đổi"
+              : "Tạo hạnh kiểm"}
         </Button>
       </div>
     </form>

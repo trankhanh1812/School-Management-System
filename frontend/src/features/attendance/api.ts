@@ -1,70 +1,80 @@
 import type { ApiResponse } from "@/types/api";
 import { apiClient } from "@/lib/api/api-client";
-import type { AttendanceRecord, ClassSession, AttendanceStats, CurrentTeacherSlot } from "./types";
+import type {
+  AttendanceRecord,
+  ClassSession,
+  AttendanceStats,
+  CurrentTeacherSlot,
+} from "./types";
 
 export const attendanceApi = {
   // Manual attendance recording (TEACHER/ADMIN)
-  recordManual(studentCode: string, sessionId: string, status: string, capturedByCode?: string) {
-    return apiClient.post<ApiResponse<AttendanceRecord>>("/attendance/manual", {
-      studentCode,
-      sessionId,
-      status,
-      method: "MANUAL",
-      capturedByCode,
-    }, { authenticated: true });
+  recordManual(
+    studentCode: string,
+    sessionId: string,
+    status: string,
+    capturedByCode?: string,
+  ) {
+    return apiClient.post<ApiResponse<AttendanceRecord>>(
+      "/attendance/manual",
+      {
+        studentCode,
+        sessionId,
+        status,
+        method: "MANUAL",
+        capturedByCode,
+      },
+      { authenticated: true },
+    );
   },
 
-  // QR attendance scanning (STUDENT) — legacy browser-camera flow
+  // QR attendance scanning (STUDENT)
   recordQR(studentCode: string, qrData: string, clientIp?: string) {
-    return apiClient.post<ApiResponse<AttendanceRecord>>("/attendance/qr", {
-      studentCode,
-      qrData,
-      clientIp,
-    }, { authenticated: true });
-  },
-
-  /**
-   * Confirm attendance via deep-link token.
-   * Called from the public /attend page after student opens the QR URL.
-   * Requires JWT auth (student must be logged in).
-   */
-  confirmQRToken(token: string) {
-    return apiClient.post<ApiResponse<{ sessionId: string; subjectName: string; className: string }>>(
-      "/attendance/qr/confirm",
-      { token },
+    return apiClient.post<ApiResponse<AttendanceRecord>>(
+      "/attendance/qr",
+      {
+        studentCode,
+        qrData,
+        clientIp,
+      },
       { authenticated: true },
     );
   },
 
   // Generate QR code for session (TEACHER/ADMIN)
   generateQRCode(sessionId: string) {
-    return apiClient.post<ApiResponse<{ qrCode: string; expiryMinutes: string }>>(
-      `/attendance/qr/generate/${sessionId}`,
-      {},
-      { authenticated: true }
-    );
+    return apiClient.post<
+      ApiResponse<{ qrCode: string; expiryMinutes: string }>
+    >(`/attendance/qr/generate/${sessionId}`, {}, { authenticated: true });
   },
 
   // Get attendance for session (TEACHER/ADMIN)
   getSessionAttendance(sessionId: string) {
-    return apiClient.get<ApiResponse<AttendanceRecord[]>>(`/attendance/session/${sessionId}`, {
-      authenticated: true,
-    });
+    return apiClient.get<ApiResponse<AttendanceRecord[]>>(
+      `/attendance/session/${sessionId}`,
+      {
+        authenticated: true,
+      },
+    );
   },
 
   // Get student attendance history (STUDENT/PARENT/ADMIN)
   getStudentAttendance(studentCode: string) {
     return apiClient.get<ApiResponse<AttendanceRecord[]>>(
       `/attendance/student/${studentCode}`,
-      { authenticated: true }
+      { authenticated: true },
     );
   },
 
   // Get attendance by date range (STUDENT/PARENT/ADMIN)
-  getAttendanceByDateRange(studentCode: string, startDate: string, endDate: string) {
+  getAttendanceByDateRange(
+    studentCode: string,
+    startDate: string,
+    endDate: string,
+  ) {
     return apiClient.get<ApiResponse<AttendanceRecord[]>>(
       `/attendance/student/${studentCode}/range?startDate=${startDate}&endDate=${endDate}`,
-      { authenticated: true }
+      { authenticated: true },
     );
   },
 
@@ -73,7 +83,7 @@ export const attendanceApi = {
     return apiClient.patch<ApiResponse<AttendanceRecord>>(
       `/attendance/${attendanceId}/status?newStatus=${newStatus}`,
       {},
-      { authenticated: true }
+      { authenticated: true },
     );
   },
 
@@ -99,13 +109,15 @@ export const attendanceApi = {
       ? `/attendance/class/${classCode}/sessions?${queryString}`
       : `/attendance/class/${classCode}/sessions`;
 
-    return apiClient.get<ApiResponse<ClassSession[]>>(url, { authenticated: true });
+    return apiClient.get<ApiResponse<ClassSession[]>>(url, {
+      authenticated: true,
+    });
   },
 
   getCurrentTeacherSlot() {
     return apiClient.get<ApiResponse<CurrentTeacherSlot>>(
       "/attendance/sessions/current-slot",
-      { authenticated: true }
+      { authenticated: true },
     );
   },
 
@@ -113,7 +125,7 @@ export const attendanceApi = {
   getStats(studentCode: string, startDate: string, endDate: string) {
     return apiClient.get<ApiResponse<AttendanceStats>>(
       `/attendance/student/${studentCode}/stats?startDate=${startDate}&endDate=${endDate}`,
-      { authenticated: true }
+      { authenticated: true },
     );
   },
 
@@ -122,5 +134,17 @@ export const attendanceApi = {
     return apiClient.get<ApiResponse<unknown[]>>("/attendance", {
       authenticated: true,
     });
+  },
+
+  /**
+   * Confirm attendance via deep-link QR token.
+   * Called from the public /attend page after student opens the QR URL.
+   */
+  confirmQRToken(token: string) {
+    return apiClient.post<ApiResponse<{ sessionId: string; subjectName: string; className: string }>>(
+      "/attendance/qr/confirm",
+      { token },
+      { authenticated: true },
+    );
   },
 };

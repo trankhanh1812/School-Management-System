@@ -1,10 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import React, { useEffect, useMemo, useState, type ReactNode } from "react";
 import { PageIntro } from "@/features/dashboard/components/page-intro";
-import { examApi, type ExamRecord, type ExamUpsertPayload } from "@/features/exam/api";
+import {
+  examApi,
+  type ExamRecord,
+  type ExamUpsertPayload,
+} from "@/features/exam/api";
+import { ExamPermissionPanel } from "@/features/exam/components/exam-permission-panel";
 import { ScoreModuleTabs } from "@/features/score/components/score-module-tabs";
-import { teachingApi, type TeachingAssignmentApiRecord } from "@/features/teaching/api";
+import {
+  teachingApi,
+  type TeachingAssignmentApiRecord,
+} from "@/features/teaching/api";
 import { useAuthSession } from "@/hooks";
 import { useToast } from "@/shared/components/toast-provider";
 import { Button, ButtonLink } from "@/shared/ui/button";
@@ -15,14 +23,18 @@ export default function ScoreExamsPage() {
   const { showToast } = useToast();
   const isAdmin = session?.user.role === "ADMIN";
   const isTeacher = session?.user.role === "TEACHER";
-  const canManage = session?.user.role === "ADMIN" || session?.user.role === "TEACHER";
+  const canManage =
+    session?.user.role === "ADMIN" || session?.user.role === "TEACHER";
 
   const [exams, setExams] = useState<ExamRecord[]>([]);
-  const [teacherAssignments, setTeacherAssignments] = useState<TeachingAssignmentApiRecord[]>([]);
+  const [teacherAssignments, setTeacherAssignments] = useState<
+    TeachingAssignmentApiRecord[]
+  >([]);
   const [isLoadingTeacherScope, setIsLoadingTeacherScope] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSavingExam, setIsSavingExam] = useState(false);
 
+  const [expandedExamId, setExpandedExamId] = useState<string | null>(null);
   const [yearFilter, setYearFilter] = useState("all");
   const [semesterFilter, setSemesterFilter] = useState("all");
   const [subjectFilter, setSubjectFilter] = useState("all");
@@ -51,7 +63,12 @@ export default function ScoreExamsPage() {
       const examResponse = await examApi.list();
       setExams(examResponse.data ?? []);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Không tải được danh sách bài kiểm tra", "error");
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "Không tải được danh sách bài kiểm tra",
+        "error",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +98,12 @@ export default function ScoreExamsPage() {
         if (!isMounted) {
           return;
         }
-        showToast(error instanceof Error ? error.message : "Không tải được phân công giảng dạy", "error");
+        showToast(
+          error instanceof Error
+            ? error.message
+            : "Không tải được phân công giảng dạy",
+          "error",
+        );
       } finally {
         if (isMounted) {
           setIsLoadingTeacherScope(false);
@@ -113,7 +135,10 @@ export default function ScoreExamsPage() {
       Array.from(
         new Set(
           teacherAssignments
-            .filter((item) => !teacherYearCode || item.academicYearCode === teacherYearCode)
+            .filter(
+              (item) =>
+                !teacherYearCode || item.academicYearCode === teacherYearCode,
+            )
             .map((item) => item.semesterCode?.trim())
             .filter((item): item is string => Boolean(item)),
         ),
@@ -124,8 +149,13 @@ export default function ScoreExamsPage() {
   const teacherSubjectOptions = useMemo(() => {
     const map = new Map<string, string>();
     teacherAssignments
-      .filter((item) => !teacherYearCode || item.academicYearCode === teacherYearCode)
-      .filter((item) => !teacherSemesterCode || item.semesterCode === teacherSemesterCode)
+      .filter(
+        (item) => !teacherYearCode || item.academicYearCode === teacherYearCode,
+      )
+      .filter(
+        (item) =>
+          !teacherSemesterCode || item.semesterCode === teacherSemesterCode,
+      )
       .forEach((item) => {
         const subjectCode = item.subjectCode?.trim();
         if (!subjectCode) {
@@ -147,9 +177,17 @@ export default function ScoreExamsPage() {
   const teacherClassOptions = useMemo(() => {
     const map = new Map<string, string>();
     teacherAssignments
-      .filter((item) => !teacherYearCode || item.academicYearCode === teacherYearCode)
-      .filter((item) => !teacherSemesterCode || item.semesterCode === teacherSemesterCode)
-      .filter((item) => !teacherSubjectCode || item.subjectCode === teacherSubjectCode)
+      .filter(
+        (item) => !teacherYearCode || item.academicYearCode === teacherYearCode,
+      )
+      .filter(
+        (item) =>
+          !teacherSemesterCode || item.semesterCode === teacherSemesterCode,
+      )
+      .filter(
+        (item) =>
+          !teacherSubjectCode || item.subjectCode === teacherSubjectCode,
+      )
       .forEach((item) => {
         const classCode = item.classCode?.trim();
         if (!classCode) {
@@ -161,14 +199,21 @@ export default function ScoreExamsPage() {
     return Array.from(map.entries())
       .map(([value, label]) => ({ value, label }))
       .sort((a, b) => a.value.localeCompare(b.value));
-  }, [teacherAssignments, teacherYearCode, teacherSemesterCode, teacherSubjectCode]);
+  }, [
+    teacherAssignments,
+    teacherYearCode,
+    teacherSemesterCode,
+    teacherSubjectCode,
+  ]);
 
   useEffect(() => {
     if (!isTeacher || teacherAssignments.length === 0) {
       return;
     }
 
-    const nextYear = teacherYearOptions.includes(teacherYearCode) ? teacherYearCode : (teacherYearOptions[0] ?? "");
+    const nextYear = teacherYearOptions.includes(teacherYearCode)
+      ? teacherYearCode
+      : (teacherYearOptions[0] ?? "");
     if (nextYear !== teacherYearCode) {
       setTeacherYearCode(nextYear);
       return;
@@ -192,8 +237,11 @@ export default function ScoreExamsPage() {
 
     setNewExam((prev) => {
       const availableClassCodes = teacherClassOptions.map((item) => item.value);
-      const currentClassCodes = prev.classCodes.filter((code) => availableClassCodes.includes(code));
-      const nextClassCodes = currentClassCodes.length > 0 ? currentClassCodes : availableClassCodes;
+      const currentClassCodes = prev.classCodes.filter((code) =>
+        availableClassCodes.includes(code),
+      );
+      const nextClassCodes =
+        currentClassCodes.length > 0 ? currentClassCodes : availableClassCodes;
 
       const unchanged =
         prev.academicYearCode === nextYear &&
@@ -227,32 +275,50 @@ export default function ScoreExamsPage() {
   ]);
 
   const yearOptions = useMemo(
-    () => Array.from(new Set(exams.map((item) => item.academicYearCode))).filter(Boolean).sort((a, b) => b.localeCompare(a)),
+    () =>
+      Array.from(new Set(exams.map((item) => item.academicYearCode)))
+        .filter(Boolean)
+        .sort((a, b) => b.localeCompare(a)),
     [exams],
   );
 
   const semesterOptions = useMemo(
-    () => Array.from(new Set(exams.map((item) => item.semesterCode))).filter(Boolean).sort((a, b) => a.localeCompare(b)),
+    () =>
+      Array.from(new Set(exams.map((item) => item.semesterCode)))
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b)),
     [exams],
   );
 
   const subjectOptions = useMemo(
-    () => Array.from(new Set(exams.map((item) => item.subjectCode))).filter(Boolean).sort((a, b) => a.localeCompare(b)),
+    () =>
+      Array.from(new Set(exams.map((item) => item.subjectCode)))
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b)),
     [exams],
   );
 
   const examTypeOptions = useMemo(
-    () => Array.from(new Set(exams.map((item) => item.examType))).filter(Boolean).sort((a, b) => a.localeCompare(b)),
+    () =>
+      Array.from(new Set(exams.map((item) => item.examType)))
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b)),
     [exams],
   );
 
   const statusOptions = useMemo(
-    () => Array.from(new Set(exams.map((item) => item.status))).filter(Boolean).sort((a, b) => a.localeCompare(b)),
+    () =>
+      Array.from(new Set(exams.map((item) => item.status)))
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b)),
     [exams],
   );
 
   const classOptions = useMemo(
-    () => Array.from(new Set(exams.flatMap((item) => item.classCodes))).filter(Boolean).sort((a, b) => a.localeCompare(b)),
+    () =>
+      Array.from(new Set(exams.flatMap((item) => item.classCodes)))
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b)),
     [exams],
   );
 
@@ -260,12 +326,24 @@ export default function ScoreExamsPage() {
     const normalizedKeyword = keyword.trim().toLowerCase();
 
     return exams
-      .filter((item) => (yearFilter === "all" ? true : item.academicYearCode === yearFilter))
-      .filter((item) => (semesterFilter === "all" ? true : item.semesterCode === semesterFilter))
-      .filter((item) => (subjectFilter === "all" ? true : item.subjectCode === subjectFilter))
-      .filter((item) => (typeFilter === "all" ? true : item.examType === typeFilter))
-      .filter((item) => (statusFilter === "all" ? true : item.status === statusFilter))
-      .filter((item) => (classFilter === "all" ? true : item.classCodes.includes(classFilter)))
+      .filter((item) =>
+        yearFilter === "all" ? true : item.academicYearCode === yearFilter,
+      )
+      .filter((item) =>
+        semesterFilter === "all" ? true : item.semesterCode === semesterFilter,
+      )
+      .filter((item) =>
+        subjectFilter === "all" ? true : item.subjectCode === subjectFilter,
+      )
+      .filter((item) =>
+        typeFilter === "all" ? true : item.examType === typeFilter,
+      )
+      .filter((item) =>
+        statusFilter === "all" ? true : item.status === statusFilter,
+      )
+      .filter((item) =>
+        classFilter === "all" ? true : item.classCodes.includes(classFilter),
+      )
       .filter((item) => {
         if (!normalizedKeyword) {
           return true;
@@ -297,11 +375,23 @@ export default function ScoreExamsPage() {
 
         return b.examDate.localeCompare(a.examDate);
       });
-  }, [exams, yearFilter, semesterFilter, subjectFilter, typeFilter, statusFilter, classFilter, keyword]);
+  }, [
+    exams,
+    yearFilter,
+    semesterFilter,
+    subjectFilter,
+    typeFilter,
+    statusFilter,
+    classFilter,
+    keyword,
+  ]);
 
   async function handleCreateExam() {
     if (isTeacher && isLoadingTeacherScope) {
-      showToast("Đang tải phạm vi phân công giảng dạy, vui lòng thử lại", "error");
+      showToast(
+        "Đang tải phạm vi phân công giảng dạy, vui lòng thử lại",
+        "error",
+      );
       return;
     }
 
@@ -321,7 +411,10 @@ export default function ScoreExamsPage() {
       await loadExams();
       setNewExam((prev) => ({ ...prev, title: "", classCodes: [] }));
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Không tạo được bài kiểm tra", "error");
+      showToast(
+        error instanceof Error ? error.message : "Không tạo được bài kiểm tra",
+        "error",
+      );
     } finally {
       setIsSavingExam(false);
     }
@@ -362,8 +455,12 @@ export default function ScoreExamsPage() {
       <Panel className="p-5 sm:p-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 className="text-base font-semibold text-slate-900">Bộ lọc kiểm tra</h3>
-            <p className="text-sm text-slate-500">Lọc theo phạm vi học kỳ, môn học, loại bài và trạng thái xử lý.</p>
+            <h3 className="text-base font-semibold text-slate-900">
+              Bộ lọc kiểm tra
+            </h3>
+            <p className="text-sm text-slate-500">
+              Lọc theo phạm vi học kỳ, môn học, loại bài và trạng thái xử lý.
+            </p>
           </div>
           <Button
             tone="ghost"
@@ -383,55 +480,91 @@ export default function ScoreExamsPage() {
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <Field label="Năm học">
-            <select value={yearFilter} onChange={(event) => setYearFilter(event.target.value)} className="h-10 rounded-xl border border-slate-200 px-3 text-sm">
+            <select
+              value={yearFilter}
+              onChange={(event) => setYearFilter(event.target.value)}
+              className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
+            >
               <option value="all">Tất cả</option>
               {yearOptions.map((value) => (
-                <option key={`year-${value}`} value={value}>{value}</option>
+                <option key={`year-${value}`} value={value}>
+                  {value}
+                </option>
               ))}
             </select>
           </Field>
 
           <Field label="Học kỳ">
-            <select value={semesterFilter} onChange={(event) => setSemesterFilter(event.target.value)} className="h-10 rounded-xl border border-slate-200 px-3 text-sm">
+            <select
+              value={semesterFilter}
+              onChange={(event) => setSemesterFilter(event.target.value)}
+              className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
+            >
               <option value="all">Tất cả</option>
               {semesterOptions.map((value) => (
-                <option key={`semester-${value}`} value={value}>{value}</option>
+                <option key={`semester-${value}`} value={value}>
+                  {value}
+                </option>
               ))}
             </select>
           </Field>
 
           <Field label="Môn học">
-            <select value={subjectFilter} onChange={(event) => setSubjectFilter(event.target.value)} className="h-10 rounded-xl border border-slate-200 px-3 text-sm">
+            <select
+              value={subjectFilter}
+              onChange={(event) => setSubjectFilter(event.target.value)}
+              className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
+            >
               <option value="all">Tất cả</option>
               {subjectOptions.map((value) => (
-                <option key={`subject-${value}`} value={value}>{value}</option>
+                <option key={`subject-${value}`} value={value}>
+                  {value}
+                </option>
               ))}
             </select>
           </Field>
 
           <Field label="Loại điểm">
-            <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="h-10 rounded-xl border border-slate-200 px-3 text-sm">
+            <select
+              value={typeFilter}
+              onChange={(event) => setTypeFilter(event.target.value)}
+              className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
+            >
               <option value="all">Tất cả</option>
               {examTypeOptions.map((value) => (
-                <option key={`type-${value}`} value={value}>{value}</option>
+                <option key={`type-${value}`} value={value}>
+                  {value}
+                </option>
               ))}
             </select>
           </Field>
 
           <Field label="Lớp áp dụng">
-            <select value={classFilter} onChange={(event) => setClassFilter(event.target.value)} className="h-10 rounded-xl border border-slate-200 px-3 text-sm">
+            <select
+              value={classFilter}
+              onChange={(event) => setClassFilter(event.target.value)}
+              className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
+            >
               <option value="all">Tất cả</option>
               {classOptions.map((value) => (
-                <option key={`class-${value}`} value={value}>{value}</option>
+                <option key={`class-${value}`} value={value}>
+                  {value}
+                </option>
               ))}
             </select>
           </Field>
 
           <Field label="Trạng thái">
-            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="h-10 rounded-xl border border-slate-200 px-3 text-sm">
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+              className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
+            >
               <option value="all">Tất cả</option>
               {statusOptions.map((value) => (
-                <option key={`status-${value}`} value={value}>{value}</option>
+                <option key={`status-${value}`} value={value}>
+                  {value}
+                </option>
               ))}
             </select>
           </Field>
@@ -446,8 +579,12 @@ export default function ScoreExamsPage() {
           </Field>
 
           <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
-            <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Kết quả</p>
-            <p className="mt-1 text-base font-semibold text-slate-900">{filteredExams.length}/{exams.length} bài kiểm tra</p>
+            <p className="text-xs uppercase tracking-[0.08em] text-slate-500">
+              Kết quả
+            </p>
+            <p className="mt-1 text-base font-semibold text-slate-900">
+              {filteredExams.length}/{exams.length} bài kiểm tra
+            </p>
           </div>
         </div>
       </Panel>
@@ -456,7 +593,8 @@ export default function ScoreExamsPage() {
         <Panel className="p-5 sm:p-6">
           {!isAdmin ? (
             <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-              Bạn chỉ có thể tạo bài kiểm tra cho đúng môn và lớp đang được phân công giảng dạy.
+              Bạn chỉ có thể tạo bài kiểm tra cho đúng môn và lớp đang được phân
+              công giảng dạy.
             </div>
           ) : null}
           <div className="grid gap-3 md:grid-cols-3">
@@ -467,10 +605,14 @@ export default function ScoreExamsPage() {
                     value={teacherYearCode}
                     onChange={(event) => setTeacherYearCode(event.target.value)}
                     className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
-                    disabled={isLoadingTeacherScope || teacherYearOptions.length === 0}
+                    disabled={
+                      isLoadingTeacherScope || teacherYearOptions.length === 0
+                    }
                   >
                     {teacherYearOptions.map((value) => (
-                      <option key={`teacher-year-${value}`} value={value}>{value}</option>
+                      <option key={`teacher-year-${value}`} value={value}>
+                        {value}
+                      </option>
                     ))}
                   </select>
                 </Field>
@@ -478,12 +620,19 @@ export default function ScoreExamsPage() {
                 <Field label="Học kỳ">
                   <select
                     value={teacherSemesterCode}
-                    onChange={(event) => setTeacherSemesterCode(event.target.value)}
+                    onChange={(event) =>
+                      setTeacherSemesterCode(event.target.value)
+                    }
                     className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
-                    disabled={isLoadingTeacherScope || teacherSemesterOptions.length === 0}
+                    disabled={
+                      isLoadingTeacherScope ||
+                      teacherSemesterOptions.length === 0
+                    }
                   >
                     {teacherSemesterOptions.map((value) => (
-                      <option key={`teacher-semester-${value}`} value={value}>{value}</option>
+                      <option key={`teacher-semester-${value}`} value={value}>
+                        {value}
+                      </option>
                     ))}
                   </select>
                 </Field>
@@ -491,13 +640,23 @@ export default function ScoreExamsPage() {
                 <Field label="Môn học">
                   <select
                     value={teacherSubjectCode}
-                    onChange={(event) => setTeacherSubjectCode(event.target.value)}
+                    onChange={(event) =>
+                      setTeacherSubjectCode(event.target.value)
+                    }
                     className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
-                    disabled={isLoadingTeacherScope || teacherSubjectOptions.length === 0}
+                    disabled={
+                      isLoadingTeacherScope ||
+                      teacherSubjectOptions.length === 0
+                    }
                   >
                     {teacherSubjectOptions.map((item) => (
-                      <option key={`teacher-subject-${item.value}`} value={item.value}>
-                        {item.value === item.label ? item.value : `${item.value} - ${item.label}`}
+                      <option
+                        key={`teacher-subject-${item.value}`}
+                        value={item.value}
+                      >
+                        {item.value === item.label
+                          ? item.value
+                          : `${item.value} - ${item.label}`}
                       </option>
                     ))}
                   </select>
@@ -508,21 +667,36 @@ export default function ScoreExamsPage() {
                 <Field label="Năm học">
                   <input
                     value={newExam.academicYearCode}
-                    onChange={(event) => setNewExam((prev) => ({ ...prev, academicYearCode: event.target.value.toUpperCase() }))}
+                    onChange={(event) =>
+                      setNewExam((prev) => ({
+                        ...prev,
+                        academicYearCode: event.target.value.toUpperCase(),
+                      }))
+                    }
                     className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
                   />
                 </Field>
                 <Field label="Học kỳ">
                   <input
                     value={newExam.semesterCode}
-                    onChange={(event) => setNewExam((prev) => ({ ...prev, semesterCode: event.target.value.toUpperCase() }))}
+                    onChange={(event) =>
+                      setNewExam((prev) => ({
+                        ...prev,
+                        semesterCode: event.target.value.toUpperCase(),
+                      }))
+                    }
                     className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
                   />
                 </Field>
                 <Field label="Mã môn">
                   <input
                     value={newExam.subjectCode}
-                    onChange={(event) => setNewExam((prev) => ({ ...prev, subjectCode: event.target.value.toUpperCase() }))}
+                    onChange={(event) =>
+                      setNewExam((prev) => ({
+                        ...prev,
+                        subjectCode: event.target.value.toUpperCase(),
+                      }))
+                    }
                     className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
                   />
                 </Field>
@@ -531,7 +705,12 @@ export default function ScoreExamsPage() {
             <Field label="Loại điểm">
               <select
                 value={newExam.examType}
-                onChange={(event) => setNewExam((prev) => ({ ...prev, examType: event.target.value }))}
+                onChange={(event) =>
+                  setNewExam((prev) => ({
+                    ...prev,
+                    examType: event.target.value,
+                  }))
+                }
                 className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
               >
                 <option value="ORAL">Điểm miệng</option>
@@ -546,7 +725,12 @@ export default function ScoreExamsPage() {
               <input
                 type="date"
                 value={newExam.examDate}
-                onChange={(event) => setNewExam((prev) => ({ ...prev, examDate: event.target.value }))}
+                onChange={(event) =>
+                  setNewExam((prev) => ({
+                    ...prev,
+                    examDate: event.target.value,
+                  }))
+                }
                 className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
               />
             </Field>
@@ -559,7 +743,14 @@ export default function ScoreExamsPage() {
                       <Button
                         tone="ghost"
                         className="h-8 px-3 text-xs"
-                        onClick={() => setNewExam((prev) => ({ ...prev, classCodes: teacherClassOptions.map((item) => item.value) }))}
+                        onClick={() =>
+                          setNewExam((prev) => ({
+                            ...prev,
+                            classCodes: teacherClassOptions.map(
+                              (item) => item.value,
+                            ),
+                          }))
+                        }
                         disabled={teacherClassOptions.length === 0}
                       >
                         Chọn tất cả
@@ -567,20 +758,29 @@ export default function ScoreExamsPage() {
                       <Button
                         tone="ghost"
                         className="h-8 px-3 text-xs"
-                        onClick={() => setNewExam((prev) => ({ ...prev, classCodes: [] }))}
+                        onClick={() =>
+                          setNewExam((prev) => ({ ...prev, classCodes: [] }))
+                        }
                         disabled={newExam.classCodes.length === 0}
                       >
                         Bỏ chọn
                       </Button>
                     </div>
                     {teacherClassOptions.length === 0 ? (
-                      <p className="text-sm text-slate-500">Không có lớp phù hợp trong phạm vi phân công hiện tại.</p>
+                      <p className="text-sm text-slate-500">
+                        Không có lớp phù hợp trong phạm vi phân công hiện tại.
+                      </p>
                     ) : (
                       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                         {teacherClassOptions.map((item) => {
-                          const checked = newExam.classCodes.includes(item.value);
+                          const checked = newExam.classCodes.includes(
+                            item.value,
+                          );
                           return (
-                            <label key={item.value} className="flex items-center gap-2 rounded-lg border border-slate-200 px-2 py-1.5 text-sm">
+                            <label
+                              key={item.value}
+                              className="flex items-center gap-2 rounded-lg border border-slate-200 px-2 py-1.5 text-sm"
+                            >
                               <input
                                 type="checkbox"
                                 checked={checked}
@@ -592,11 +792,18 @@ export default function ScoreExamsPage() {
                                     } else {
                                       set.delete(item.value);
                                     }
-                                    return { ...prev, classCodes: Array.from(set).sort((a, b) => a.localeCompare(b)) };
+                                    return {
+                                      ...prev,
+                                      classCodes: Array.from(set).sort((a, b) =>
+                                        a.localeCompare(b),
+                                      ),
+                                    };
                                   });
                                 }}
                               />
-                              <span>{item.value} - {item.label}</span>
+                              <span>
+                                {item.value} - {item.label}
+                              </span>
                             </label>
                           );
                         })}
@@ -625,16 +832,27 @@ export default function ScoreExamsPage() {
           </div>
 
           <div className="mt-3 grid gap-2">
-            <label className="text-sm font-semibold text-slate-800">Tên bài kiểm tra</label>
+            <label className="text-sm font-semibold text-slate-800">
+              Tên bài kiểm tra
+            </label>
             <input
               value={newExam.title}
-              onChange={(event) => setNewExam((prev) => ({ ...prev, title: event.target.value }))}
+              onChange={(event) =>
+                setNewExam((prev) => ({ ...prev, title: event.target.value }))
+              }
               className="h-10 rounded-xl border border-slate-200 px-3 text-sm"
             />
           </div>
 
           <div className="mt-4 flex justify-end">
-            <Button onClick={handleCreateExam} disabled={isSavingExam || (isTeacher && (isLoadingTeacherScope || teacherAssignments.length === 0))}>
+            <Button
+              onClick={handleCreateExam}
+              disabled={
+                isSavingExam ||
+                (isTeacher &&
+                  (isLoadingTeacherScope || teacherAssignments.length === 0))
+              }
+            >
               {isSavingExam ? "Đang tạo..." : "Tạo bài kiểm tra"}
             </Button>
           </div>
@@ -643,7 +861,9 @@ export default function ScoreExamsPage() {
 
       <Panel className="overflow-hidden p-0">
         {isLoading ? (
-          <div className="p-6 text-sm text-slate-600">Đang tải danh sách bài kiểm tra...</div>
+          <div className="p-6 text-sm text-slate-600">
+            Đang tải danh sách bài kiểm tra...
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
@@ -651,35 +871,65 @@ export default function ScoreExamsPage() {
                 <tr>
                   <th className="px-4 py-3 text-left">Tiêu đề</th>
                   <th className="px-4 py-3 text-left">Môn</th>
-                  <th className="hidden sm:table-cell px-4 py-3 text-left">Loại</th>
-                  <th className="hidden md:table-cell px-4 py-3 text-left">Năm học</th>
-                  <th className="hidden md:table-cell px-4 py-3 text-left">Học kỳ</th>
-                  <th className="hidden lg:table-cell px-4 py-3 text-left">Lớp áp dụng</th>
+                  <th className="px-4 py-3 text-left">Loại</th>
+                  <th className="px-4 py-3 text-left">Năm học</th>
+                  <th className="px-4 py-3 text-left">Học kỳ</th>
+                  <th className="px-4 py-3 text-left">Lớp áp dụng</th>
                   <th className="px-4 py-3 text-left">Trạng thái</th>
                   <th className="px-4 py-3 text-left">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredExams.map((exam) => (
-                  <tr key={exam.examId} className="border-t border-slate-100">
-                    <td className="px-4 py-3">{exam.title}</td>
-                    <td className="px-4 py-3">{exam.subjectCode}</td>
-                    <td className="hidden sm:table-cell px-4 py-3">{exam.examTypeLabel || exam.examType}</td>
-                    <td className="hidden md:table-cell px-4 py-3">{exam.academicYearCode}</td>
-                    <td className="hidden md:table-cell px-4 py-3">{exam.semesterCode}</td>
-                    <td className="hidden lg:table-cell px-4 py-3">{exam.classCodes.join(", ")}</td>
-                    <td className="px-4 py-3">{exam.status}</td>
-                    <td className="px-4 py-3">
-                      <ButtonLink href={`/scores/gradebook?examId=${encodeURIComponent(exam.examId)}`} tone="secondary" className="h-8 px-3 text-xs">
-                        Mở điểm số
-                      </ButtonLink>
-                    </td>
-                  </tr>
+                  <React.Fragment key={exam.examId}>
+                    <tr className="border-t border-slate-100">
+                      <td className="px-4 py-3">{exam.title}</td>
+                      <td className="px-4 py-3">{exam.subjectCode}</td>
+                      <td className="hidden sm:table-cell px-4 py-3">{exam.examTypeLabel || exam.examType}</td>
+                      <td className="hidden md:table-cell px-4 py-3">{exam.academicYearCode}</td>
+                      <td className="hidden md:table-cell px-4 py-3">{exam.semesterCode}</td>
+                      <td className="hidden lg:table-cell px-4 py-3">{exam.classCodes.join(", ")}</td>
+                      <td className="px-4 py-3">{exam.status}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <ButtonLink
+                            href={`/scores/gradebook?examId=${encodeURIComponent(exam.examId)}`}
+                            tone="secondary"
+                            className="h-8 px-3 text-xs"
+                          >
+                            Mở điểm số
+                          </ButtonLink>
+                          {isAdmin && (
+                            <button
+                              type="button"
+                              onClick={() => setExpandedExamId(expandedExamId === exam.examId ? null : exam.examId)}
+                              className="h-8 rounded-lg border border-slate-200 px-3 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
+                            >
+                              {expandedExamId === exam.examId ? "Đóng" : "Quyền thi"}
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                    {isAdmin && expandedExamId === exam.examId && (
+                      <tr key={`${exam.examId}-perm`} className="bg-slate-50">
+                        <td colSpan={8} className="px-4 py-4">
+                          <ExamPermissionPanel
+                            examId={exam.examId}
+                            examTitle={exam.title}
+                            classCodes={exam.classCodes}
+                          />
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))}
                 {filteredExams.length === 0 ? (
                   <tr>
                     <td className="px-4 py-6 text-slate-500" colSpan={8}>
-                      {exams.length === 0 ? "Chưa có bài kiểm tra." : "Không có bài kiểm tra phù hợp bộ lọc."}
+                      {exams.length === 0
+                        ? "Chưa có bài kiểm tra."
+                        : "Không có bài kiểm tra phù hợp bộ lọc."}
                     </td>
                   </tr>
                 ) : null}
@@ -692,13 +942,7 @@ export default function ScoreExamsPage() {
   );
 }
 
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
+function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="grid gap-1.5">
       <label className="text-sm font-semibold text-slate-700">{label}</label>

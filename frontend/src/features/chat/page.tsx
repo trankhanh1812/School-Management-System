@@ -164,7 +164,7 @@ export default function ChatPage() {
   const canCreateGroup = user.role === "ADMIN" || user.role === "TEACHER";
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] gap-4">
+    <div className="flex h-[calc(100vh-8rem)] gap-4 bg-gray-50 p-4">
       {/* Groups Panel */}
       <div className="w-80 flex flex-col border border-gray-200 rounded-lg bg-white shadow-sm">
         <div className="border-b border-gray-200 p-4">
