@@ -1,5 +1,5 @@
-import { apiClient } from '@/lib/api/api-client';
-import { ApiResponse } from '@/types/api';
+import { apiClient } from "@/lib/api/api-client";
+import { ApiResponse } from "@/types/api";
 
 export interface ChatGroupResponse {
   id: string;
@@ -64,7 +64,10 @@ export interface ChatGroupMemberResponse {
 const chatApi = {
   // Chat Group APIs
   async listMyGroups(page = 0, size = 20) {
-    const query = new URLSearchParams({ page: page.toString(), size: size.toString() });
+    const query = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+    });
     const response = await apiClient.get<
       ApiResponse<{
         content: ChatGroupResponse[];
@@ -80,16 +83,16 @@ const chatApi = {
   async getGroup(groupId: string) {
     const response = await apiClient.get<ApiResponse<ChatGroupResponse>>(
       `/chat/groups/${groupId}`,
-      { authenticated: true }
+      { authenticated: true },
     );
     return response.data;
   },
 
   async createGroup(data: CreateChatGroupRequest) {
     const response = await apiClient.post<ApiResponse<ChatGroupResponse>>(
-      '/chat/groups',
+      "/chat/groups",
       data,
-      { authenticated: true }
+      { authenticated: true },
     );
     return response.data;
   },
@@ -98,7 +101,7 @@ const chatApi = {
     const response = await apiClient.put<ApiResponse<ChatGroupResponse>>(
       `/chat/groups/${groupId}`,
       data,
-      { authenticated: true }
+      { authenticated: true },
     );
     return response.data;
   },
@@ -107,7 +110,7 @@ const chatApi = {
     const response = await apiClient.post<ApiResponse<void>>(
       `/chat/groups/${groupId}/members/${userId}`,
       {},
-      { authenticated: true }
+      { authenticated: true },
     );
     return response.data;
   },
@@ -116,25 +119,20 @@ const chatApi = {
     const response = await apiClient.post<ApiResponse<void>>(
       `/chat/groups/${groupId}/members/by-email`,
       { email },
-      { authenticated: true }
+      { authenticated: true },
     );
     return response.data;
   },
 
-  async addStudentMembers(groupId: string, studentCodes: string[] | null, classCode: string | null) {
+  async addStudentMembers(
+    groupId: string,
+    studentCodes: string[] | null,
+    classCode: string | null,
+  ) {
     const response = await apiClient.post<ApiResponse<void>>(
       `/chat/groups/${groupId}/members/students/add`,
       { studentCodes, classCode },
-      { authenticated: true }
-    );
-    return response.data;
-  },
-
-  async autoAddMembers(groupId: string, scope: string, departmentCode?: string, classCode?: string) {
-    const response = await apiClient.post<ApiResponse<void>>(
-      `/chat/groups/${groupId}/members/auto-add`,
-      { scope, departmentCode, classCode },
-      { authenticated: true }
+      { authenticated: true },
     );
     return response.data;
   },
@@ -142,7 +140,7 @@ const chatApi = {
   async removeMember(groupId: string, userId: string) {
     const response = await apiClient.delete<ApiResponse<void>>(
       `/chat/groups/${groupId}/members/${userId}`,
-      { authenticated: true }
+      { authenticated: true },
     );
     return response.data;
   },
@@ -151,7 +149,7 @@ const chatApi = {
     const response = await apiClient.post<ApiResponse<void>>(
       `/chat/groups/${groupId}/archive`,
       {},
-      { authenticated: true }
+      { authenticated: true },
     );
     return response.data;
   },
@@ -159,7 +157,7 @@ const chatApi = {
   async deleteGroup(groupId: string) {
     const response = await apiClient.delete<ApiResponse<void>>(
       `/chat/groups/${groupId}`,
-      { authenticated: true }
+      { authenticated: true },
     );
     return response.data;
   },
@@ -169,7 +167,7 @@ const chatApi = {
     const response = await apiClient.post<ApiResponse<ChatMessageResponse>>(
       `/chat/groups/${groupId}/messages`,
       data,
-      { authenticated: true }
+      { authenticated: true },
     );
     return response.data;
   },
@@ -178,7 +176,7 @@ const chatApi = {
     const query = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
-      sort: 'createdAt,desc',
+      sort: "createdAt,desc",
     });
     const response = await apiClient.get<
       ApiResponse<{
@@ -214,7 +212,7 @@ const chatApi = {
     const response = await apiClient.put<ApiResponse<ChatMessageResponse>>(
       `/chat/messages/${messageId}`,
       data,
-      { authenticated: true }
+      { authenticated: true },
     );
     return response.data;
   },
@@ -222,7 +220,7 @@ const chatApi = {
   async deleteMessage(messageId: string) {
     const response = await apiClient.delete<ApiResponse<void>>(
       `/chat/messages/${messageId}`,
-      { authenticated: true }
+      { authenticated: true },
     );
     return response.data;
   },
@@ -231,7 +229,7 @@ const chatApi = {
     const response = await apiClient.post<ApiResponse<void>>(
       `/chat/messages/${messageId}/read`,
       {},
-      { authenticated: true }
+      { authenticated: true },
     );
     return response.data;
   },
@@ -240,7 +238,7 @@ const chatApi = {
     const response = await apiClient.post<ApiResponse<void>>(
       `/chat/groups/${groupId}/read-all`,
       {},
-      { authenticated: true }
+      { authenticated: true },
     );
     return response.data;
   },
@@ -248,7 +246,7 @@ const chatApi = {
   async getUnreadCount(groupId: string) {
     const response = await apiClient.get<ApiResponse<number>>(
       `/chat/groups/${groupId}/unread-count`,
-      { authenticated: true }
+      { authenticated: true },
     );
     return response.data;
   },

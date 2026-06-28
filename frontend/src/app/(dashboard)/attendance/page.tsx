@@ -23,7 +23,6 @@ import { useToast } from "@/shared/components/toast-provider";
 import { Button } from "@/shared/ui/button";
 import { Modal } from "@/shared/ui/modal";
 import { Panel } from "@/shared/ui/panel";
-import { useSearchParams } from "next/navigation";
 
 type ManualStatus = Extract<
   AttendanceStatus,
@@ -49,84 +48,19 @@ type ManualRosterRow = {
 type Option = { label: string; value: string };
 
 const TODAY = new Date().toISOString().slice(0, 10);
-const DEMO_ACADEMIC_YEAR = "2026-2027";
-const DEMO_SEMESTER = "HK1";
-const DEMO_CLASS_CODE = "12A1";
-const DEMO_CLASS_NAME = "12A1 - Lớp 12A1";
-const DEMO_SESSION_ID = "demo-attendance-session";
-const DEMO_STUDENTS = [
-  { studentCode: "HS1001", studentName: "Nguyễn Minh Anh" },
-  { studentCode: "HS1002", studentName: "Trần Gia Huy" },
-  { studentCode: "HS1003", studentName: "Lê Hoàng Long" },
-  { studentCode: "HS1004", studentName: "Phạm Thu Hà" },
-  { studentCode: "HS1005", studentName: "Đặng Ngọc Mai" },
-  { studentCode: "HS1006", studentName: "Võ Đức Tài" },
-];
-
-const DEMO_SESSION: ClassSession = {
-  sessionId: DEMO_SESSION_ID,
-  className: DEMO_CLASS_NAME,
-  subjectCode: "TOAN",
-  subjectName: "Toán",
-  semesterCode: DEMO_SEMESTER,
-  academicYearCode: DEMO_ACADEMIC_YEAR,
-  startTime: `${DEMO_ACADEMIC_YEAR.split("-")[0]}-10-10T07:00:00.000Z`,
-  endTime: `${DEMO_ACADEMIC_YEAR.split("-")[0]}-10-10T07:45:00.000Z`,
-  teacherCode: "GV001",
-  teacherName: "Cô Nguyễn Thị Lan",
-  periodLabel: "Tiết 1",
-  isCurrentSlot: true,
-};
-
-const DEMO_CURRENT_SLOT: CurrentTeacherSlot = {
-  ...DEMO_SESSION,
-  hasCurrentSlot: true,
-  date: TODAY,
-  serverTime: new Date().toISOString(),
-};
-
-const DEMO_ATTENDANCE_ROWS: AttendanceRecord[] = DEMO_STUDENTS.map(
-  (student, index) => ({
-    attendanceId: `demo-attendance-${index + 1}`,
-    studentCode: student.studentCode,
-    studentName: student.studentName,
-    sessionId: DEMO_SESSION_ID,
-    className: DEMO_CLASS_NAME,
-    subjectCode: DEMO_SESSION.subjectCode,
-    subjectName: DEMO_SESSION.subjectName,
-    teacherCode: DEMO_SESSION.teacherCode,
-    teacherName: DEMO_SESSION.teacherName,
-    sessionStartTime: DEMO_SESSION.startTime,
-    sessionEndTime: DEMO_SESSION.endTime,
-    status: (index % 4 === 0
-      ? "PRESENT"
-      : index % 4 === 1
-        ? "ABSENT"
-        : index % 4 === 2
-          ? "LATE"
-          : "EXCUSED") as AttendanceStatus,
-    method: index % 2 === 0 ? "MANUAL" : "QR",
-    capturedByCode: DEMO_SESSION.teacherCode,
-    capturedByName: DEMO_SESSION.teacherName,
-    createdAt: new Date().toISOString(),
-  }),
-);
 
 export default function AttendancePage() {
   const { session } = useAuthSession();
   const { showToast } = useToast();
-  const searchParams = useSearchParams();
 
   const isTeacher = session?.user.role === "TEACHER";
   const isAdmin = session?.user.role === "ADMIN";
   const canManage = Boolean(isTeacher || isAdmin);
-  const initialDemoMode = searchParams.get("demo") === "1";
 
   const [academicYearCode, setAcademicYearCode] = useState("");
   const [semesterCode, setSemesterCode] = useState("");
   const [classCode, setClassCode] = useState("");
   const [attendanceDate, setAttendanceDate] = useState(TODAY);
-  const [demoMode, setDemoMode] = useState(initialDemoMode);
 
   const [yearOptions, setYearOptions] = useState<Option[]>([]);
   const [semesterOptions, setSemesterOptions] = useState<Option[]>([]);
@@ -167,12 +101,6 @@ export default function AttendancePage() {
     [sessions, selectedSessionId],
   );
 
-  const showDemoPrompt = Boolean(
-    !demoMode &&
-    ((isTeacher && teacherCurrentSlot && !teacherCurrentSlot.hasCurrentSlot) ||
-      (sessions.length === 0 && selectedSessionId === "")),
-  );
-
   const teacherCanCreateAttendance = useMemo(() => {
     if (!isTeacher) {
       return true;
@@ -210,34 +138,6 @@ export default function AttendancePage() {
   async function bootstrapOptionsAndDefaults() {
     setLoadingOptions(true);
     try {
-      if (demoMode) {
-        setYearOptions([
-          { value: DEMO_ACADEMIC_YEAR, label: DEMO_ACADEMIC_YEAR },
-        ]);
-        setSemesterOptions([{ value: DEMO_SEMESTER, label: DEMO_SEMESTER }]);
-        setClassOptions([{ value: DEMO_CLASS_CODE, label: DEMO_CLASS_NAME }]);
-        setAcademicYearCode(DEMO_ACADEMIC_YEAR);
-        setSemesterCode(DEMO_SEMESTER);
-        setClassCode(DEMO_CLASS_CODE);
-        setAttendanceDate(TODAY);
-        setTeacherCurrentSlot(DEMO_CURRENT_SLOT);
-        setSessions([DEMO_SESSION]);
-        setSelectedSessionId(DEMO_SESSION_ID);
-        setAttendanceRows(DEMO_ATTENDANCE_ROWS);
-        setManualRosterRows(
-          DEMO_STUDENTS.map((student, index) => ({
-            studentCode: student.studentCode,
-            studentName: student.studentName,
-            status:
-              normalizeAttendanceStatus(DEMO_ATTENDANCE_ROWS[index]?.status) ??
-              "ABSENT",
-            attendanceId: DEMO_ATTENDANCE_ROWS[index]?.attendanceId,
-          })),
-        );
-        setShowManualPanel(true);
-        return;
-      }
-
       const [teachingResponse, classroomResponse] = await Promise.all([
         teachingApi.list(),
         classroomApi.list({ scope: "all", limit: 500 }),
@@ -373,16 +273,10 @@ export default function AttendancePage() {
     if (!deduped.some((item) => item.value === classCode)) {
       setClassCode(deduped[0]?.value ?? "");
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [academicYearCode, teachingAssignments, classroomRecords]);
 
   async function handleFetchSessions() {
-    if (demoMode) {
-      setSessions([DEMO_SESSION]);
-      setSelectedSessionId(DEMO_SESSION_ID);
-      return;
-    }
-
     if (!classCode.trim()) {
       showToast("Vui lòng chọn lớp học", "error");
       return;
@@ -434,11 +328,6 @@ export default function AttendancePage() {
       return;
     }
 
-    if (demoMode) {
-      setAttendanceRows(DEMO_ATTENDANCE_ROWS.map((item) => ({ ...item })));
-      return;
-    }
-
     setLoadingAttendance(true);
     try {
       const response = await attendanceApi.getSessionAttendance(sessionId);
@@ -456,20 +345,6 @@ export default function AttendancePage() {
   }
 
   async function handleLoadManualRoster(session: ClassSession) {
-    if (demoMode) {
-      setManualRosterRows(
-        DEMO_STUDENTS.map((student, index) => ({
-          studentCode: student.studentCode,
-          studentName: student.studentName,
-          status:
-            normalizeAttendanceStatus(DEMO_ATTENDANCE_ROWS[index]?.status) ??
-            "ABSENT",
-          attendanceId: DEMO_ATTENDANCE_ROWS[index]?.attendanceId,
-        })),
-      );
-      return;
-    }
-
     setLoadingRoster(true);
     try {
       const response = await classroomApi.students(session.className);
@@ -511,7 +386,7 @@ export default function AttendancePage() {
 
   useEffect(() => {
     void bootstrapOptionsAndDefaults();
-  }, [demoMode]);
+  }, []);
 
   useEffect(() => {
     if (!classCode || !semesterCode || !attendanceDate) {
@@ -582,20 +457,6 @@ export default function AttendancePage() {
     }
 
     try {
-      if (demoMode) {
-        const fakeQr = `demo-attendance:${selectedSessionId}:${Date.now()}`;
-        setQrValue(fakeQr);
-        const qrDataUrl = await QRCode.toDataURL(fakeQr, {
-          width: 320,
-          margin: 2,
-        });
-        setQrImageUrl(qrDataUrl);
-        setQrExpiresAt(Date.now() + 15 * 60 * 1000);
-        setQrModalOpen(true);
-        showToast("Đã tạo QR demo cho giao diện kiểm thử", "success");
-        return;
-      }
-
       const response = await attendanceApi.generateQRCode(selectedSessionId);
       const payload = response.data;
       if (!payload?.qrCode) {
@@ -641,39 +502,6 @@ export default function AttendancePage() {
 
     setSavingManual(true);
     try {
-      if (demoMode) {
-        const nextRows = manualRosterRows.map((row) => {
-          const matched = DEMO_ATTENDANCE_ROWS.find(
-            (item) => item.studentCode === row.studentCode,
-          );
-          return {
-            ...matched,
-            attendanceId:
-              row.attendanceId ??
-              matched?.attendanceId ??
-              `demo-attendance-${row.studentCode}`,
-            studentCode: row.studentCode,
-            studentName: row.studentName,
-            sessionId: DEMO_SESSION_ID,
-            className: DEMO_CLASS_NAME,
-            subjectCode: DEMO_SESSION.subjectCode,
-            subjectName: DEMO_SESSION.subjectName,
-            teacherCode: DEMO_SESSION.teacherCode,
-            teacherName: DEMO_SESSION.teacherName,
-            sessionStartTime: DEMO_SESSION.startTime,
-            sessionEndTime: DEMO_SESSION.endTime,
-            status: row.status,
-            method: "MANUAL",
-            capturedByCode: DEMO_SESSION.teacherCode,
-            capturedByName: DEMO_SESSION.teacherName,
-            createdAt: new Date().toISOString(),
-          } satisfies AttendanceRecord;
-        });
-        setAttendanceRows(nextRows);
-        showToast("Đã lưu điểm danh demo", "success");
-        return;
-      }
-
       const operations = manualRosterRows.map(async (row) => {
         if (row.attendanceId) {
           return attendanceApi.updateStatus(row.attendanceId, row.status);
@@ -716,23 +544,6 @@ export default function AttendancePage() {
   ) {
     setSavingRowId(attendanceId);
     try {
-      if (demoMode) {
-        setAttendanceRows((previous) =>
-          previous.map((item) =>
-            item.attendanceId === attendanceId ? { ...item, status } : item,
-          ),
-        );
-        setManualRosterRows((previous) =>
-          previous.map((item) =>
-            item.attendanceId === attendanceId
-              ? { ...item, status: status as ManualStatus }
-              : item,
-          ),
-        );
-        showToast("Đã cập nhật trạng thái demo", "success");
-        return;
-      }
-
       await attendanceApi.updateStatus(attendanceId, status);
       showToast("Đã cập nhật trạng thái", "success");
       await handleLoadAttendance(selectedSessionId);
@@ -751,21 +562,6 @@ export default function AttendancePage() {
   async function handleDeleteRow(attendanceId: string) {
     setDeletingRowId(attendanceId);
     try {
-      if (demoMode) {
-        setAttendanceRows((previous) =>
-          previous.filter((item) => item.attendanceId !== attendanceId),
-        );
-        setManualRosterRows((previous) =>
-          previous.map((item) =>
-            item.attendanceId === attendanceId
-              ? { ...item, attendanceId: undefined }
-              : item,
-          ),
-        );
-        showToast("Đã xóa bản ghi demo", "success");
-        return;
-      }
-
       await attendanceApi.delete(attendanceId);
       showToast("Đã xóa bản ghi điểm danh", "success");
       await handleLoadAttendance(selectedSessionId);
@@ -795,86 +591,89 @@ export default function AttendancePage() {
         description="Chọn theo thứ tự Năm học - Học kỳ - Lớp - Ngày - Tiết học, sau đó tạo QR hoặc mở điểm danh thủ công."
       />
 
-      {showDemoPrompt ? (
-        <Panel className="border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="font-semibold">Chưa có tiết thật để điểm danh.</p>
-              <p className="mt-1 text-sm text-amber-800">
-                Bạn có thể bật dữ liệu demo để kiểm tra toàn bộ giao diện, QR và
-                bảng điểm danh ngay trên màn hình này.
-              </p>
-            </div>
-            <Button onClick={() => setDemoMode(true)} tone="secondary">
-              Bật dữ liệu demo
-            </Button>
-          </div>
-        </Panel>
-      ) : null}
-
-      {demoMode ? (
-        <Panel className="border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
-          Đang chạy ở chế độ demo. Dữ liệu, QR và thao tác lưu/xóa chỉ thay đổi
-          trên giao diện hiện tại, không gọi API thật.
-        </Panel>
-      ) : null}
-
       <Panel className="p-5 sm:p-6">
         <div className="grid gap-3">
           {/* Row 1: compact filters */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="grid gap-1">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Năm học</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Năm học
+              </label>
               <select
                 value={academicYearCode}
                 onChange={(event) => setAcademicYearCode(event.target.value)}
-                disabled={loadingOptions || yearOptions.length === 0 || (isTeacher && Boolean(teacherCurrentSlot?.hasCurrentSlot))}
+                disabled={
+                  loadingOptions ||
+                  yearOptions.length === 0 ||
+                  (isTeacher && Boolean(teacherCurrentSlot?.hasCurrentSlot))
+                }
                 className="h-9 rounded-lg border border-slate-200 px-2 text-xs"
               >
                 <option value="">Chọn năm</option>
                 {yearOptions.map((item) => (
-                  <option key={item.value} value={item.value}>{item.label}</option>
+                  <option key={item.value} value={item.value}>
+                    {item.label}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div className="grid gap-1">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Học kỳ</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Học kỳ
+              </label>
               <select
                 value={semesterCode}
                 onChange={(event) => setSemesterCode(event.target.value)}
-                disabled={loadingOptions || (isTeacher && Boolean(teacherCurrentSlot?.hasCurrentSlot))}
+                disabled={
+                  loadingOptions ||
+                  (isTeacher && Boolean(teacherCurrentSlot?.hasCurrentSlot))
+                }
                 className="h-9 rounded-lg border border-slate-200 px-2 text-xs"
               >
                 <option value="">Chọn kỳ</option>
                 {semesterOptions.map((item) => (
-                  <option key={item.value} value={item.value}>{item.label}</option>
+                  <option key={item.value} value={item.value}>
+                    {item.label}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div className="grid gap-1">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Ngày</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Ngày
+              </label>
               <input
                 type="date"
                 value={attendanceDate}
                 onChange={(event) => setAttendanceDate(event.target.value)}
-                disabled={isTeacher && Boolean(teacherCurrentSlot?.hasCurrentSlot)}
+                disabled={
+                  isTeacher && Boolean(teacherCurrentSlot?.hasCurrentSlot)
+                }
                 className="h-9 rounded-lg border border-slate-200 px-2 text-xs"
               />
             </div>
 
             <div className="grid gap-1">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Lớp học</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Lớp học
+              </label>
               <select
                 value={classCode}
                 onChange={(event) => setClassCode(event.target.value)}
-                disabled={loadingOptions || classOptions.length === 0 || (isTeacher && Boolean(teacherCurrentSlot?.hasCurrentSlot))}
+                disabled={
+                  loadingOptions ||
+                  classOptions.length === 0 ||
+                  (isTeacher && Boolean(teacherCurrentSlot?.hasCurrentSlot))
+                }
                 className="h-9 rounded-lg border border-slate-200 px-2 text-xs"
               >
                 <option value="">Chọn lớp</option>
                 {classOptions.map((item) => (
-                  <option key={item.value} value={item.value}>{item.label}</option>
+                  <option key={item.value} value={item.value}>
+                    {item.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -882,7 +681,9 @@ export default function AttendancePage() {
 
           {/* Row 2: tiết học full width */}
           <div className="grid gap-1">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Tiết học</label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              Tiết học
+            </label>
             <select
               value={selectedSessionId}
               onChange={(event) => setSelectedSessionId(event.target.value)}
@@ -1014,7 +815,9 @@ export default function AttendancePage() {
                   <th className="px-3 py-2 text-left font-semibold text-slate-900">
                     Trạng thái
                   </th>
-                  <th className="hidden sm:table-cell px-3 py-2 text-left font-semibold text-slate-900">Bản ghi hiện có</th>
+                  <th className="hidden sm:table-cell px-3 py-2 text-left font-semibold text-slate-900">
+                    Bản ghi hiện có
+                  </th>
                 </tr>
               </thead>
               <tbody>

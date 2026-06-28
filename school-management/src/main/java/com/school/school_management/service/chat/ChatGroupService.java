@@ -1,12 +1,15 @@
 package com.school.school_management.service.chat;
 
-import com.school.school_management.dto.chat.ChatGroupResponse;
-import com.school.school_management.dto.chat.CreateChatGroupRequest;
-import com.school.school_management.dto.chat.AddStudentMembersRequest;
 import java.util.List;
 import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import com.school.school_management.dto.chat.AddStudentMembersRequest;
+import com.school.school_management.dto.chat.AutoAddMembersRequest;
+import com.school.school_management.dto.chat.ChatGroupResponse;
+import com.school.school_management.dto.chat.CreateChatGroupRequest;
 
 public interface ChatGroupService {
 
@@ -24,7 +27,7 @@ public interface ChatGroupService {
 
     void addStudentMembersToGroup(UUID groupId, AddStudentMembersRequest request);
 
-    void autoAddMembers(UUID groupId, com.school.school_management.dto.chat.AutoAddMembersRequest request);
+    void autoAddMembersToGroup(UUID groupId, AutoAddMembersRequest request);
 
     void removeMemberFromGroup(UUID groupId, UUID userId);
 

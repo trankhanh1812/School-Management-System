@@ -37,8 +37,15 @@ function SectionSkeleton({ rows = 3 }: { rows?: number }) {
 export default function DashboardPage() {
   const { session } = useAuthSession();
   const isStudent = session?.user.role === "STUDENT";
-  const { snapshot, isLoading, isRefreshing, hasLoaded, error, refresh, triggerLoad } =
-    useEducationAnalytics();
+  const {
+    snapshot,
+    isLoading,
+    isRefreshing,
+    hasLoaded,
+    error,
+    refresh,
+    triggerLoad,
+  } = useEducationAnalytics();
 
   // Auto-trigger load when the page mounts (deferred — not blocking render)
   useEffect(() => {
@@ -93,9 +100,9 @@ export default function DashboardPage() {
           ? Array.from({ length: 4 }).map((_, index) => (
               <MetricSkeleton key={`metric-skeleton-${index}`} />
             ))
-          : snapshot.reportMetrics.slice(0, 4).map((metric) => (
-              <MetricCard key={metric.label} {...metric} />
-            ))}
+          : snapshot.reportMetrics
+              .slice(0, 4)
+              .map((metric) => <MetricCard key={metric.label} {...metric} />)}
       </section>
 
       {/* Charts row */}
@@ -192,7 +199,14 @@ export default function DashboardPage() {
             <DataTable
               title="Hiệu suất lớp học"
               description="So sánh quy mô lớp, điểm trung bình và tỷ lệ đạt theo từng lớp."
-              columns={["Lớp", "Năm học", "Sĩ số", "Điểm TB", "Tỷ lệ đạt", "GVCN"]}
+              columns={[
+                "Lớp",
+                "Năm học",
+                "Sĩ số",
+                "Điểm TB",
+                "Tỷ lệ đạt",
+                "GVCN",
+              ]}
               rows={snapshot.classPerformance
                 .slice(0, 12)
                 .map((item) => [

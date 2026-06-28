@@ -38,8 +38,15 @@ function SectionSkeleton({ rows = 3 }: { rows?: number }) {
 export default function ReportsPage() {
   const { session } = useAuthSession();
   const isAdmin = session?.user.role === "ADMIN";
-  const { snapshot, isLoading, isRefreshing, hasLoaded, error, refresh, triggerLoad } =
-    useEducationAnalytics();
+  const {
+    snapshot,
+    isLoading,
+    isRefreshing,
+    hasLoaded,
+    error,
+    refresh,
+    triggerLoad,
+  } = useEducationAnalytics();
 
   // Auto-trigger load when the page mounts (deferred — not blocking render)
   useEffect(() => {
@@ -52,7 +59,9 @@ export default function ReportsPage() {
     try {
       const res = await fetch(url, {
         headers: {
-          Authorization: tokens?.accessToken ? `Bearer ${tokens.accessToken}` : "",
+          Authorization: tokens?.accessToken
+            ? `Bearer ${tokens.accessToken}`
+            : "",
         },
       });
       if (!res.ok) throw new Error("Không thể tải báo cáo");
@@ -93,7 +102,10 @@ export default function ReportsPage() {
             </ButtonLink>
             {isAdmin && (
               <>
-                <Button tone="secondary" onClick={() => void downloadReport("students")}>
+                <Button
+                  tone="secondary"
+                  onClick={() => void downloadReport("students")}
+                >
                   Export học sinh
                 </Button>
                 <Button
@@ -120,9 +132,9 @@ export default function ReportsPage() {
           ? Array.from({ length: 6 }).map((_, index) => (
               <MetricSkeleton key={`report-metric-skeleton-${index}`} />
             ))
-          : snapshot.reportMetrics.slice(0, 6).map((metric) => (
-              <MetricCard key={metric.label} {...metric} />
-            ))}
+          : snapshot.reportMetrics
+              .slice(0, 6)
+              .map((metric) => <MetricCard key={metric.label} {...metric} />)}
       </section>
 
       {/* Conduct + Academic rank */}
@@ -226,7 +238,14 @@ export default function ReportsPage() {
             <DataTable
               title="Hiệu suất lớp học"
               description="Có thể dùng bảng này làm nền cho báo cáo học lực theo lớp và đối chiếu GVCN."
-              columns={["Lớp", "Năm học", "Sĩ số", "Điểm TB", "Tỷ lệ đạt", "GVCN"]}
+              columns={[
+                "Lớp",
+                "Năm học",
+                "Sĩ số",
+                "Điểm TB",
+                "Tỷ lệ đạt",
+                "GVCN",
+              ]}
               rows={snapshot.classPerformance.map((item) => [
                 item.className,
                 item.academicYear,
@@ -262,7 +281,13 @@ export default function ReportsPage() {
             <DataTable
               title="Khối lượng giảng dạy giáo viên"
               description="Dùng để đối chiếu mức độ phân công của từng giáo viên và hỗ trợ cân bằng tải."
-              columns={["Mã GV", "Họ và tên", "Bộ môn", "Số assignment", "Chủ nhiệm"]}
+              columns={[
+                "Mã GV",
+                "Họ và tên",
+                "Bộ môn",
+                "Số assignment",
+                "Chủ nhiệm",
+              ]}
               rows={snapshot.teacherLoad.map((teacher) => [
                 teacher.teacherCode,
                 teacher.fullName,

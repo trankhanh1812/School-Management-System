@@ -27,7 +27,8 @@ export function StudentListContent() {
   const [importing, setImporting] = useState(false);
   const [lastImportId, setLastImportId] = useState<string | null>(null);
   const [showingPreview, setShowingPreview] = useState(false);
-  const [previewData, setPreviewData] = useState<StudentImportPreviewResponse | null>(null);
+  const [previewData, setPreviewData] =
+    useState<StudentImportPreviewResponse | null>(null);
   const [currentFile, setCurrentFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { showToast } = useToast();
@@ -99,10 +100,13 @@ export function StudentListContent() {
       if (result.failedRecords > 0) {
         showToast(
           `Import xong: ${result.successfulRecords} thanh cong, ${result.failedRecords} loi`,
-          "info"
+          "info",
         );
       } else {
-        showToast(`Import thanh cong ${result.successfulRecords} ban ghi`, "success");
+        showToast(
+          `Import thanh cong ${result.successfulRecords} ban ghi`,
+          "success",
+        );
       }
     } catch {
       showToast("Import that bai", "error");
@@ -180,7 +184,11 @@ export function StudentListContent() {
                 <Button tone="secondary" onClick={handleDownloadTemplate}>
                   Download template
                 </Button>
-                <Button tone="secondary" onClick={handleSelectImportFile} disabled={importing}>
+                <Button
+                  tone="secondary"
+                  onClick={handleSelectImportFile}
+                  disabled={importing}
+                >
                   {importing ? "Dang import..." : "Import Excel"}
                 </Button>
                 <Button tone="ghost" onClick={handleDownloadErrors}>
@@ -202,7 +210,17 @@ export function StudentListContent() {
 
       <StudentImportPreview
         open={showingPreview && Boolean(previewData)}
-        previewData={previewData ?? { import_id: "", total_records: 0, valid_records: 0, invalid_records: 0, students: [], parents: [], errors: [] }}
+        previewData={
+          previewData ?? {
+            import_id: "",
+            total_records: 0,
+            valid_records: 0,
+            invalid_records: 0,
+            students: [],
+            parents: [],
+            errors: [],
+          }
+        }
         onImportComplete={handleImportFromPreview}
         onCancel={handleCancelPreview}
       />
@@ -214,14 +232,23 @@ export function StudentListContent() {
           <Panel className="relative overflow-hidden border border-cyan-100 bg-gradient-to-br from-cyan-50 via-white to-sky-50 p-5 sm:p-6">
             <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-cyan-100/70" />
             <div className="relative">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-700">Nghiệp vụ học vụ</p>
-              <h3 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">Xét lên lớp</h3>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-700">
+                Nghiệp vụ học vụ
+              </p>
+              <h3 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">
+                Xét lên lớp
+              </h3>
               <p className="mt-2 text-sm leading-6 text-slate-700">
-                Kiểm tra phương án lên lớp, lưu ban, chuyển lớp và import quyết định hàng loạt theo biểu mẫu.
+                Kiểm tra phương án lên lớp, lưu ban, chuyển lớp và import quyết
+                định hàng loạt theo biểu mẫu.
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
-                <ButtonLink href="/classes/promotion">Mở workspace xét lên lớp</ButtonLink>
-                <ButtonLink href="/classes" tone="secondary">Xem danh sách lớp</ButtonLink>
+                <ButtonLink href="/classes/promotion">
+                  Mở workspace xét lên lớp
+                </ButtonLink>
+                <ButtonLink href="/classes" tone="secondary">
+                  Xem danh sách lớp
+                </ButtonLink>
               </div>
             </div>
           </Panel>
@@ -229,14 +256,23 @@ export function StudentListContent() {
           <Panel className="relative overflow-hidden border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-5 sm:p-6">
             <div className="absolute -left-12 -bottom-12 h-36 w-36 rounded-full bg-emerald-100/70" />
             <div className="relative">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">Nghiệp vụ học sinh</p>
-              <h3 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">Hạnh kiểm theo học kỳ</h3>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                Nghiệp vụ học sinh
+              </p>
+              <h3 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">
+                Hạnh kiểm theo học kỳ
+              </h3>
               <p className="mt-2 text-sm leading-6 text-slate-700">
-                Nhập nhận xét hạnh kiểm trong module Học sinh để theo dõi đồng bộ với học bạ và lịch sử học tập.
+                Nhập nhận xét hạnh kiểm trong module Học sinh để theo dõi đồng
+                bộ với học bạ và lịch sử học tập.
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
-                <ButtonLink href="/students/conduct">Mở quản lý hạnh kiểm</ButtonLink>
-                <ButtonLink href="/students/conduct/new" tone="secondary">Tạo bản ghi mới</ButtonLink>
+                <ButtonLink href="/students/conduct">
+                  Mở quản lý hạnh kiểm
+                </ButtonLink>
+                <ButtonLink href="/students/conduct/new" tone="secondary">
+                  Tạo bản ghi mới
+                </ButtonLink>
               </div>
             </div>
           </Panel>
@@ -245,9 +281,12 @@ export function StudentListContent() {
 
       <section className="grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
         <Panel className="p-5 sm:p-6">
-          <h3 className="text-xl font-semibold tracking-tight text-slate-950">Bộ lọc học sinh</h3>
+          <h3 className="text-xl font-semibold tracking-tight text-slate-950">
+            Bộ lọc học sinh
+          </h3>
           <p className="mt-2 text-sm text-slate-600">
-            Tránh tải toàn bộ dữ liệu: ưu tiên phạm vi hiện tại, mở rộng khi cần.
+            Tránh tải toàn bộ dữ liệu: ưu tiên phạm vi hiện tại, mở rộng khi
+            cần.
           </p>
 
           <div className="mt-5 grid gap-3">
@@ -262,7 +301,9 @@ export function StudentListContent() {
             <div className="grid gap-3 sm:grid-cols-2">
               <select
                 value={scope}
-                onChange={(event) => setScope(event.target.value as "current" | "all")}
+                onChange={(event) =>
+                  setScope(event.target.value as "current" | "all")
+                }
                 className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-sky-400 focus:outline-none"
               >
                 <option value="current">Năm học hiện tại</option>
@@ -302,7 +343,9 @@ export function StudentListContent() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <h3 className="text-xl font-semibold tracking-tight text-slate-950">
-                {userRole === "TEACHER" ? "Học sinh lớp của tôi" : "Danh sách học sinh trọng tâm"}
+                {userRole === "TEACHER"
+                  ? "Học sinh lớp của tôi"
+                  : "Danh sách học sinh trọng tâm"}
               </h3>
               <p className="mt-2 text-sm leading-6 text-slate-600">
                 {userRole === "TEACHER"
@@ -373,18 +416,28 @@ function StudentSelfViewContent() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Panel className="lg:col-span-2 p-6">
-          <h3 className="text-lg font-semibold text-slate-950">Thông tin cá nhân</h3>
+          <h3 className="text-lg font-semibold text-slate-950">
+            Thông tin cá nhân
+          </h3>
           <div className="mt-6 space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-slate-600">Họ và tên:</span>
-              <span className="text-sm font-semibold text-slate-950">{session?.user.fullName}</span>
+              <span className="text-sm font-medium text-slate-600">
+                Họ và tên:
+              </span>
+              <span className="text-sm font-semibold text-slate-950">
+                {session?.user.fullName}
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-slate-600">Email:</span>
-              <span className="text-sm font-semibold text-slate-950">{session?.user.email}</span>
+              <span className="text-sm font-semibold text-slate-950">
+                {session?.user.email}
+              </span>
             </div>
             <div className="flex items-center justify-between border-t border-slate-200 pt-4">
-              <span className="text-sm font-medium text-slate-600">Loại tài khoản:</span>
+              <span className="text-sm font-medium text-slate-600">
+                Loại tài khoản:
+              </span>
               <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-800">
                 <span className="h-2 w-2 rounded-full bg-blue-500"></span>
                 Học sinh
@@ -394,7 +447,9 @@ function StudentSelfViewContent() {
         </Panel>
 
         <Panel className="p-6">
-          <h3 className="text-lg font-semibold text-slate-950">Tài liệu liên quan</h3>
+          <h3 className="text-lg font-semibold text-slate-950">
+            Tài liệu liên quan
+          </h3>
           <div className="mt-6 space-y-3">
             <Link
               href="/my-profile"
@@ -432,7 +487,9 @@ function ParentStudentsViewContent() {
       />
 
       <Panel className="p-6">
-        <h3 className="text-lg font-semibold text-slate-950">Danh sách con em</h3>
+        <h3 className="text-lg font-semibold text-slate-950">
+          Danh sách con em
+        </h3>
         <div className="mt-6 rounded-lg border border-slate-200 p-6 text-center">
           <p className="text-sm text-slate-600">
             Hiện tại hệ thống chưa cấu hình kết nối phụ huynh - học sinh.

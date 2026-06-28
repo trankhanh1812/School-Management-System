@@ -1,45 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import QRCode from "qrcode";
 import { PageIntro } from "@/features/dashboard/components/page-intro";
 import { useMyStudentProfileData } from "@/features/student/student-client-data";
-import { env } from "@/lib/env";
 import { Panel } from "@/shared/ui/panel";
 
 /**
- * Trang này hiển thị hướng dẫn cho học sinh:
- * - QR code được tạo bởi giáo viên và hiển thị trên bảng/projector
- * - Học sinh dùng camera điện thoại (native) quét QR đó
- * - QR encode URL: {appUrl}/attend?token=<qrToken>
- * - Sau khi quét, điện thoại mở URL → trang /attend xử lý xác nhận
- *
- * Component này chỉ hiển thị hướng dẫn + demo URL flow.
+ * Trang này hiển thị hướng dẫn cho học sinh về quy trình điểm danh bằng QR.
+ * Giáo viên tạo mã QR cho buổi học, học sinh quét bằng camera và xác nhận.
  */
-
-function QRPreview({ url }: { url: string }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    if (!canvasRef.current || !url) return;
-    QRCode.toCanvas(canvasRef.current, url, {
-      width: 220,
-      margin: 2,
-      color: { dark: "#0f172a", light: "#ffffff" },
-    }).catch(() => {/* ignore */});
-  }, [url]);
-
-  return <canvas ref={canvasRef} className="rounded-xl" />;
-}
 
 export function QRScanContent() {
   const { student, isLoading } = useMyStudentProfileData();
 
-  // Demo: build the attend URL shape so student understands what to expect
-  const exampleUrl = `${env.appUrl}/attend?token=<mã-từ-giáo-viên>`;
-
   if (isLoading) {
-    return <div className="text-sm text-slate-500">Đang tải thông tin học sinh...</div>;
+    return (
+      <div className="text-sm text-slate-500">
+        Đang tải thông tin học sinh...
+      </div>
+    );
   }
 
   return (
@@ -69,7 +47,9 @@ export function QRScanContent() {
 
       {/* How it works */}
       <Panel className="p-5">
-        <h3 className="text-base font-semibold text-slate-900">Cách thức hoạt động</h3>
+        <h3 className="text-base font-semibold text-slate-900">
+          Cách thức hoạt động
+        </h3>
         <ol className="mt-4 grid gap-4">
           {[
             {
@@ -98,7 +78,9 @@ export function QRScanContent() {
             },
           ].map((item) => (
             <li key={item.step} className="flex items-start gap-4">
-              <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${item.color}`}>
+              <span
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${item.color}`}
+              >
                 {item.step}
               </span>
               <div>
@@ -108,18 +90,6 @@ export function QRScanContent() {
             </li>
           ))}
         </ol>
-      </Panel>
-
-      {/* Demo QR */}
-      <Panel className="p-5">
-        <h3 className="text-base font-semibold text-slate-900">Ví dụ mã QR điểm danh</h3>
-        <p className="mt-1 text-sm text-slate-500">
-          Mã QR thực tế do giáo viên tạo sẽ có dạng tương tự — quét sẽ mở link xác nhận điểm danh.
-        </p>
-        <div className="mt-4 flex flex-col items-center gap-3">
-          <QRPreview url={exampleUrl} />
-          <p className="max-w-xs break-all text-center text-xs text-slate-400">{exampleUrl}</p>
-        </div>
       </Panel>
 
       {/* Notes */}

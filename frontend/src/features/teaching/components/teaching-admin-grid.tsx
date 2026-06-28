@@ -4,7 +4,11 @@ import { useState, useMemo } from "react";
 import { Panel } from "@/shared/ui/panel";
 import { Button } from "@/shared/ui/button";
 import { useToast } from "@/shared/components/toast-provider";
-import { teachingApi, type TeachingScheduleDetail, type TeachingAssignmentUpsertPayload } from "@/features/teaching/api";
+import {
+  teachingApi,
+  type TeachingScheduleDetail,
+  type TeachingAssignmentUpsertPayload,
+} from "@/features/teaching/api";
 import { detectConflicts } from "@/features/teaching/utils/schedule-formatter";
 
 type GradeLevel = "all" | "10" | "11" | "12";
@@ -23,29 +27,29 @@ interface TeachingAdminGridProps {
   onSaveSuccess?: () => void;
 }
 
-const MOCK_CLASSES = {
+const DEFAULT_CLASS_OPTIONS = {
   "10": ["10A1", "10A2", "10A3"],
   "11": ["11A1", "11A2", "11A3"],
   "12": ["12A1", "12A2"],
 };
 
-const MOCK_TEACHERS = [
+const DEFAULT_TEACHER_OPTIONS = [
   { code: "GV001", name: "Nguyễn Thu Hà" },
   { code: "GV002", name: "Trần Minh Khôi" },
   { code: "GV003", name: "Lê Hoàng Nam" },
 ];
 
-const MOCK_SUBJECTS = [
+const DEFAULT_SUBJECT_OPTIONS = [
   { code: "TOAN", name: "Toán" },
   { code: "VAN", name: "Văn" },
 ];
 
-const MOCK_SEMESTERS = [
+const DEFAULT_SEMESTER_OPTIONS = [
   { code: "HK1", name: "Học kỳ 1" },
   { code: "HK2", name: "Học kỳ 2" },
 ];
 
-const MOCK_YEARS = [
+const DEFAULT_YEAR_OPTIONS = [
   { code: "2024-2025", name: "2024-2025" },
   { code: "2025-2026", name: "2025-2026" },
 ];
@@ -61,14 +65,25 @@ const DAYS_OF_WEEK = [
 
 const PERIODS = [1, 2, 3, 4, 5];
 
-export function TeachingAdminGrid({ mode = "create", assignmentId, initialData, onSaveSuccess }: TeachingAdminGridProps) {
+export function TeachingAdminGrid({
+  mode = "create",
+  assignmentId,
+  initialData,
+  onSaveSuccess,
+}: TeachingAdminGridProps) {
   const { showToast } = useToast();
 
-  const [selectedSubject, setSelectedSubject] = useState<string>(initialData?.subjectCode || "");
-  const [selectedSemester, setSelectedSemester] = useState<string>(initialData?.semesterCode || "");
-  const [selectedYear, setSelectedYear] = useState<string>(initialData?.academicYearCode || "");
+  const [selectedSubject, setSelectedSubject] = useState<string>(
+    initialData?.subjectCode || "",
+  );
+  const [selectedSemester, setSelectedSemester] = useState<string>(
+    initialData?.semesterCode || "",
+  );
+  const [selectedYear, setSelectedYear] = useState<string>(
+    initialData?.academicYearCode || "",
+  );
   const [selectedGrade, setSelectedGrade] = useState<GradeLevel>("all");
-  
+
   const [cellData, setCellData] = useState<Record<string, string>>(() => {
     if (!initialData?.scheduleData) return {};
     const data: Record<string, string> = {};
@@ -88,12 +103,26 @@ export function TeachingAdminGrid({ mode = "create", assignmentId, initialData, 
 
   const getClassesForDisplay = (): Record<string, string[]> => {
     if (selectedGrade === "all") {
-      return { "10": MOCK_CLASSES["10"], "11": MOCK_CLASSES["11"], "12": MOCK_CLASSES["12"] };
+      return {
+        "10": DEFAULT_CLASS_OPTIONS["10"],
+        "11": DEFAULT_CLASS_OPTIONS["11"],
+        "12": DEFAULT_CLASS_OPTIONS["12"],
+      };
     }
-    return { [selectedGrade]: MOCK_CLASSES[selectedGrade as keyof typeof MOCK_CLASSES] };
+    return {
+      [selectedGrade]:
+        DEFAULT_CLASS_OPTIONS[
+          selectedGrade as keyof typeof DEFAULT_CLASS_OPTIONS
+        ],
+    };
   };
 
-  const handleCellChange = (classCode: string, day: number, period: number, teacherCode: string) => {
+  const handleCellChange = (
+    classCode: string,
+    day: number,
+    period: number,
+    teacherCode: string,
+  ) => {
     const key = `${classCode}_${day}_${period}`;
     setCellData((prev) => ({
       ...prev,
@@ -124,8 +153,14 @@ export function TeachingAdminGrid({ mode = "create", assignmentId, initialData, 
     return detectConflicts(scheduleList, "");
   }, [scheduleList]);
 
-  const isConflict = (classCode: string, day: number, period: number): boolean => {
-    return conflicts.some((c) => c.day === day && c.period === period && c.classCode === classCode);
+  const isConflict = (
+    classCode: string,
+    day: number,
+    period: number,
+  ): boolean => {
+    return conflicts.some(
+      (c) => c.day === day && c.period === period && c.classCode === classCode,
+    );
   };
 
   const handleSave = async () => {
@@ -168,12 +203,17 @@ export function TeachingAdminGrid({ mode = "create", assignmentId, initialData, 
         }
       }
 
-      showToast(`${mode === "create" ? "Tạo" : "Cập nhật"} phân công thành công`, "success");
+      showToast(
+        `${mode === "create" ? "Tạo" : "Cập nhật"} phân công thành công`,
+        "success",
+      );
       onSaveSuccess?.();
     } catch (error) {
       showToast(
-        error instanceof Error ? error.message : `Lỗi khi ${mode === "create" ? "tạo" : "cập nhật"} phân công`,
-        "error"
+        error instanceof Error
+          ? error.message
+          : `Lỗi khi ${mode === "create" ? "tạo" : "cập nhật"} phân công`,
+        "error",
       );
     } finally {
       setIsSaving(false);
@@ -186,7 +226,9 @@ export function TeachingAdminGrid({ mode = "create", assignmentId, initialData, 
     return (
       <div key={gradeLevel} className="grid gap-4">
         <div className="flex items-center gap-4">
-          <h3 className="text-lg font-semibold text-slate-900">Khối {gradeLevel}</h3>
+          <h3 className="text-lg font-semibold text-slate-900">
+            Khối {gradeLevel}
+          </h3>
           <select
             value={shift}
             onChange={(e) =>
@@ -223,19 +265,34 @@ export function TeachingAdminGrid({ mode = "create", assignmentId, initialData, 
             <tbody>
               {DAYS_OF_WEEK.map((day) =>
                 PERIODS.map((period) => {
-                  const isConflictRow = classes.some((c) => isConflict(c, day.value, period));
+                  const isConflictRow = classes.some((c) =>
+                    isConflict(c, day.value, period),
+                  );
 
                   return (
-                    <tr key={`${day.value}_${period}`} className={isConflictRow ? "bg-rose-50" : ""}>
+                    <tr
+                      key={`${day.value}_${period}`}
+                      className={isConflictRow ? "bg-rose-50" : ""}
+                    >
                       <td className="border border-slate-300 bg-slate-50 px-3 py-2 font-medium sticky left-0 z-10 whitespace-nowrap">
                         {day.label} - Tiết {period}
                       </td>
                       {classes.map((classCode) => {
                         const cellKey = `${classCode}_${day.value}_${period}`;
                         const selectedTeacher = cellData[cellKey];
-                        const hasConflict = isConflict(classCode, day.value, period);
-                        const bgColor = hasConflict ? "bg-rose-100" : selectedTeacher ? "bg-sky-50" : "bg-white";
-                        const borderColor = hasConflict ? "border-rose-300" : "border-slate-300";
+                        const hasConflict = isConflict(
+                          classCode,
+                          day.value,
+                          period,
+                        );
+                        const bgColor = hasConflict
+                          ? "bg-rose-100"
+                          : selectedTeacher
+                            ? "bg-sky-50"
+                            : "bg-white";
+                        const borderColor = hasConflict
+                          ? "border-rose-300"
+                          : "border-slate-300";
 
                         return (
                           <td
@@ -245,7 +302,12 @@ export function TeachingAdminGrid({ mode = "create", assignmentId, initialData, 
                             <select
                               value={selectedTeacher || ""}
                               onChange={(e) =>
-                                handleCellChange(classCode, day.value, period, e.target.value)
+                                handleCellChange(
+                                  classCode,
+                                  day.value,
+                                  period,
+                                  e.target.value,
+                                )
                               }
                               className={`h-8 w-full rounded border px-2 text-xs font-medium ${
                                 hasConflict
@@ -254,15 +316,21 @@ export function TeachingAdminGrid({ mode = "create", assignmentId, initialData, 
                               }`}
                             >
                               <option value="">-- Chọn --</option>
-                              {MOCK_TEACHERS.map((teacher) => (
+                              {DEFAULT_TEACHER_OPTIONS.map((teacher) => (
                                 <option key={teacher.code} value={teacher.code}>
                                   {teacher.name}
                                 </option>
                               ))}
                             </select>
                             {selectedTeacher && (
-                              <div className={`mt-1 text-xs font-semibold ${hasConflict ? "text-rose-700" : "text-sky-700"}`}>
-                                {MOCK_TEACHERS.find((t) => t.code === selectedTeacher)?.name}
+                              <div
+                                className={`mt-1 text-xs font-semibold ${hasConflict ? "text-rose-700" : "text-sky-700"}`}
+                              >
+                                {
+                                  DEFAULT_TEACHER_OPTIONS.find(
+                                    (t) => t.code === selectedTeacher,
+                                  )?.name
+                                }
                               </div>
                             )}
                           </td>
@@ -288,14 +356,16 @@ export function TeachingAdminGrid({ mode = "create", assignmentId, initialData, 
         <h2 className="mb-4 text-lg font-semibold">Bộ lọc</h2>
         <div className="grid gap-4 md:grid-cols-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Môn học</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Môn học
+            </label>
             <select
               value={selectedSubject}
               onChange={(e) => setSelectedSubject(e.target.value)}
               className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm"
             >
               <option value="">-- Chọn môn --</option>
-              {MOCK_SUBJECTS.map((s) => (
+              {DEFAULT_SUBJECT_OPTIONS.map((s) => (
                 <option key={s.code} value={s.code}>
                   {s.name}
                 </option>
@@ -304,14 +374,16 @@ export function TeachingAdminGrid({ mode = "create", assignmentId, initialData, 
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Học kỳ</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Học kỳ
+            </label>
             <select
               value={selectedSemester}
               onChange={(e) => setSelectedSemester(e.target.value)}
               className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm"
             >
               <option value="">-- Chọn học kỳ --</option>
-              {MOCK_SEMESTERS.map((s) => (
+              {DEFAULT_SEMESTER_OPTIONS.map((s) => (
                 <option key={s.code} value={s.code}>
                   {s.name}
                 </option>
@@ -320,14 +392,16 @@ export function TeachingAdminGrid({ mode = "create", assignmentId, initialData, 
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Năm học</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Năm học
+            </label>
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
               className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm"
             >
               <option value="">-- Chọn năm --</option>
-              {MOCK_YEARS.map((y) => (
+              {DEFAULT_YEAR_OPTIONS.map((y) => (
                 <option key={y.code} value={y.code}>
                   {y.name}
                 </option>
@@ -336,7 +410,9 @@ export function TeachingAdminGrid({ mode = "create", assignmentId, initialData, 
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Khối</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Khối
+            </label>
             <select
               value={selectedGrade}
               onChange={(e) => setSelectedGrade(e.target.value as GradeLevel)}
@@ -352,11 +428,14 @@ export function TeachingAdminGrid({ mode = "create", assignmentId, initialData, 
 
         {conflicts.length > 0 && (
           <div className="mt-4 rounded-lg border border-rose-300 bg-rose-50 p-3">
-            <p className="text-sm font-semibold text-rose-700">⚠ Phát hiện xung đột lịch dạy:</p>
+            <p className="text-sm font-semibold text-rose-700">
+              ⚠ Phát hiện xung đột lịch dạy:
+            </p>
             <div className="mt-2 text-xs text-rose-600">
               {conflicts.map((c, i) => (
                 <div key={i}>
-                  {DAYS_OF_WEEK.find((d) => d.value === c.day)?.label} - Tiết {c.period}, Lớp {c.classCode}
+                  {DAYS_OF_WEEK.find((d) => d.value === c.day)?.label} - Tiết{" "}
+                  {c.period}, Lớp {c.classCode}
                 </div>
               ))}
             </div>
@@ -377,9 +456,15 @@ export function TeachingAdminGrid({ mode = "create", assignmentId, initialData, 
           className="h-11 px-5"
           tone="primary"
           onClick={handleSave}
-          disabled={isSaving || !selectedSubject || !selectedSemester || !selectedYear}
+          disabled={
+            isSaving || !selectedSubject || !selectedSemester || !selectedYear
+          }
         >
-          {isSaving ? "Đang lưu..." : mode === "create" ? "Tạo phân công" : "Cập nhật phân công"}
+          {isSaving
+            ? "Đang lưu..."
+            : mode === "create"
+              ? "Tạo phân công"
+              : "Cập nhật phân công"}
         </Button>
       </div>
     </div>

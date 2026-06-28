@@ -141,10 +141,8 @@ export const attendanceApi = {
    * Called from the public /attend page after student opens the QR URL.
    */
   confirmQRToken(token: string) {
-    return apiClient.post<ApiResponse<{ sessionId: string; subjectName: string; className: string }>>(
-      "/attendance/qr/confirm",
-      { token },
-      { authenticated: true },
-    );
+    return apiClient.post<
+      ApiResponse<{ sessionId: string; subjectName: string; className: string }>
+    >("/attendance/qr/confirm", { token }, { authenticated: true });
   },
 };

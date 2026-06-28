@@ -1,18 +1,8 @@
 package com.school.school_management.controller.chat;
 
-import com.school.school_management.dto.ApiResponse;
-import com.school.school_management.dto.chat.ChatGroupResponse;
-import com.school.school_management.dto.chat.ChatMessageResponse;
-import com.school.school_management.dto.chat.CreateChatGroupRequest;
-import com.school.school_management.dto.chat.SendMessageRequest;
-import com.school.school_management.dto.chat.AddStudentMembersRequest;
-import com.school.school_management.entity.User;
-import com.school.school_management.exception.CustomException;
-import com.school.school_management.repository.UserRepository;
-import com.school.school_management.service.chat.ChatGroupService;
-import com.school.school_management.service.chat.ChatMessageService;
 import java.util.Locale;
 import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +17,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.school.school_management.dto.ApiResponse;
+import com.school.school_management.dto.chat.AddStudentMembersRequest;
+import com.school.school_management.dto.chat.AutoAddMembersRequest;
+import com.school.school_management.dto.chat.ChatGroupResponse;
+import com.school.school_management.dto.chat.ChatMessageResponse;
+import com.school.school_management.dto.chat.CreateChatGroupRequest;
+import com.school.school_management.dto.chat.SendMessageRequest;
+import com.school.school_management.entity.User;
+import com.school.school_management.exception.CustomException;
+import com.school.school_management.repository.UserRepository;
+import com.school.school_management.service.chat.ChatGroupService;
+import com.school.school_management.service.chat.ChatMessageService;
 
 @RestController
 @RequestMapping("/api/chat")
@@ -142,11 +145,11 @@ public class ChatController {
 
     @PostMapping("/groups/{groupId}/members/auto-add")
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
-    public ResponseEntity<ApiResponse<Void>> autoAddMembers(
+    public ResponseEntity<ApiResponse<Void>> autoAddMembersToGroup(
         @PathVariable UUID groupId,
-        @RequestBody com.school.school_management.dto.chat.AutoAddMembersRequest request
+        @RequestBody AutoAddMembersRequest request
     ) {
-        chatGroupService.autoAddMembers(groupId, request);
+        chatGroupService.autoAddMembersToGroup(groupId, request);
         return ResponseEntity.ok(ApiResponse.success(null, "Members auto-added to group"));
     }
 

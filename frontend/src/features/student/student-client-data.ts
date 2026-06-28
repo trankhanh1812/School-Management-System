@@ -11,7 +11,7 @@ import {
 } from "@/features/student/student-adapter";
 import { type StudentRecord } from "@/features/student/student-data";
 
-export type StudentDataSource = "api" | "mock";
+export type StudentDataSource = "api";
 
 export type StudentListFilters = {
   academicYearCode?: string;
@@ -55,7 +55,9 @@ type MyTranscriptState = {
   refresh: () => Promise<void>;
 };
 
-export function useStudentListData(filters?: StudentListFilters): StudentListState {
+export function useStudentListData(
+  filters?: StudentListFilters,
+): StudentListState {
   const [records, setRecords] = useState<StudentRecord[]>([]);
   const [source, setSource] = useState<StudentDataSource>("api");
   const [isLoading, setIsLoading] = useState(true);
@@ -213,7 +215,9 @@ export function useMyStudentScoresData(): MyScoresState {
 
 export function useMyStudentTranscriptData(): MyTranscriptState {
   const [transcript, setTranscript] = useState<StudentRecord["transcript"]>([]);
-  const [transcriptOverview, setTranscriptOverview] = useState<StudentRecord["transcriptOverview"]>([]);
+  const [transcriptOverview, setTranscriptOverview] = useState<
+    StudentRecord["transcriptOverview"]
+  >([]);
   const [source, setSource] = useState<StudentDataSource>("api");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -225,7 +229,9 @@ export function useMyStudentTranscriptData(): MyTranscriptState {
     try {
       const response = await studentApi.myTranscript();
       setTranscript(mapTranscript(response.data?.transcript));
-      setTranscriptOverview(mapTranscriptOverview(response.data?.transcriptOverview));
+      setTranscriptOverview(
+        mapTranscriptOverview(response.data?.transcriptOverview),
+      );
       setSource("api");
     } catch (loadError) {
       setTranscript([]);

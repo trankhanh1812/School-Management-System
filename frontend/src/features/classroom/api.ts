@@ -286,7 +286,9 @@ export const classroomApi = {
   },
 
   autoCalculatePromotion(classCode: string, semesterCode?: string) {
-    const qs = semesterCode ? `?semesterCode=${encodeURIComponent(semesterCode)}` : "";
+    const qs = semesterCode
+      ? `?semesterCode=${encodeURIComponent(semesterCode)}`
+      : "";
     return apiClient.get<ApiResponse<PromotionPlanApiRecord[]>>(
       `/classes/${encodeURIComponent(classCode)}/promotion/auto-calculate${qs}`,
       { authenticated: true },

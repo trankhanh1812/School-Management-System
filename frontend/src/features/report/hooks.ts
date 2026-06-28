@@ -254,7 +254,10 @@ function emptySnapshot(): EducationAnalyticsSnapshot {
   };
 }
 
-function settleData<T>(result: PromiseSettledResult<{ data: T }>, fallback: T): T {
+function settleData<T>(
+  result: PromiseSettledResult<{ data: T }>,
+  fallback: T,
+): T {
   if (result.status === "fulfilled") {
     return result.value.data;
   }
@@ -267,7 +270,10 @@ function mapStudents(raw: unknown): StudentLite[] {
   }
 
   return raw.map((item) => {
-    const record = typeof item === "object" && item !== null ? (item as Record<string, unknown>) : {};
+    const record =
+      typeof item === "object" && item !== null
+        ? (item as Record<string, unknown>)
+        : {};
     return {
       studentCode: asString(record.studentCode, "HS-NA"),
       fullName: asString(record.fullName, "Hoc sinh"),
@@ -285,7 +291,10 @@ function mapTeachers(raw: unknown): TeacherLite[] {
   }
 
   return raw.map((item) => {
-    const record = typeof item === "object" && item !== null ? (item as Record<string, unknown>) : {};
+    const record =
+      typeof item === "object" && item !== null
+        ? (item as Record<string, unknown>)
+        : {};
     return {
       teacherCode: asString(record.teacherCode, "GV-NA"),
       fullName: asString(record.fullName, "Giao vien"),
@@ -301,7 +310,10 @@ function mapClasses(raw: unknown): ClassLite[] {
   }
 
   return raw.map((item) => {
-    const record = typeof item === "object" && item !== null ? (item as Record<string, unknown>) : {};
+    const record =
+      typeof item === "object" && item !== null
+        ? (item as Record<string, unknown>)
+        : {};
     return {
       classCode: asString(record.classCode, "CLS-NA"),
       className: asString(record.className, "Lop"),
@@ -318,7 +330,10 @@ function mapSubjects(raw: unknown): SubjectLite[] {
   }
 
   return raw.map((item) => {
-    const record = typeof item === "object" && item !== null ? (item as Record<string, unknown>) : {};
+    const record =
+      typeof item === "object" && item !== null
+        ? (item as Record<string, unknown>)
+        : {};
     return {
       code: asString(record.code, "SUB-NA"),
       name: asString(record.name, "Mon hoc"),
@@ -333,7 +348,10 @@ function mapAssignments(raw: unknown): AssignmentLite[] {
   }
 
   return raw.map((item) => {
-    const record = typeof item === "object" && item !== null ? (item as Record<string, unknown>) : {};
+    const record =
+      typeof item === "object" && item !== null
+        ? (item as Record<string, unknown>)
+        : {};
     return {
       teacherCode: asString(record.teacherCode, ""),
       classCode: asString(record.classCode, ""),
@@ -349,7 +367,10 @@ function mapScores(raw: unknown): ScoreLite[] {
   }
 
   return raw.map((item) => {
-    const record = typeof item === "object" && item !== null ? (item as Record<string, unknown>) : {};
+    const record =
+      typeof item === "object" && item !== null
+        ? (item as Record<string, unknown>)
+        : {};
     return {
       examId: asString(record.examId, ""),
       scoreValue: parseNumber(record.scoreValue),
@@ -364,7 +385,10 @@ function mapAttendance(raw: unknown): AttendanceLite[] {
   }
 
   return raw.map((item) => {
-    const record = typeof item === "object" && item !== null ? (item as Record<string, unknown>) : {};
+    const record =
+      typeof item === "object" && item !== null
+        ? (item as Record<string, unknown>)
+        : {};
     return {
       className: asString(record.className, "Chua ro lop"),
       status: normalizeAttendanceStatus(asString(record.status, "")),
@@ -378,7 +402,10 @@ function mapExams(raw: unknown): ExamLite[] {
   }
 
   return raw.map((item) => {
-    const record = typeof item === "object" && item !== null ? (item as Record<string, unknown>) : {};
+    const record =
+      typeof item === "object" && item !== null
+        ? (item as Record<string, unknown>)
+        : {};
     return {
       examId: asString(record.examId, ""),
       examDate: asString(record.examDate, ""),
@@ -419,28 +446,44 @@ function buildSnapshot(payload: {
       conduct: item.conduct,
     }));
 
-  const classPerformance: ClassPerformanceItem[] = classes.map((item) => {
-    const classStudents = students.filter((student) => student.className === item.className);
-    const averageScore = classStudents.length
-      ? classStudents.reduce((sum, student) => sum + student.scoreAverage, 0) / classStudents.length
-      : 0;
-    const passCount = classStudents.filter((student) => student.scoreAverage >= PASSING_SCORE).length;
-    return {
-      className: item.className,
-      academicYear: item.academicYear,
-      totalStudents: classStudents.length > 0 ? classStudents.length : item.totalStudents,
-      averageScore: averageScore.toFixed(2),
-      passRate: formatPercent(passCount, classStudents.length),
-      homeroomTeacher: item.homeroomTeacher,
-    };
-  }).sort((a, b) => Number.parseFloat(b.averageScore) - Number.parseFloat(a.averageScore));
+  const classPerformance: ClassPerformanceItem[] = classes
+    .map((item) => {
+      const classStudents = students.filter(
+        (student) => student.className === item.className,
+      );
+      const averageScore = classStudents.length
+        ? classStudents.reduce(
+            (sum, student) => sum + student.scoreAverage,
+            0,
+          ) / classStudents.length
+        : 0;
+      const passCount = classStudents.filter(
+        (student) => student.scoreAverage >= PASSING_SCORE,
+      ).length;
+      return {
+        className: item.className,
+        academicYear: item.academicYear,
+        totalStudents:
+          classStudents.length > 0 ? classStudents.length : item.totalStudents,
+        averageScore: averageScore.toFixed(2),
+        passRate: formatPercent(passCount, classStudents.length),
+        homeroomTeacher: item.homeroomTeacher,
+      };
+    })
+    .sort(
+      (a, b) =>
+        Number.parseFloat(b.averageScore) - Number.parseFloat(a.averageScore),
+    );
 
   const teacherAssignmentMap = new Map<string, number>();
   assignments.forEach((item) => {
     if (item.teacherCode.length === 0) {
       return;
     }
-    teacherAssignmentMap.set(item.teacherCode, (teacherAssignmentMap.get(item.teacherCode) ?? 0) + 1);
+    teacherAssignmentMap.set(
+      item.teacherCode,
+      (teacherAssignmentMap.get(item.teacherCode) ?? 0) + 1,
+    );
   });
 
   const teacherLoad: TeacherLoadItem[] = teachers
@@ -453,7 +496,15 @@ function buildSnapshot(payload: {
     }))
     .sort((a, b) => b.totalAssignments - a.totalAssignments);
 
-  const subjectStats = new Map<string, { name: string; assignmentCount: number; teachers: Set<string>; classes: Set<string> }>();
+  const subjectStats = new Map<
+    string,
+    {
+      name: string;
+      assignmentCount: number;
+      teachers: Set<string>;
+      classes: Set<string>;
+    }
+  >();
   assignments.forEach((item) => {
     if (item.subjectCode.length === 0) {
       return;
@@ -510,16 +561,23 @@ function buildSnapshot(payload: {
       assignmentCount: 0,
     };
     current.teacherCount += 1;
-    current.assignmentCount += teacherAssignmentMap.get(teacher.teacherCode) ?? 0;
+    current.assignmentCount +=
+      teacherAssignmentMap.get(teacher.teacherCode) ?? 0;
     departmentLoadMap.set(teacher.department, current);
   });
 
-  const departmentLoad = [...departmentLoadMap.values()].sort((a, b) => b.assignmentCount - a.assignmentCount);
+  const departmentLoad = [...departmentLoadMap.values()].sort(
+    (a, b) => b.assignmentCount - a.assignmentCount,
+  );
 
-  const conductDistribution = toDistributionItems(toDistributionMap(students.map((item) => item.conduct)));
+  const conductDistribution = toDistributionItems(
+    toDistributionMap(students.map((item) => item.conduct)),
+  );
 
   const academicRankDistribution = toDistributionItems(
-    toDistributionMap(students.map((item) => classifyAcademicRank(item.scoreAverage))),
+    toDistributionMap(
+      students.map((item) => classifyAcademicRank(item.scoreAverage)),
+    ),
   );
 
   const scoreStatusDistribution = toDistributionItems(
@@ -534,14 +592,24 @@ function buildSnapshot(payload: {
     toDistributionMap(attendance.map((item) => item.status)),
   );
 
-  const attendancePresentLike = attendance.filter((item) => ["PRESENT", "LATE", "EXCUSED"].includes(item.status)).length;
+  const attendancePresentLike = attendance.filter((item) =>
+    ["PRESENT", "LATE", "EXCUSED"].includes(item.status),
+  ).length;
 
   const averageScore = scores.length
-    ? (scores.reduce((sum, item) => sum + item.scoreValue, 0) / scores.length).toFixed(2)
+    ? (
+        scores.reduce((sum, item) => sum + item.scoreValue, 0) / scores.length
+      ).toFixed(2)
     : "0.00";
 
-  const passRate = formatPercent(scores.filter((item) => item.scoreValue >= PASSING_SCORE).length, scores.length);
-  const attendanceRate = formatPercent(attendancePresentLike, attendance.length);
+  const passRate = formatPercent(
+    scores.filter((item) => item.scoreValue >= PASSING_SCORE).length,
+    scores.length,
+  );
+  const attendanceRate = formatPercent(
+    attendancePresentLike,
+    attendance.length,
+  );
 
   const reportMetrics: ReportMetric[] = [
     {
@@ -594,8 +662,12 @@ function buildSnapshot(payload: {
   const examTimeline: TrendPoint[] = [...examTimelineMap.entries()]
     .map(([label, value]) => ({ label, value }))
     .sort((a, b) => {
-      const [monthA, yearA] = a.label.split("/").map((item) => Number.parseInt(item, 10));
-      const [monthB, yearB] = b.label.split("/").map((item) => Number.parseInt(item, 10));
+      const [monthA, yearA] = a.label
+        .split("/")
+        .map((item) => Number.parseInt(item, 10));
+      const [monthB, yearB] = b.label
+        .split("/")
+        .map((item) => Number.parseInt(item, 10));
       const validA = Number.isFinite(monthA) && Number.isFinite(yearA);
       const validB = Number.isFinite(monthB) && Number.isFinite(yearB);
       if (!validA || !validB) {
@@ -626,11 +698,18 @@ function buildSnapshot(payload: {
   const scoreTimeline: TrendPoint[] = [...scoreByExam.entries()]
     .map(([examId, aggregate]) => ({
       label: monthLabel(examDateById.get(examId) ?? ""),
-      value: aggregate.count > 0 ? Number.parseFloat((aggregate.total / aggregate.count).toFixed(2)) : 0,
+      value:
+        aggregate.count > 0
+          ? Number.parseFloat((aggregate.total / aggregate.count).toFixed(2))
+          : 0,
     }))
     .sort((a, b) => {
-      const [monthA, yearA] = a.label.split("/").map((item) => Number.parseInt(item, 10));
-      const [monthB, yearB] = b.label.split("/").map((item) => Number.parseInt(item, 10));
+      const [monthA, yearA] = a.label
+        .split("/")
+        .map((item) => Number.parseInt(item, 10));
+      const [monthB, yearB] = b.label
+        .split("/")
+        .map((item) => Number.parseInt(item, 10));
       const validA = Number.isFinite(monthA) && Number.isFinite(yearA);
       const validB = Number.isFinite(monthB) && Number.isFinite(yearB);
       if (!validA || !validB) {
@@ -645,7 +724,10 @@ function buildSnapshot(payload: {
     if (item.status !== "ABSENT") {
       return;
     }
-    absencesByClass.set(item.className, (absencesByClass.get(item.className) ?? 0) + 1);
+    absencesByClass.set(
+      item.className,
+      (absencesByClass.get(item.className) ?? 0) + 1,
+    );
   });
 
   const highRiskClasses = [...absencesByClass.entries()]
@@ -655,7 +737,10 @@ function buildSnapshot(payload: {
 
   const lowScoreClasses = classPerformance
     .filter((item) => Number.parseFloat(item.averageScore) < 5.5)
-    .sort((a, b) => Number.parseFloat(a.averageScore) - Number.parseFloat(b.averageScore))
+    .sort(
+      (a, b) =>
+        Number.parseFloat(a.averageScore) - Number.parseFloat(b.averageScore),
+    )
     .slice(0, 4);
 
   const riskAlerts: RiskAlertItem[] = [
