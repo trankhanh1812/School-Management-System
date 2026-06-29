@@ -1,9 +1,7 @@
 package com.school.school_management.config;
 
-import com.school.school_management.security.JwtAuthenticationFilter;
-import com.school.school_management.service.UserDetailsServiceImpl;
 import java.util.Arrays;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -22,6 +20,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import com.school.school_management.security.JwtAuthenticationFilter;
+import com.school.school_management.service.UserDetailsServiceImpl;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Configuration
@@ -57,6 +60,8 @@ public class SecurityConfig {
             "http://localhost:3001",
             "http://localhost:8080",
                 "http://127.0.0.1:4040",
+                "https://school-management-system-trankhanh1812s-projects.vercel.app",
+                "https://school-management-system-six-alpha.vercel.app",
                 "https://neritic-yareli-monomeric.ngrok-free.dev"
         ));
         configuration.setAllowedMethods(Arrays.asList(
