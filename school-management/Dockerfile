@@ -5,14 +5,14 @@ FROM eclipse-temurin:17-jdk-alpine AS builder
 WORKDIR /app
 
 # Copy Maven wrapper và pom trước để cache layer deps
-COPY school-management/mvnw school-management/mvnw.cmd school-management/pom.xml ./
-COPY school-management/.mvn .mvn
+COPY mvnw mvnw.cmd pom.xml ./
+COPY .mvn .mvn
 
 # Download deps (cache layer riêng)
 RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
 
 # Copy source và build (bỏ qua tests)
-COPY school-management/src ./src
+COPY src ./src
 RUN ./mvnw package -DskipTests -B
 
 # ─────────────────────────────────────────────
