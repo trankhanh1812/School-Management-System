@@ -60,7 +60,7 @@ public class DataInitializer {
             User adminUser = User.builder()
                 .username("admin")
                 .email("admin@school.local")
-                .passwordHash(passwordEncoder.encode("admin"))
+                .passwordHash(passwordEncoder.encode("admin123"))
                 .fullName("System Administrator")
                 .status("ACTIVE")
                 .build();
