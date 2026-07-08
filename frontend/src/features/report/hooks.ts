@@ -110,7 +110,7 @@ function asString(input: unknown, fallback = "") {
 function toDistributionMap(items: string[]) {
   const map = new Map<string, number>();
   items.forEach((item) => {
-    const key = item.trim().length > 0 ? item.trim() : "Khac";
+    const key = item.trim().length > 0 ? item.trim() : "Khác";
     map.set(key, (map.get(key) ?? 0) + 1);
   });
   return map;
@@ -131,32 +131,32 @@ function formatPercent(numerator: number, denominator: number) {
 
 function classifyAcademicRank(score: number) {
   if (score >= 8) {
-    return "Gioi";
+    return "Giỏi";
   }
   if (score >= 6.5) {
-    return "Kha";
+    return "Khá";
   }
   if (score >= 5) {
-    return "Trung binh";
+    return "Trung bình";
   }
-  return "Can ho tro";
+  return "Cần hỗ trợ";
 }
 
 function normalizeConduct(input: string) {
   const normalized = input.trim().toUpperCase();
-  if (["EXCELLENT", "TOT", "TOT"].includes(normalized)) {
-    return "Tot";
+  if (["EXCELLENT", "TOT", "TỐT"].includes(normalized)) {
+    return "Tốt";
   }
-  if (["GOOD", "KHA"].includes(normalized)) {
-    return "Kha";
+  if (["GOOD", "KHA", "KHÁ"].includes(normalized)) {
+    return "Khá";
   }
-  if (["AVERAGE", "TRUNG BINH"].includes(normalized)) {
-    return "Trung binh";
+  if (["AVERAGE", "TRUNG BINH", "TRUNG BÌNH"].includes(normalized)) {
+    return "Trung bình";
   }
-  if (["POOR", "YEU"].includes(normalized)) {
-    return "Yeu";
+  if (["POOR", "YEU", "YẾU"].includes(normalized)) {
+    return "Yếu";
   }
-  return input.trim().length > 0 ? input : "Chua cap nhat";
+  return input.trim().length > 0 ? input : "Chưa cập nhật";
 }
 
 function normalizeGender(input: string) {
@@ -164,16 +164,16 @@ function normalizeGender(input: string) {
   if (["MALE", "NAM"].includes(normalized)) {
     return "Nam";
   }
-  if (["FEMALE", "NU"].includes(normalized)) {
-    return "Nu";
+  if (["FEMALE", "NU", "NỮ"].includes(normalized)) {
+    return "Nữ";
   }
-  return "Khac";
+  return "Khác";
 }
 
 function normalizeScoreStatus(input: string) {
   const normalized = input.trim().toUpperCase();
   if (normalized.length === 0) {
-    return "Khong ro";
+    return "Không rõ";
   }
   return normalized;
 }
@@ -198,7 +198,7 @@ function normalizeAttendanceStatus(input: string) {
 function monthLabel(dateString: string) {
   const date = new Date(dateString);
   if (Number.isNaN(date.getTime())) {
-    return "Khong ro";
+    return "Không rõ";
   }
   const month = date.getMonth() + 1;
   const year = date.getFullYear();
@@ -208,26 +208,26 @@ function monthLabel(dateString: string) {
 function buildReportExports(): ReportExportItem[] {
   return [
     {
-      reportName: "Bao cao hoc luc tong hop",
-      scope: "Toan truong theo nam hoc",
+      reportName: "Báo cáo học lực tổng hợp",
+      scope: "Toàn trường theo năm học",
       format: "PDF / Excel",
       source: "students + scores + classes",
     },
     {
-      reportName: "Thong ke diem danh",
-      scope: "Theo lop, hoc ky, thang",
+      reportName: "Thống kê điểm danh",
+      scope: "Theo lớp, học kỳ, tháng",
       format: "PDF / Dashboard",
       source: "attendance + classes",
     },
     {
-      reportName: "Tai giang day giao vien",
-      scope: "Theo giao vien / bo mon",
+      reportName: "Tải giảng dạy giáo viên",
+      scope: "Theo giáo viên / bộ môn",
       format: "Excel",
       source: "teachers + teaching-assignments",
     },
     {
-      reportName: "Theo doi ky thi va ket qua",
-      scope: "Theo mon hoc / dot thi",
+      reportName: "Theo dõi kỳ thi và kết quả",
+      scope: "Theo môn học / đợt thi",
       format: "PDF / Excel",
       source: "exams + scores",
     },
@@ -276,8 +276,8 @@ function mapStudents(raw: unknown): StudentLite[] {
         : {};
     return {
       studentCode: asString(record.studentCode, "HS-NA"),
-      fullName: asString(record.fullName, "Hoc sinh"),
-      className: asString(record.className, "Chua phan lop"),
+      fullName: asString(record.fullName, "Học sinh"),
+      className: asString(record.className, "Chưa phân lớp"),
       scoreAverage: parseNumber(record.scoreAverage),
       conduct: normalizeConduct(asString(record.conduct, "")),
       gender: normalizeGender(asString(record.gender, "")),
@@ -297,9 +297,9 @@ function mapTeachers(raw: unknown): TeacherLite[] {
         : {};
     return {
       teacherCode: asString(record.teacherCode, "GV-NA"),
-      fullName: asString(record.fullName, "Giao vien"),
-      department: asString(record.department, "Chua cap nhat"),
-      homeroomClass: asString(record.homeroomClass, "Khong co"),
+      fullName: asString(record.fullName, "Giáo viên"),
+      department: asString(record.department, "Chưa cập nhật"),
+      homeroomClass: asString(record.homeroomClass, "Không có"),
     };
   });
 }
@@ -316,9 +316,9 @@ function mapClasses(raw: unknown): ClassLite[] {
         : {};
     return {
       classCode: asString(record.classCode, "CLS-NA"),
-      className: asString(record.className, "Lop"),
+      className: asString(record.className, "Lớp"),
       academicYear: asString(record.academicYear, "N/A"),
-      homeroomTeacher: asString(record.homeroomTeacher, "Chua cap nhat"),
+      homeroomTeacher: asString(record.homeroomTeacher, "Chưa cập nhật"),
       totalStudents: parseNumber(record.totalStudents),
     };
   });
@@ -336,8 +336,8 @@ function mapSubjects(raw: unknown): SubjectLite[] {
         : {};
     return {
       code: asString(record.code, "SUB-NA"),
-      name: asString(record.name, "Mon hoc"),
-      departmentName: asString(record.departmentName, "Khac"),
+      name: asString(record.name, "Môn học"),
+      departmentName: asString(record.departmentName, "Khác"),
     };
   });
 }
@@ -356,7 +356,7 @@ function mapAssignments(raw: unknown): AssignmentLite[] {
       teacherCode: asString(record.teacherCode, ""),
       classCode: asString(record.classCode, ""),
       subjectCode: asString(record.subjectCode, ""),
-      subjectName: asString(record.subjectName, "Chua cap nhat"),
+      subjectName: asString(record.subjectName, "Chưa cập nhật"),
     };
   });
 }
@@ -390,7 +390,7 @@ function mapAttendance(raw: unknown): AttendanceLite[] {
         ? (item as Record<string, unknown>)
         : {};
     return {
-      className: asString(record.className, "Chua ro lop"),
+      className: asString(record.className, "Chưa rõ lớp"),
       status: normalizeAttendanceStatus(asString(record.status, "")),
     };
   });
@@ -409,7 +409,7 @@ function mapExams(raw: unknown): ExamLite[] {
     return {
       examId: asString(record.examId, ""),
       examDate: asString(record.examDate, ""),
-      title: asString(record.title, "Bai kiem tra"),
+      title: asString(record.title, "Bài kiểm tra"),
     };
   });
 }
@@ -613,40 +613,40 @@ function buildSnapshot(payload: {
 
   const reportMetrics: ReportMetric[] = [
     {
-      label: "Tong hoc sinh",
+      label: "Tổng học sinh",
       value: `${students.length}`,
-      trend: "Realtime",
-      note: "So luong hoc sinh trong du lieu he thong",
+      trend: "Thời gian thực",
+      note: "Số lượng học sinh trong dữ liệu hệ thống",
     },
     {
-      label: "Tong giao vien",
+      label: "Tổng giáo viên",
       value: `${teachers.length}`,
-      trend: "Realtime",
-      note: "Nguon tu module quan ly giao vien",
+      trend: "Thời gian thực",
+      note: "Nguồn từ module quản lý giáo viên",
     },
     {
-      label: "Diem trung binh",
+      label: "Điểm trung bình",
       value: averageScore,
       trend: passRate,
-      note: "Tinh tren toan bo dau diem hien co",
+      note: "Tính trên toàn bộ đầu điểm hiện có",
     },
     {
-      label: "Ti le diem danh",
+      label: "Tỉ lệ điểm danh",
       value: attendanceRate,
-      trend: `${attendance.length} ban ghi`,
-      note: "Bao gom present, late, excused",
+      trend: `${attendance.length} bản ghi`,
+      note: "Bao gồm có mặt, đi muộn, có phép",
     },
     {
-      label: "Lop dang quan ly",
+      label: "Lớp đang quản lý",
       value: `${classes.length}`,
-      trend: `${assignments.length} phan cong`,
-      note: "Quy mo lop va tai giang day",
+      trend: `${assignments.length} phân công`,
+      note: "Quy mô lớp và tải giảng dạy",
     },
     {
-      label: "Dot kiem tra",
+      label: "Đợt kiểm tra",
       value: `${exams.length}`,
-      trend: `${subjects.length} mon hoc`,
-      note: "Tong hop lich kiem tra toan truong",
+      trend: `${subjects.length} môn học`,
+      note: "Tổng hợp lịch kiểm tra toàn trường",
     },
   ];
 
@@ -745,21 +745,21 @@ function buildSnapshot(payload: {
 
   const riskAlerts: RiskAlertItem[] = [
     ...highRiskClasses.map(([className, count]) => ({
-      title: `Canh bao vang hoc lop ${className}`,
-      detail: `${count} ban ghi vang trong du lieu diem danh`,
+      title: `Cảnh báo vắng học lớp ${className}`,
+      detail: `${count} bản ghi vắng trong dữ liệu điểm danh`,
       severity: "high" as const,
     })),
     ...lowScoreClasses.map((item) => ({
-      title: `Can theo doi hoc luc lop ${item.className}`,
-      detail: `Diem trung binh hien tai ${item.averageScore}, ti le dat ${item.passRate}`,
+      title: `Cần theo dõi học lực lớp ${item.className}`,
+      detail: `Điểm trung bình hiện tại ${item.averageScore}, tỉ lệ đạt ${item.passRate}`,
       severity: "medium" as const,
     })),
   ];
 
   if (riskAlerts.length === 0) {
     riskAlerts.push({
-      title: "Khong co canh bao nghiem trong",
-      detail: "Du lieu hien tai khong ghi nhan lop vuot nguong rui ro",
+      title: "Không có cảnh báo nghiêm trọng",
+      detail: "Dữ liệu hiện tại không ghi nhận lớp vượt ngưỡng rủi ro",
       severity: "low",
     });
   }

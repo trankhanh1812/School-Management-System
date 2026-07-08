@@ -91,9 +91,9 @@ public class AuthServiceImpl implements AuthService {
             throw new CustomException("Email already exists", 409);
         }
 
-        com.school.school_management.enums.UserRole requestedRole =
-            com.school.school_management.enums.UserRole.fromString(registerRequest.getRole());
-        Role role = getOrCreateRole(requestedRole);
+        // Self-registration is always a STUDENT account. Privileged roles must be
+        // granted via admin-managed user provisioning.
+        Role role = getOrCreateRole(com.school.school_management.enums.UserRole.STUDENT);
 
         User user = User.builder()
             .username(buildUsername(registerRequest.getEmail()))

@@ -15,13 +15,13 @@ export const scheduleMetrics = [
     label: "Ca học đang vận hành",
     value: String(teachingAssignments.length),
     trend: "+3",
-    note: "Tính trên teaching assignment hiện có trong năm học hiện tại.",
+    note: "Tính trên phân công giáo viên hiện có trong năm học hiện tại.",
   },
   {
-    label: "Conflict đang mở",
+    label: "Xung đột đang mở",
     value: "3",
     trend: "-1",
-    note: "Bao gồm conflict giáo viên, lớp và phòng học cần xử lý.",
+    note: "Bao gồm xung đột giáo viên, lớp và phòng học cần xử lý.",
   },
   {
     label: "Lịch dạy thay",
@@ -57,7 +57,8 @@ export const scheduleConflicts: ScheduleConflict[] = [
     description:
       "Nguyễn Thu Hà đang được gán dạy Toán cho 10A1 và 10A2 trong cùng buổi nếu thêm ca bù chiều thứ hai.",
     affectedItems: ["Nguyễn Thu Hà", "10A1", "10A2"],
-    recommendation: "Chuyển một ca sang chiều thứ ba hoặc gán giáo viên hỗ trợ.",
+    recommendation:
+      "Chuyển một ca sang chiều thứ ba hoặc gán giáo viên hỗ trợ.",
   },
   {
     id: "room-1",
@@ -84,14 +85,17 @@ export const scheduleConflicts: ScheduleConflict[] = [
 export const scheduleTemplates = [
   {
     name: "Khung sáng khối 10",
-    description: "Ưu tiên Toán, Văn, Anh vào đầu tuần và xen kẽ tiết thực hành.",
+    description:
+      "Ưu tiên Toán, Văn, Anh vào đầu tuần và xen kẽ tiết thực hành.",
   },
   {
     name: "Khung ôn thi khối 12",
-    description: "Tăng số tiết môn trọng điểm và gom các lớp phụ đạo vào cuối ngày.",
+    description:
+      "Tăng số tiết môn trọng điểm và gom các lớp phụ đạo vào cuối ngày.",
   },
   {
     name: "Khung phòng lab",
-    description: "Điều phối Lab 1 và Lab 2 theo luồng Tin học, Robotics và dự án.",
+    description:
+      "Điều phối Lab 1 và Lab 2 theo luồng Tin học, Robotics và dự án.",
   },
 ];

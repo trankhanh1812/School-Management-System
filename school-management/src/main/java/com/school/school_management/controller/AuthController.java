@@ -1,17 +1,7 @@
 package com.school.school_management.controller;
 
-import com.school.school_management.dto.ApiResponse;
-import com.school.school_management.dto.auth.ForgotPasswordRequest;
-import com.school.school_management.dto.auth.LoginRequest;
-import com.school.school_management.dto.auth.LoginResponse;
-import com.school.school_management.dto.auth.RefreshTokenRequest;
-import com.school.school_management.dto.auth.RegisterRequest;
-import com.school.school_management.dto.auth.ResetPasswordRequest;
-import com.school.school_management.service.auth.AuthService;
-import com.school.school_management.util.DateTimeUtil;
-import jakarta.validation.Valid;
 import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,6 +13,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.school.school_management.dto.ApiResponse;
+import com.school.school_management.dto.auth.ForgotPasswordRequest;
+import com.school.school_management.dto.auth.LoginRequest;
+import com.school.school_management.dto.auth.LoginResponse;
+import com.school.school_management.dto.auth.RefreshTokenRequest;
+import com.school.school_management.dto.auth.RegisterRequest;
+import com.school.school_management.dto.auth.ResetPasswordRequest;
+import com.school.school_management.service.auth.AuthService;
+import com.school.school_management.util.DateTimeUtil;
+
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
@@ -57,12 +60,12 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ResponseEntity<ApiResponse<Object>> forgotPassword(
             @Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
-        String resetToken = authService.forgotPassword(forgotPasswordRequest);
+        authService.forgotPassword(forgotPasswordRequest);
 
         return ResponseEntity.ok(
             ApiResponse.of(
-                Map.of("token", resetToken),
-                "If the account exists, a reset token has been generated",
+                null,
+                "If the account exists, a password reset link has been sent",
                 200
             )
         );

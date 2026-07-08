@@ -73,7 +73,16 @@ public class ChatController {
     }
 
     @GetMapping("/groups/{groupId}")
-    public ResponseEntity<ApiResponse<ChatGroupResponse>> getGroup(@PathVariable UUID groupId) {
+    public ResponseEntity<ApiResponse<ChatGroupResponse>> getGroup(
+        @PathVariable UUID groupId,
+        Authentication authentication
+    ) {
+        UUID userId = getCurrentUserId(authentication);
+        boolean isAdmin = authentication.getAuthorities().stream()
+            .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+        if (!isAdmin && !chatGroupService.isMemberOfGroup(groupId, userId)) {
+            throw new CustomException("You are not a member of this chat group", 403);
+        }
         ChatGroupResponse response = chatGroupService.getGroupById(groupId);
         return ResponseEntity.ok(ApiResponse.success(response, "Chat group retrieved"));
     }
@@ -208,7 +217,7 @@ public class ChatController {
         Authentication authentication
     ) {
         UUID userId = getCurrentUserId(authentication);
-        ChatMessageResponse response = chatMessageService.getMessageById(messageId);
+        ChatMessageResponse response = chatMessageService.getMessageById(messageId, userId);
         return ResponseEntity.ok(ApiResponse.success(response, "Message retrieved"));
     }
 

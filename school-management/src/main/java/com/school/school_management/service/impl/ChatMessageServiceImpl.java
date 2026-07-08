@@ -1,5 +1,16 @@
 package com.school.school_management.service.impl;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.school.school_management.dto.chat.ChatMessageResponse;
 import com.school.school_management.dto.chat.ChatWebSocketMessage;
 import com.school.school_management.dto.chat.SendMessageRequest;
@@ -15,16 +26,6 @@ import com.school.school_management.repository.ChatMessageReadRepository;
 import com.school.school_management.repository.ChatMessageRepository;
 import com.school.school_management.repository.UserRepository;
 import com.school.school_management.service.chat.ChatMessageService;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -51,6 +52,16 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         this.chatGroupMemberRepository = chatGroupMemberRepository;
         this.userRepository = userRepository;
         this.messagingTemplate = messagingTemplate;
+    }
+
+    /**
+     * Reading a group's messages, searching, or unread/read state requires membership.
+     * Without this a STUDENT/PARENT could read any group's history by supplying its id.
+     */
+    private void assertMember(UUID groupId, UUID userId) {
+        if (!chatGroupMemberRepository.existsByChatGroupIdAndUserId(groupId, userId)) {
+            throw new CustomException("You are not a member of this chat group", 403);
+        }
     }
 
     @Override
@@ -91,16 +102,18 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
     @Override
     @Transactional(readOnly = true)
-    public ChatMessageResponse getMessageById(UUID messageId) {
+    public ChatMessageResponse getMessageById(UUID messageId, UUID currentUserId) {
         ChatMessage message = chatMessageRepository
             .findByIdAndDeletedAtIsNull(messageId)
             .orElseThrow(() -> new ResourceNotFoundException("Chat message not found"));
-        return mapToResponse(message, message.getSender().getId());
+        assertMember(message.getChatGroup().getId(), currentUserId);
+        return mapToResponse(message, currentUserId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<ChatMessageResponse> getGroupMessages(UUID groupId, UUID currentUserId, Pageable pageable) {
+        assertMember(groupId, currentUserId);
         return chatMessageRepository
             .findByChatGroupIdAndDeletedAtIsNullOrderByCreatedAtDesc(groupId, pageable)
             .map(message -> mapToResponse(message, currentUserId));
@@ -109,21 +122,11 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Override
     @Transactional(readOnly = true)
     public Page<ChatMessageResponse> searchMessages(UUID groupId, String keyword, UUID currentUserId, Pageable pageable) {
-        // Search in message text first
-        Page<ChatMessage> messagesFromText = chatMessageRepository
-            .findByChatGroupIdAndMessageTextContainingIgnoreCaseAndDeletedAtIsNullOrderByCreatedAtDesc(
-                groupId, keyword, pageable
-            );
-
-        // If no results, search in file names
-        if (messagesFromText.getContent().isEmpty()) {
-            messagesFromText = chatMessageRepository
-                .findByChatGroupIdAndFileNameContainingIgnoreCaseAndDeletedAtIsNullOrderByCreatedAtDesc(
-                    groupId, keyword, pageable
-                );
-        }
-
-        return messagesFromText.map(message -> mapToResponse(message, currentUserId));
+        assertMember(groupId, currentUserId);
+        // Search message text AND file names together so a text hit doesn't hide filename hits.
+        return chatMessageRepository
+            .searchInGroup(groupId, keyword == null ? "" : keyword, pageable)
+            .map(message -> mapToResponse(message, currentUserId));
     }
 
     @Override
@@ -131,6 +134,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         ChatMessage message = chatMessageRepository
             .findByIdAndDeletedAtIsNull(messageId)
             .orElseThrow(() -> new ResourceNotFoundException("Chat message not found"));
+        assertMember(message.getChatGroup().getId(), userId);
 
         User user = userRepository
             .findByIdAndDeletedAtIsNull(userId)
@@ -150,6 +154,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
     @Override
     public void markGroupMessagesAsRead(UUID groupId, UUID userId) {
+        assertMember(groupId, userId);
         List<ChatMessage> messages = chatMessageRepository
             .findByChatGroupIdAndDeletedAtIsNullOrderByCreatedAtDesc(groupId);
 
@@ -169,6 +174,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Override
     @Transactional(readOnly = true)
     public long getUnreadMessageCount(UUID groupId, UUID userId) {
+        assertMember(groupId, userId);
         List<ChatMessage> messages = chatMessageRepository
             .findByChatGroupIdAndDeletedAtIsNullOrderByCreatedAtDesc(groupId);
 

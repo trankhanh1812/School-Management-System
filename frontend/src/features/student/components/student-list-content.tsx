@@ -49,9 +49,9 @@ export function StudentListContent() {
     try {
       const blob = await studentService.downloadImportTemplate();
       saveBlob(blob, "student_import_template.xlsx");
-      showToast("Da tai template import", "success");
+      showToast("Đã tải mẫu nhập", "success");
     } catch {
-      showToast("Khong the tai template", "error");
+      showToast("Không thể tải mẫu nhập", "error");
     }
   };
 
@@ -76,9 +76,9 @@ export function StudentListContent() {
       const preview = response.data;
       setPreviewData(preview);
       setShowingPreview(true);
-      showToast("Đã tải preview dữ liệu", "success");
+      showToast("Đã tải bản xem trước dữ liệu", "success");
     } catch (error) {
-      showToast("Không thể tạo preview", "error");
+      showToast("Không thể tạo bản xem trước", "error");
       console.error(error);
     } finally {
       setImporting(false);
@@ -99,17 +99,17 @@ export function StudentListContent() {
 
       if (result.failedRecords > 0) {
         showToast(
-          `Import xong: ${result.successfulRecords} thanh cong, ${result.failedRecords} loi`,
+          `Nhập xong: ${result.successfulRecords} thành công, ${result.failedRecords} lỗi`,
           "info",
         );
       } else {
         showToast(
-          `Import thanh cong ${result.successfulRecords} ban ghi`,
+          `Nhập thành công ${result.successfulRecords} bản ghi`,
           "success",
         );
       }
     } catch {
-      showToast("Import that bai", "error");
+      showToast("Nhập dữ liệu thất bại", "error");
     } finally {
       setImporting(false);
     }
@@ -123,16 +123,16 @@ export function StudentListContent() {
 
   const handleDownloadErrors = async () => {
     if (!lastImportId) {
-      showToast("Chua co file loi de tai", "info");
+      showToast("Chưa có file lỗi để tải", "info");
       return;
     }
 
     try {
       const blob = await studentService.downloadImportErrors(lastImportId);
       saveBlob(blob, `student_import_errors_${lastImportId}.xlsx`);
-      showToast("Da tai file loi", "success");
+      showToast("Đã tải file lỗi", "success");
     } catch {
-      showToast("Khong the tai file loi", "error");
+      showToast("Không thể tải file lỗi", "error");
     }
   };
 
@@ -182,17 +182,17 @@ export function StudentListContent() {
                   onChange={handleFileChanged}
                 />
                 <Button tone="secondary" onClick={handleDownloadTemplate}>
-                  Download template
+                  Tải mẫu Excel
                 </Button>
                 <Button
                   tone="secondary"
                   onClick={handleSelectImportFile}
                   disabled={importing}
                 >
-                  {importing ? "Dang import..." : "Import Excel"}
+                  {importing ? "Đang nhập..." : "Nhập từ Excel"}
                 </Button>
                 <Button tone="ghost" onClick={handleDownloadErrors}>
-                  Download file loi
+                  Tải file lỗi
                 </Button>
               </>
             )}

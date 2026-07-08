@@ -5,7 +5,10 @@ import { useEffect, useMemo, useState } from "react";
 import { PageIntro } from "@/features/dashboard/components/page-intro";
 import { useAuthSession } from "@/hooks";
 import { useTeachingListData } from "@/features/teaching/teaching-client-data";
-import { teachingApi, type TimetableVersionApiRecord } from "@/features/teaching/api";
+import {
+  teachingApi,
+  type TimetableVersionApiRecord,
+} from "@/features/teaching/api";
 import { formatSchedule } from "@/features/teaching/utils/schedule-formatter";
 import { ButtonLink } from "@/shared/ui/button";
 import { Panel } from "@/shared/ui/panel";
@@ -14,24 +17,34 @@ export default function SchedulePage() {
   const { session } = useAuthSession();
   const isAdmin = session?.user.role === "ADMIN";
   const isTeacher = session?.user.role === "TEACHER";
-  const { records, isLoading, error } = useTeachingListData(isTeacher ? "mine" : "all");
+  const { records, isLoading, error } = useTeachingListData(
+    isTeacher ? "mine" : "all",
+  );
   const [yearFilter, setYearFilter] = useState("all");
   const [semesterFilter, setSemesterFilter] = useState("all");
   const [keyword, setKeyword] = useState("");
   const [selectedClassView, setSelectedClassView] = useState("all");
   const [versionAcademicYear, setVersionAcademicYear] = useState("");
   const [versionSemester, setVersionSemester] = useState("HK1");
-  const [versionOptions, setVersionOptions] = useState<TimetableVersionApiRecord[]>([]);
+  const [versionOptions, setVersionOptions] = useState<
+    TimetableVersionApiRecord[]
+  >([]);
   const [selectedVersionId, setSelectedVersionId] = useState("");
   const [isLoadingVersions, setIsLoadingVersions] = useState(false);
 
   const yearOptions = useMemo(
-    () => Array.from(new Set(records.map((item) => item.academicYearCode))).filter(Boolean).sort((a, b) => b.localeCompare(a)),
+    () =>
+      Array.from(new Set(records.map((item) => item.academicYearCode)))
+        .filter(Boolean)
+        .sort((a, b) => b.localeCompare(a)),
     [records],
   );
 
   const semesterOptions = useMemo(
-    () => Array.from(new Set(records.map((item) => item.semesterCode))).filter(Boolean).sort((a, b) => a.localeCompare(b)),
+    () =>
+      Array.from(new Set(records.map((item) => item.semesterCode)))
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b)),
     [records],
   );
 
@@ -57,7 +70,10 @@ export default function SchedulePage() {
     void (async () => {
       try {
         setIsLoadingVersions(true);
-        const response = await teachingApi.listTimetableVersions(versionSemester, versionAcademicYear);
+        const response = await teachingApi.listTimetableVersions(
+          versionSemester,
+          versionAcademicYear,
+        );
         const rows = Array.isArray(response.data) ? response.data : [];
 
         if (cancelled) {
@@ -94,8 +110,11 @@ export default function SchedulePage() {
     [versionOptions, selectedVersionId],
   );
 
-  const selectedVersionStatus = (selectedVersionMeta?.status ?? "").toUpperCase();
-  const isSelectedVersionReadOnly = selectedVersionStatus === "LOCKED" || selectedVersionStatus === "EXPIRED";
+  const selectedVersionStatus = (
+    selectedVersionMeta?.status ?? ""
+  ).toUpperCase();
+  const isSelectedVersionReadOnly =
+    selectedVersionStatus === "LOCKED" || selectedVersionStatus === "EXPIRED";
   const selectedVersionCreateHref = selectedVersionId
     ? `/schedule/new?sourceVersionId=${encodeURIComponent(selectedVersionId)}&academicYear=${encodeURIComponent(versionAcademicYear)}&semester=${encodeURIComponent(versionSemester)}`
     : `/schedule/new?academicYear=${encodeURIComponent(versionAcademicYear)}&semester=${encodeURIComponent(versionSemester)}`;
@@ -144,7 +163,11 @@ export default function SchedulePage() {
         ...item,
         classesCount: item.uniqueClasses.size,
         completionRate:
-          item.totalAssignments === 0 ? 0 : Math.round((item.assignmentsWithSchedule / item.totalAssignments) * 100),
+          item.totalAssignments === 0
+            ? 0
+            : Math.round(
+                (item.assignmentsWithSchedule / item.totalAssignments) * 100,
+              ),
       }))
       .sort((a, b) => {
         const yearComp = b.academicYear.localeCompare(a.academicYear);
@@ -158,8 +181,12 @@ export default function SchedulePage() {
   const filteredRows = useMemo(() => {
     const normalizedKeyword = keyword.trim().toLowerCase();
     return records
-      .filter((item) => (yearFilter === "all" ? true : item.academicYearCode === yearFilter))
-      .filter((item) => (semesterFilter === "all" ? true : item.semesterCode === semesterFilter))
+      .filter((item) =>
+        yearFilter === "all" ? true : item.academicYearCode === yearFilter,
+      )
+      .filter((item) =>
+        semesterFilter === "all" ? true : item.semesterCode === semesterFilter,
+      )
       .filter((item) => {
         if (!normalizedKeyword) {
           return true;
@@ -199,12 +226,16 @@ export default function SchedulePage() {
   }, [records, keyword, yearFilter, semesterFilter]);
 
   const classOptions = useMemo(
-    () => Array.from(new Set(filteredRows.map((item) => item.classCode))).filter(Boolean).sort((a, b) => a.localeCompare(b)),
+    () =>
+      Array.from(new Set(filteredRows.map((item) => item.classCode)))
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b)),
     [filteredRows],
   );
 
   const classFocusedSlots = useMemo(() => {
-    const targetClass = selectedClassView === "all" ? classOptions[0] : selectedClassView;
+    const targetClass =
+      selectedClassView === "all" ? classOptions[0] : selectedClassView;
     if (!targetClass) {
       return [] as Array<{
         day: string;
@@ -253,8 +284,12 @@ export default function SchedulePage() {
 
     const escapeCsv = (value: string) => `"${value.replace(/"/g, '""')}"`;
     const lines = filteredRows.map((item) => {
-      const scheduleText = formatSchedule(item.scheduleData).replace(/\n/g, " | ");
-      const status = (item.scheduleData ?? []).length > 0 ? "DA_CO_LICH" : "CHUA_CO_LICH";
+      const scheduleText = formatSchedule(item.scheduleData).replace(
+        /\n/g,
+        " | ",
+      );
+      const status =
+        (item.scheduleData ?? []).length > 0 ? "DA_CO_LICH" : "CHUA_CO_LICH";
       return [
         item.academicYearCode,
         item.semesterCode,
@@ -272,7 +307,9 @@ export default function SchedulePage() {
     });
 
     const csvContent = [headers.join(","), ...lines].join("\n");
-    const blob = new Blob([`\uFEFF${csvContent}`], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([`\uFEFF${csvContent}`], {
+      type: "text/csv;charset=utf-8;",
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -287,7 +324,11 @@ export default function SchedulePage() {
     <div className="grid gap-4 2xl:gap-5">
       <PageIntro
         eyebrow="Schedule"
-        title={isTeacher ? "Thời khóa biểu giảng dạy của tôi" : "Quản lý thời khóa biểu và kiểm tra xung đột"}
+        title={
+          isTeacher
+            ? "Thời khóa biểu giảng dạy của tôi"
+            : "Quản lý thời khóa biểu và kiểm tra xung đột"
+        }
         description={
           isTeacher
             ? "Xem lịch giảng dạy cá nhân theo năm học/học kỳ. Dữ liệu lấy theo tài khoản giáo viên hiện tại."
@@ -297,10 +338,11 @@ export default function SchedulePage() {
           <>
             {isAdmin ? (
               <>
-                <ButtonLink href="/schedule/new">
-                  Lập thời khóa biểu
-                </ButtonLink>
-                <ButtonLink href="/teaching-assignments/assign-teachers" tone="secondary">
+                <ButtonLink href="/schedule/new">Lập thời khóa biểu</ButtonLink>
+                <ButtonLink
+                  href="/teaching-assignments/assign-teachers"
+                  tone="secondary"
+                >
                   Phân công giáo viên
                 </ButtonLink>
                 <ButtonLink href="/classes" tone="secondary">
@@ -327,24 +369,34 @@ export default function SchedulePage() {
           Không thể tải dữ liệu thời khóa biểu: {error}
         </Panel>
       ) : isLoading ? (
-        <Panel className="p-4 text-sm text-slate-500">Đang tải dữ liệu thời khóa biểu...</Panel>
+        <Panel className="p-4 text-sm text-slate-500">
+          Đang tải dữ liệu thời khóa biểu...
+        </Panel>
       ) : (
         <>
           <Panel className="p-5 md:p-6">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <h3 className="text-base font-semibold text-slate-900">Danh mục thời khóa biểu đã lập</h3>
-                <p className="text-sm text-slate-500">Mỗi thẻ đại diện một kỳ lập lịch theo năm học và học kỳ.</p>
+                <h3 className="text-base font-semibold text-slate-900">
+                  Danh mục thời khóa biểu đã lập
+                </h3>
+                <p className="text-sm text-slate-500">
+                  Mỗi thẻ đại diện một kỳ lập lịch theo năm học và học kỳ.
+                </p>
               </div>
             </div>
 
             {!isTeacher ? (
               <div className="mb-4 grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 md:grid-cols-4">
                 <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Năm học</label>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                    Năm học
+                  </label>
                   <select
                     value={versionAcademicYear}
-                    onChange={(event) => setVersionAcademicYear(event.target.value)}
+                    onChange={(event) =>
+                      setVersionAcademicYear(event.target.value)
+                    }
                     className="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm"
                   >
                     {yearOptions.map((year) => (
@@ -356,7 +408,9 @@ export default function SchedulePage() {
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Học kỳ</label>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                    Học kỳ
+                  </label>
                   <select
                     value={versionSemester}
                     onChange={(event) => setVersionSemester(event.target.value)}
@@ -368,17 +422,22 @@ export default function SchedulePage() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Phiên bản thời khóa biểu (mặc định mới nhất)</label>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                    Phiên bản thời khóa biểu (mặc định mới nhất)
+                  </label>
                   <select
                     value={selectedVersionId}
-                    onChange={(event) => setSelectedVersionId(event.target.value)}
+                    onChange={(event) =>
+                      setSelectedVersionId(event.target.value)
+                    }
                     disabled={isLoadingVersions}
                     className="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm"
                   >
                     <option value="">-- Chọn phiên bản --</option>
                     {versionOptions.map((item) => (
                       <option key={item.versionId} value={item.versionId}>
-                        {(item.versionName ?? "Phiên bản") + ` (v${item.versionNo ?? 0} - ${(item.status ?? "").toUpperCase()})`}
+                        {(item.versionName ?? "Phiên bản") +
+                          ` (v${item.versionNo ?? 0} - ${(item.status ?? "").toUpperCase()})`}
                       </option>
                     ))}
                   </select>
@@ -387,9 +446,11 @@ export default function SchedulePage() {
                 <div className="md:col-span-3 text-xs text-slate-600">
                   {selectedVersionMeta ? (
                     <>
-                      Hiệu lực: {selectedVersionMeta.effectiveFrom ?? "?"} đến {selectedVersionMeta.effectiveTo ?? "?"} •
-                      Trạng thái: {selectedVersionStatus}{isSelectedVersionReadOnly ? " (chỉ xem)" : ""} •
-                      Slot: {selectedVersionMeta.entryCount ?? 0}
+                      Hiệu lực: {selectedVersionMeta.effectiveFrom ?? "?"} đến{" "}
+                      {selectedVersionMeta.effectiveTo ?? "?"} • Trạng thái:{" "}
+                      {selectedVersionStatus}
+                      {isSelectedVersionReadOnly ? " (chỉ xem)" : ""} • Slot:{" "}
+                      {selectedVersionMeta.entryCount ?? 0}
                     </>
                   ) : (
                     "Chưa có phiên bản cho năm học/học kỳ đã chọn."
@@ -406,7 +467,10 @@ export default function SchedulePage() {
                       {selectedVersionId ? "Xem chi tiết" : "Mở thời khóa biểu"}
                     </ButtonLink>
                     {selectedVersionId ? (
-                      <ButtonLink href={selectedVersionCreateHref} className="w-full justify-center">
+                      <ButtonLink
+                        href={selectedVersionCreateHref}
+                        className="w-full justify-center"
+                      >
                         Tạo bản mới từ phiên bản này
                       </ButtonLink>
                     ) : null}
@@ -416,11 +480,16 @@ export default function SchedulePage() {
             ) : null}
 
             {groupedTimetables.length === 0 ? (
-              <p className="text-sm text-slate-500">Chưa có dữ liệu thời khóa biểu để hiển thị.</p>
+              <p className="text-sm text-slate-500">
+                Chưa có dữ liệu thời khóa biểu để hiển thị.
+              </p>
             ) : (
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {groupedTimetables.map((item) => (
-                  <div key={`${item.academicYear}-${item.semester}`} className="rounded-2xl border border-slate-200 bg-white p-4">
+                  <div
+                    key={`${item.academicYear}-${item.semester}`}
+                    className="rounded-2xl border border-slate-200 bg-white p-4"
+                  >
                     <div className="mb-2 flex items-center justify-between gap-2">
                       <p className="text-sm font-semibold text-slate-900">
                         {item.academicYear} • {item.semester}
@@ -461,7 +530,10 @@ export default function SchedulePage() {
           <Panel className="p-5 md:p-6">
             <div className="mb-4 grid gap-3 md:grid-cols-4">
               <div className="md:col-span-2">
-                <label htmlFor="schedule-keyword" className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                <label
+                  htmlFor="schedule-keyword"
+                  className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500"
+                >
                   Tìm kiếm
                 </label>
                 <input
@@ -474,7 +546,10 @@ export default function SchedulePage() {
               </div>
 
               <div>
-                <label htmlFor="schedule-year-filter" className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                <label
+                  htmlFor="schedule-year-filter"
+                  className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500"
+                >
                   Năm học
                 </label>
                 <select
@@ -493,7 +568,10 @@ export default function SchedulePage() {
               </div>
 
               <div>
-                <label htmlFor="schedule-semester-filter" className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                <label
+                  htmlFor="schedule-semester-filter"
+                  className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500"
+                >
                   Học kỳ
                 </label>
                 <select
@@ -514,14 +592,16 @@ export default function SchedulePage() {
 
             <div className="mb-3 flex items-center justify-between text-sm">
               <p className="text-slate-700">
-                Hiển thị <span className="font-semibold">{filteredRows.length}</span> phân công phù hợp bộ lọc.
+                Hiển thị{" "}
+                <span className="font-semibold">{filteredRows.length}</span>{" "}
+                phân công phù hợp bộ lọc.
               </p>
               <button
                 type="button"
                 onClick={exportFilteredCsv}
                 className="inline-flex items-center rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
               >
-                Export CSV
+                Xuất CSV
               </button>
             </div>
 
@@ -529,27 +609,45 @@ export default function SchedulePage() {
               <table className="min-w-full divide-y divide-slate-200 text-sm">
                 <thead className="bg-slate-50">
                   <tr>
-                    <th className="px-3 py-2 text-left font-semibold text-slate-700">Năm học / HK</th>
-                    <th className="px-3 py-2 text-left font-semibold text-slate-700">Giáo viên</th>
-                    <th className="px-3 py-2 text-left font-semibold text-slate-700">Lớp - Môn</th>
-                    <th className="px-3 py-2 text-left font-semibold text-slate-700">Trạng thái</th>
-                    <th className="px-3 py-2 text-left font-semibold text-slate-700">Lịch dạy</th>
-                    <th className="px-3 py-2 text-left font-semibold text-slate-700">Hành động</th>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                      Năm học / HK
+                    </th>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                      Giáo viên
+                    </th>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                      Lớp - Môn
+                    </th>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                      Trạng thái
+                    </th>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                      Lịch dạy
+                    </th>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                      Hành động
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
                   {filteredRows.map((item) => (
                     <tr key={item.assignmentId}>
                       <td className="px-3 py-2 text-slate-600">
-                        <p className="font-medium text-slate-900">{item.academicYearCode}</p>
+                        <p className="font-medium text-slate-900">
+                          {item.academicYearCode}
+                        </p>
                         <p>{item.semesterCode}</p>
                       </td>
                       <td className="px-3 py-2 text-slate-700">
-                        <p className="font-medium text-slate-900">{item.teacherName}</p>
+                        <p className="font-medium text-slate-900">
+                          {item.teacherName}
+                        </p>
                         <p className="text-xs">{item.teacherCode}</p>
                       </td>
                       <td className="px-3 py-2 text-slate-700">
-                        <p className="font-medium text-slate-900">{item.className}</p>
+                        <p className="font-medium text-slate-900">
+                          {item.className}
+                        </p>
                         <p className="text-xs">{item.subjectName}</p>
                       </td>
                       <td className="px-3 py-2">
@@ -564,7 +662,9 @@ export default function SchedulePage() {
                         )}
                       </td>
                       <td className="px-3 py-2 text-xs text-slate-600">
-                        <div className="max-w-[360px] whitespace-pre-wrap">{formatSchedule(item.scheduleData)}</div>
+                        <div className="max-w-[360px] whitespace-pre-wrap">
+                          {formatSchedule(item.scheduleData)}
+                        </div>
                       </td>
                       <td className="px-3 py-2">
                         <div className="flex flex-wrap gap-2">
@@ -594,11 +694,19 @@ export default function SchedulePage() {
           <Panel className="p-5 md:p-6">
             <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
               <div>
-                <h3 className="text-base font-semibold text-slate-900">Xem nhanh thời khóa biểu theo lớp</h3>
-                <p className="text-sm text-slate-500">Giúp kiểm tra nhanh các tiết đã gán của một lớp trong tập dữ liệu đang lọc.</p>
+                <h3 className="text-base font-semibold text-slate-900">
+                  Xem nhanh thời khóa biểu theo lớp
+                </h3>
+                <p className="text-sm text-slate-500">
+                  Giúp kiểm tra nhanh các tiết đã gán của một lớp trong tập dữ
+                  liệu đang lọc.
+                </p>
               </div>
               <div className="min-w-[220px]">
-                <label htmlFor="class-focused-view" className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                <label
+                  htmlFor="class-focused-view"
+                  className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500"
+                >
                   Chọn lớp
                 </label>
                 <select
@@ -618,30 +726,50 @@ export default function SchedulePage() {
             </div>
 
             {classFocusedSlots.length === 0 ? (
-              <p className="text-sm text-slate-500">Không có slot nào cho lớp được chọn trong bộ lọc hiện tại.</p>
+              <p className="text-sm text-slate-500">
+                Không có slot nào cho lớp được chọn trong bộ lọc hiện tại.
+              </p>
             ) : (
               <div className="overflow-x-auto rounded-xl border border-slate-200">
                 <table className="min-w-full divide-y divide-slate-200 text-sm">
                   <thead className="bg-slate-50">
                     <tr>
-                      <th className="px-3 py-2 text-left font-semibold text-slate-700">Thứ</th>
-                      <th className="px-3 py-2 text-left font-semibold text-slate-700">Tiết</th>
-                      <th className="px-3 py-2 text-left font-semibold text-slate-700">Môn học</th>
-                      <th className="px-3 py-2 text-left font-semibold text-slate-700">Giáo viên</th>
+                      <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                        Thứ
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                        Tiết
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                        Môn học
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                        Giáo viên
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 bg-white">
                     {classFocusedSlots.map((slot, index) => (
-                      <tr key={`${slot.day}-${slot.period}-${slot.subjectCode}-${index}`}>
+                      <tr
+                        key={`${slot.day}-${slot.period}-${slot.subjectCode}-${index}`}
+                      >
                         <td className="px-3 py-2">{slot.day}</td>
                         <td className="px-3 py-2">{slot.period}</td>
                         <td className="px-3 py-2">
-                          <p className="font-medium text-slate-900">{slot.subjectName}</p>
-                          <p className="text-xs text-slate-500">{slot.subjectCode}</p>
+                          <p className="font-medium text-slate-900">
+                            {slot.subjectName}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {slot.subjectCode}
+                          </p>
                         </td>
                         <td className="px-3 py-2">
-                          <p className="font-medium text-slate-900">{slot.teacherName}</p>
-                          <p className="text-xs text-slate-500">{slot.teacherCode}</p>
+                          <p className="font-medium text-slate-900">
+                            {slot.teacherName}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {slot.teacherCode}
+                          </p>
                         </td>
                       </tr>
                     ))}

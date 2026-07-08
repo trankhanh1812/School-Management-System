@@ -1,10 +1,5 @@
 package com.school.school_management.service.teaching;
 
-import com.school.school_management.dto.teaching.TimetableGridUpsertRequest;
-import com.school.school_management.dto.teaching.TimetableImportPreviewResponse;
-import com.school.school_management.exception.CustomException;
-import com.school.school_management.repository.SchoolClassRepository;
-import com.school.school_management.repository.SubjectRepository;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -12,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -20,10 +15,19 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.school.school_management.dto.teaching.TimetableGridUpsertRequest;
+import com.school.school_management.dto.teaching.TimetableImportPreviewResponse;
+import com.school.school_management.exception.CustomException;
+import com.school.school_management.repository.SchoolClassRepository;
+import com.school.school_management.repository.SubjectRepository;
+
+import lombok.RequiredArgsConstructor;
+
 @Service
 @RequiredArgsConstructor
 public class TimetableImportServiceImpl implements TimetableImportService {
 
+    private static final int METADATA_ROW_INDEX = 2; // row 3 (row 2 holds the labels)
     private static final int HEADER_ROW_INDEX = 4; // row 5
     private static final int DATA_START_ROW_INDEX = 5; // row 6
     private static final int CLASS_START_COLUMN_INDEX = 2; // column C
@@ -39,12 +43,12 @@ public class TimetableImportServiceImpl implements TimetableImportService {
             XSSFSheet sheet = workbook.getSheetAt(0);
             DataFormatter formatter = new DataFormatter();
 
-            String versionName = normalize(getCellValue(sheet, 1, 0, formatter));
-            String academicYearCode = normalize(getCellValue(sheet, 1, 1, formatter));
-            String semesterRaw = normalize(getCellValue(sheet, 1, 2, formatter));
+            String versionName = normalize(getCellValue(sheet, METADATA_ROW_INDEX, 0, formatter));
+            String academicYearCode = normalize(getCellValue(sheet, METADATA_ROW_INDEX, 1, formatter));
+            String semesterRaw = normalize(getCellValue(sheet, METADATA_ROW_INDEX, 2, formatter));
             String semesterCode = normalizeSemester(semesterRaw);
-            String effectiveFrom = normalizeDate(getCellValue(sheet, 1, 3, formatter));
-            String effectiveTo = normalizeDate(getCellValue(sheet, 1, 4, formatter));
+            String effectiveFrom = normalizeDate(getCellValue(sheet, METADATA_ROW_INDEX, 3, formatter));
+            String effectiveTo = normalizeDate(getCellValue(sheet, METADATA_ROW_INDEX, 4, formatter));
 
             Map<Integer, String> classCodeByColumn = extractClassColumns(sheet, formatter);
 

@@ -1,21 +1,16 @@
 package com.school.school_management.util;
 
-import com.school.school_management.dto.student.BulkImportRequest;
-import com.school.school_management.dto.student.ImportErrorRecord;
-import com.school.school_management.dto.student.ParentImportRequest;
-import com.school.school_management.dto.student.StudentImportRequest;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-import org.springframework.core.io.ClassPathResource;
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
@@ -27,6 +22,12 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.core.io.ClassPathResource;
+
+import com.school.school_management.dto.student.BulkImportRequest;
+import com.school.school_management.dto.student.ImportErrorRecord;
+import com.school.school_management.dto.student.ParentImportRequest;
+import com.school.school_management.dto.student.StudentImportRequest;
 public class ExcelImportUtil {
 
     private static final String STUDENT_SHEET = "STUDENT";
@@ -50,10 +51,23 @@ public class ExcelImportUtil {
     public BulkImportRequest parseExcelFile(InputStream inputStream) {
         try (XSSFWorkbook workbook = new XSSFWorkbook(inputStream)) {
             BulkImportRequest request = new BulkImportRequest();
-            XSSFSheet student = workbook.getSheet(STUDENT_SHEET);
-            XSSFSheet parent = workbook.getSheet(PARENT_SHEET);
-            request.setStudents(student == null ? new ArrayList<>() : parseStudentSheet(student));
-            request.setParents(parent == null ? new ArrayList<>() : parseParentSheet(parent));
+            // The template served to users is the Vietnamese file with sheets
+            // "DanhSachHocSinh"/"DanhSachPhuHuynh", an STT column, and data from row 3.
+            // Fall back to the legacy layout (STUDENT/parent, no STT, data from row 2).
+            XSSFSheet student = workbook.getSheet("DanhSachHocSinh");
+            XSSFSheet parent = workbook.getSheet("DanhSachPhuHuynh");
+            boolean vietnameseLayout = student != null;
+            if (student == null) {
+                student = workbook.getSheet(STUDENT_SHEET);
+            }
+            if (parent == null) {
+                parent = workbook.getSheet(PARENT_SHEET);
+            }
+            int sttOffset = vietnameseLayout ? 1 : 0;   // STT column shifts every field by 1
+            int dataStartRow = vietnameseLayout ? 2 : 1; // row index 2 (Excel row 3) skips header + note row
+
+            request.setStudents(student == null ? new ArrayList<>() : parseStudentSheet(student, sttOffset, dataStartRow));
+            request.setParents(parent == null ? new ArrayList<>() : parseParentSheet(parent, sttOffset, dataStartRow));
             return request;
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse excel", e);
@@ -94,8 +108,8 @@ public class ExcelImportUtil {
         if (isBlank(s.getDateOfBirth()) || !isValidDate(s.getDateOfBirth())) {
             errors.add(error(s, "date_of_birth", "date_of_birth must be yyyy-MM-dd"));
         }
-        if (isBlank(s.getGender()) || !("male".equalsIgnoreCase(s.getGender()) || "female".equalsIgnoreCase(s.getGender()))) {
-            errors.add(error(s, "gender", "gender must be Male or Female"));
+        if (isBlank(s.getGender()) || !isValidGender(s.getGender())) {
+            errors.add(error(s, "gender", "Giới tính phải là Nam/Nữ (Male/Female)"));
         }
         if (isBlank(s.getClassName())) {
             errors.add(error(s, "class_name", "class_name is required"));
@@ -111,8 +125,12 @@ public class ExcelImportUtil {
         }
         if (!isBlank(s.getStatus())) {
             String v = s.getStatus().trim().toLowerCase();
-            if (!("studying".equals(v) || "transferred".equals(v) || "dropout".equals(v))) {
-                errors.add(error(s, "status", "status must be studying/transferred/dropout"));
+            boolean ok = v.equals("studying") || v.equals("transferred") || v.equals("dropout")
+                || v.equals("đang học") || v.equals("dang hoc")
+                || v.equals("chuyển trường") || v.equals("chuyen truong")
+                || v.equals("thôi học") || v.equals("thoi hoc") || v.equals("bảo lưu");
+            if (!ok) {
+                errors.add(error(s, "status", "Trạng thái phải là Đang học/Chuyển trường/Thôi học"));
             }
         }
         if (!isBlank(s.getNationalId()) && (s.getNationalId().length() < 9 || s.getNationalId().length() > 12 || !s.getNationalId().matches("\\d+"))) {
@@ -201,50 +219,83 @@ public class ExcelImportUtil {
         sheet.setColumnWidth(0, 20000);
     }
 
-    private List<StudentImportRequest> parseStudentSheet(XSSFSheet sheet) {
+    private List<StudentImportRequest> parseStudentSheet(XSSFSheet sheet, int off, int dataStartRow) {
         List<StudentImportRequest> result = new ArrayList<>();
-        for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+        for (int i = dataStartRow; i <= sheet.getLastRowNum(); i++) {
             var row = sheet.getRow(i);
-            if (row == null || isRowEmpty(row, 12)) {
+            if (row == null || isRowEmpty(row, off, off + 12)) {
                 continue;
             }
             result.add(StudentImportRequest.builder()
-                .studentCode(getCellValue(row, 0))
-                .fullName(getCellValue(row, 1))
-                .dateOfBirth(getCellValue(row, 2))
-                .gender(getCellValue(row, 3))
-                .phone(getCellValue(row, 4))
-                .email(getCellValue(row, 5))
-                .address(getCellValue(row, 6))
-                .className(getCellValue(row, 7))
-                .academicYear(getCellValue(row, 8))
-                .status(getCellValue(row, 9))
-                .enrollmentDate(getCellValue(row, 10))
-                .nationalId(getCellValue(row, 11))
+                .studentCode(getCellValue(row, off))
+                .fullName(getCellValue(row, off + 1))
+                .dateOfBirth(getCellValue(row, off + 2))
+                .gender(getCellValue(row, off + 3))
+                .phone(getCellValue(row, off + 4))
+                .email(getCellValue(row, off + 5))
+                .address(getCellValue(row, off + 6))
+                .className(getCellValue(row, off + 7))
+                .academicYear(getCellValue(row, off + 8))
+                .status(getCellValue(row, off + 9))
+                .enrollmentDate(getCellValue(row, off + 10))
+                .nationalId(getCellValue(row, off + 11))
                 .rowNumber(i + 1)
                 .build());
         }
         return result;
     }
 
-    private List<ParentImportRequest> parseParentSheet(XSSFSheet sheet) {
+    private List<ParentImportRequest> parseParentSheet(XSSFSheet sheet, int off, int dataStartRow) {
         List<ParentImportRequest> result = new ArrayList<>();
-        for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+        for (int i = dataStartRow; i <= sheet.getLastRowNum(); i++) {
             var row = sheet.getRow(i);
-            if (row == null || isRowEmpty(row, 6)) {
+            if (row == null || isRowEmpty(row, off, off + 6)) {
                 continue;
             }
             result.add(ParentImportRequest.builder()
-                .studentCode(getCellValue(row, 0))
-                .parentName(getCellValue(row, 1))
-                .parentPhone(getCellValue(row, 2))
-                .parentEmail(getCellValue(row, 3))
-                .relation(getCellValue(row, 4))
-                .isPrimary(getCellValue(row, 5))
+                .studentCode(getCellValue(row, off))
+                .parentName(getCellValue(row, off + 1))
+                .parentPhone(getCellValue(row, off + 2))
+                .parentEmail(getCellValue(row, off + 3))
+                .relation(normalizeRelation(getCellValue(row, off + 4)))
+                .isPrimary(normalizeYesNo(getCellValue(row, off + 5)))
                 .rowNumber(i + 1)
                 .build());
         }
         return result;
+    }
+
+    /** Map Vietnamese / English relation labels to the canonical father/mother/guardian. */
+    private String normalizeRelation(String value) {
+        if (isBlank(value)) {
+            return value;
+        }
+        String t = value.trim().toLowerCase();
+        if (t.equals("bố") || t.equals("bo") || t.equals("ba") || t.equals("cha") || t.equals("father")) {
+            return "father";
+        }
+        if (t.equals("mẹ") || t.equals("me") || t.equals("má") || t.equals("ma") || t.equals("mother")) {
+            return "mother";
+        }
+        if (t.equals("người giám hộ") || t.equals("giám hộ") || t.equals("guardian")) {
+            return "guardian";
+        }
+        return t;
+    }
+
+    /** Map Có/Không (or true/false) to canonical true/false. */
+    private String normalizeYesNo(String value) {
+        if (isBlank(value)) {
+            return value;
+        }
+        String t = value.trim().toLowerCase();
+        if (t.equals("có") || t.equals("co") || t.equals("true") || t.equals("x") || t.equals("1")) {
+            return "true";
+        }
+        if (t.equals("không") || t.equals("khong") || t.equals("false") || t.equals("0")) {
+            return "false";
+        }
+        return t;
     }
 
     private void addDropdownValidation(XSSFSheet sheet, int firstRow, int lastRow, int col, String[] values) {
@@ -268,8 +319,8 @@ public class ExcelImportUtil {
         return value == null ? null : value.trim();
     }
 
-    private boolean isRowEmpty(org.apache.poi.ss.usermodel.Row row, int maxColumns) {
-        for (int i = 0; i < maxColumns; i++) {
+    private boolean isRowEmpty(org.apache.poi.ss.usermodel.Row row, int startCol, int endColExclusive) {
+        for (int i = startCol; i < endColExclusive; i++) {
             if (!isBlank(getCellValue(row, i))) {
                 return false;
             }
@@ -297,6 +348,12 @@ public class ExcelImportUtil {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private boolean isValidGender(String value) {
+        String v = value.trim().toLowerCase();
+        return v.equals("male") || v.equals("female")
+            || v.equals("nam") || v.equals("nữ") || v.equals("nu");
     }
 
     private boolean isValidDate(String value) {

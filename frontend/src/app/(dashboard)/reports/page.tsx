@@ -106,13 +106,13 @@ export default function ReportsPage() {
                   tone="secondary"
                   onClick={() => void downloadReport("students")}
                 >
-                  Export học sinh
+                  Xuất học sinh
                 </Button>
                 <Button
                   tone="secondary"
                   onClick={() => void downloadReport("teaching-assignments")}
                 >
-                  Export phân công
+                  Xuất phân công
                 </Button>
               </>
             )}
@@ -213,7 +213,7 @@ export default function ReportsPage() {
         <SectionSkeleton rows={6} />
       ) : (
         <DataTable
-          title="Top học sinh"
+          title="Học sinh xuất sắc"
           description="Bảng này mô phỏng dashboard top học sinh mà hội đồng rất hay thích xem ở phần demo."
           columns={["Mã học sinh", "Họ và tên", "Lớp", "Điểm TB", "Hạnh kiểm"]}
           rows={snapshot.topStudents.map((student) => [
@@ -257,8 +257,8 @@ export default function ReportsPage() {
             />
             <DataTable
               title="Tải phân công theo bộ môn"
-              description="Giúp đánh giá tổ chuyên môn nào đang gánh nhiều teaching assignment trong năm học."
-              columns={["Bộ môn", "Số giáo viên", "Số assignment"]}
+              description="Giúp đánh giá tổ chuyên môn nào đang gánh nhiều phân công giảng dạy trong năm học."
+              columns={["Bộ môn", "Số giáo viên", "Số phân công"]}
               rows={snapshot.departmentLoad.map((item) => [
                 item.department,
                 String(item.teacherCount),
@@ -285,7 +285,7 @@ export default function ReportsPage() {
                 "Mã GV",
                 "Họ và tên",
                 "Bộ môn",
-                "Số assignment",
+                "Số phân công",
                 "Chủ nhiệm",
               ]}
               rows={snapshot.teacherLoad.map((teacher) => [
@@ -297,7 +297,7 @@ export default function ReportsPage() {
               ])}
             />
             <DataTable
-              title="Danh mục export báo cáo"
+              title="Danh mục xuất báo cáo"
               description="Các gói xuất dữ liệu thông dụng trong quản trị nhà trường."
               columns={["Tên báo cáo", "Phạm vi", "Định dạng", "Nguồn dữ liệu"]}
               rows={snapshot.reportExports.map((report) => [

@@ -212,11 +212,11 @@ export default function ScoreGradebookPage() {
     }
     try {
       await scoreApi.submit(selectedExamId);
-      showToast("Đã submit điểm để chờ duyệt", "success");
+      showToast("Đã gửi điểm để chờ duyệt", "success");
       await loadData(selectedExamId);
     } catch (error) {
       showToast(
-        error instanceof Error ? error.message : "Không submit được điểm",
+        error instanceof Error ? error.message : "Không gửi được điểm",
         "error",
       );
     }
@@ -284,9 +284,7 @@ export default function ScoreGradebookPage() {
       URL.revokeObjectURL(url);
     } catch (error) {
       showToast(
-        error instanceof Error
-          ? error.message
-          : "Không tải được template import điểm",
+        error instanceof Error ? error.message : "Không tải được mẫu nhập điểm",
         "error",
       );
     }
@@ -314,7 +312,7 @@ export default function ScoreGradebookPage() {
       showToast(
         error instanceof Error
           ? error.message
-          : "Không tạo được preview import điểm",
+          : "Không tạo được bản xem trước nhập điểm",
         "error",
       );
     } finally {
@@ -340,7 +338,7 @@ export default function ScoreGradebookPage() {
       handleCloseImportPreview();
     } catch (error) {
       showToast(
-        error instanceof Error ? error.message : "Không import được điểm",
+        error instanceof Error ? error.message : "Không nhập được điểm",
         "error",
       );
     } finally {
@@ -375,14 +373,14 @@ export default function ScoreGradebookPage() {
               Sang tab Kiểm tra
             </ButtonLink>
             <Button tone="secondary" onClick={handleDownloadImportTemplate}>
-              Download template import điểm
+              Tải mẫu nhập điểm
             </Button>
             <Button
               tone="secondary"
               onClick={handleSelectImportFile}
               disabled={isPreviewingImport || isImporting}
             >
-              {isPreviewingImport ? "Đang preview..." : "Import Excel"}
+              {isPreviewingImport ? "Đang xem trước..." : "Import Excel"}
             </Button>
             <ButtonLink href="/students">Mở hồ sơ học sinh</ButtonLink>
           </>
@@ -411,31 +409,55 @@ export default function ScoreGradebookPage() {
         {/* Row 1: scope filters — compact 2x2 grid */}
         <div className="mb-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <div className="grid gap-1">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Năm học</label>
-            <select value={yearScope} onChange={(event) => setYearScope(event.target.value)} className="h-9 rounded-lg border border-slate-200 px-2 text-xs">
+            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              Năm học
+            </label>
+            <select
+              value={yearScope}
+              onChange={(event) => setYearScope(event.target.value)}
+              className="h-9 rounded-lg border border-slate-200 px-2 text-xs"
+            >
               <option value="all">Tất cả</option>
               {yearOptions.map((value) => (
-                <option key={`year-${value}`} value={value}>{value}</option>
+                <option key={`year-${value}`} value={value}>
+                  {value}
+                </option>
               ))}
             </select>
           </div>
 
           <div className="grid gap-1">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Học kỳ</label>
-            <select value={semesterScope} onChange={(event) => setSemesterScope(event.target.value)} className="h-9 rounded-lg border border-slate-200 px-2 text-xs">
+            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              Học kỳ
+            </label>
+            <select
+              value={semesterScope}
+              onChange={(event) => setSemesterScope(event.target.value)}
+              className="h-9 rounded-lg border border-slate-200 px-2 text-xs"
+            >
               <option value="all">Tất cả</option>
               {semesterOptions.map((value) => (
-                <option key={`semester-${value}`} value={value}>{value}</option>
+                <option key={`semester-${value}`} value={value}>
+                  {value}
+                </option>
               ))}
             </select>
           </div>
 
           <div className="grid gap-1">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Lớp áp dụng</label>
-            <select value={classScope} onChange={(event) => setClassScope(event.target.value)} className="h-9 rounded-lg border border-slate-200 px-2 text-xs">
+            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              Lớp áp dụng
+            </label>
+            <select
+              value={classScope}
+              onChange={(event) => setClassScope(event.target.value)}
+              className="h-9 rounded-lg border border-slate-200 px-2 text-xs"
+            >
               <option value="all">Tất cả</option>
               {classScopeOptions.map((value) => (
-                <option key={`scope-class-${value}`} value={value}>{value}</option>
+                <option key={`scope-class-${value}`} value={value}>
+                  {value}
+                </option>
               ))}
             </select>
           </div>
@@ -443,7 +465,9 @@ export default function ScoreGradebookPage() {
 
         {/* Row 2: exam selector — full width to prevent overflow */}
         <div className="mb-4 grid gap-1">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Bài kiểm tra</label>
+          <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Bài kiểm tra
+          </label>
           <select
             value={selectedExamId}
             onChange={(event) => setSelectedExamId(event.target.value)}
@@ -451,9 +475,10 @@ export default function ScoreGradebookPage() {
           >
             <option value="">-- Chọn bài kiểm tra --</option>
             {scopedExams.map((exam) => {
-              const classes = exam.classCodes.length > 3
-                ? `${exam.classCodes.slice(0, 3).join(", ")}…`
-                : exam.classCodes.join(", ");
+              const classes =
+                exam.classCodes.length > 3
+                  ? `${exam.classCodes.slice(0, 3).join(", ")}…`
+                  : exam.classCodes.join(", ");
               return (
                 <option key={exam.examId} value={exam.examId}>
                   {exam.title} · {exam.subjectCode} · {classes}
@@ -482,7 +507,7 @@ export default function ScoreGradebookPage() {
               onClick={handleSubmitScores}
               disabled={!selectedExamId || isLoading}
             >
-              Submit
+              Gửi duyệt
             </Button>
             {isAdmin ? (
               <Button
@@ -490,7 +515,7 @@ export default function ScoreGradebookPage() {
                 onClick={handlePublishScores}
                 disabled={!selectedExamId || isLoading}
               >
-                Publish
+                Công bố
               </Button>
             ) : null}
           </div>
@@ -646,7 +671,7 @@ export default function ScoreGradebookPage() {
                               score.status === "LOCKED"
                             }
                           >
-                            Approve
+                            Duyệt
                           </Button>
                         </td>
                       ) : null}
@@ -748,7 +773,7 @@ export default function ScoreGradebookPage() {
                             score.status === "LOCKED"
                           }
                         >
-                          Approve
+                          Duyệt
                         </Button>
                       </div>
                     ) : null}

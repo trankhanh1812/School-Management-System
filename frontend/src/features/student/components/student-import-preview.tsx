@@ -21,7 +21,9 @@ export function StudentImportPreview({
 }: StudentImportPreviewProps) {
   const [deletedRows, setDeletedRows] = useState<Set<string>>(new Set());
   const [importing, setImporting] = useState(false);
-  const [activeTab, setActiveTab] = useState<"students" | "parents">("students");
+  const [activeTab, setActiveTab] = useState<"students" | "parents">(
+    "students",
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -71,8 +73,8 @@ export function StudentImportPreview({
   return (
     <Modal
       open={open}
-      title="Preview import danh sách học sinh"
-      description="Kiểm tra dữ liệu trước khi xác nhận import. Các dòng lỗi được đánh dấu vàng."
+      title="Xem trước nhập dữ liệu danh sách học sinh"
+      description="Kiểm tra dữ liệu trước khi xác nhận nhập. Các dòng lỗi được đánh dấu vàng."
       onClose={onCancel}
       size="lg"
       footer={
@@ -82,9 +84,11 @@ export function StudentImportPreview({
           </Button>
           <Button
             onClick={() => void handleImport()}
-            disabled={importing || (stats.students + stats.parents) === 0}
+            disabled={importing || stats.students + stats.parents === 0}
           >
-            {importing ? "Đang import..." : `Xác nhận import ${totalValid} dòng hợp lệ`}
+            {importing
+              ? "Đang import..."
+              : `Xác nhận import ${totalValid} dòng hợp lệ`}
           </Button>
         </>
       }
@@ -104,15 +108,27 @@ export function StudentImportPreview({
             <p className="text-xl font-bold text-emerald-700">{totalValid}</p>
             <p className="text-xs text-emerald-600">Hợp lệ</p>
           </div>
-          <div className={`rounded-xl border px-4 py-3 text-center ${totalErrors > 0 ? "border-amber-200 bg-amber-50" : "border-slate-200 bg-slate-50"}`}>
-            <p className={`text-xl font-bold ${totalErrors > 0 ? "text-amber-700" : "text-slate-400"}`}>{totalErrors}</p>
-            <p className={`text-xs ${totalErrors > 0 ? "text-amber-600" : "text-slate-400"}`}>Có lỗi</p>
+          <div
+            className={`rounded-xl border px-4 py-3 text-center ${totalErrors > 0 ? "border-amber-200 bg-amber-50" : "border-slate-200 bg-slate-50"}`}
+          >
+            <p
+              className={`text-xl font-bold ${totalErrors > 0 ? "text-amber-700" : "text-slate-400"}`}
+            >
+              {totalErrors}
+            </p>
+            <p
+              className={`text-xs ${totalErrors > 0 ? "text-amber-600" : "text-slate-400"}`}
+            >
+              Có lỗi
+            </p>
           </div>
         </div>
 
         {totalErrors > 0 && (
           <Panel className="border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-            <span className="font-semibold">{totalErrors} dòng có lỗi</span> — vẫn có thể import, các dòng lỗi sẽ bị bỏ qua. Kiểm tra cột lỗi để biết chi tiết.
+            <span className="font-semibold">{totalErrors} dòng có lỗi</span> —
+            vẫn có thể import, các dòng lỗi sẽ bị bỏ qua. Kiểm tra cột lỗi để
+            biết chi tiết.
           </Panel>
         )}
 
@@ -156,7 +172,9 @@ export function StudentImportPreview({
         {activeTab === "students" && (
           <div className="overflow-x-auto rounded-xl border border-slate-200">
             {previewData.students.length === 0 ? (
-              <div className="p-6 text-center text-sm text-slate-500">Không có dữ liệu học sinh</div>
+              <div className="p-6 text-center text-sm text-slate-500">
+                Không có dữ liệu học sinh
+              </div>
             ) : (
               <table className="min-w-full text-sm">
                 <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -174,7 +192,9 @@ export function StudentImportPreview({
                 </thead>
                 <tbody>
                   {previewData.students.map((student) => {
-                    const isDeleted = deletedRows.has(`student-${student.row_number}`);
+                    const isDeleted = deletedRows.has(
+                      `student-${student.row_number}`,
+                    );
                     return (
                       <tr
                         key={student.row_number}
@@ -186,18 +206,36 @@ export function StudentImportPreview({
                               : ""
                         }`}
                       >
-                        <td className="px-3 py-2 text-slate-400">{student.row_number}</td>
-                        <td className="px-3 py-2 font-mono text-xs text-slate-700">{student.student_code || "—"}</td>
-                        <td className="px-3 py-2 font-medium text-slate-900">{student.full_name || "—"}</td>
-                        <td className="px-3 py-2 font-mono text-xs text-slate-600">{student.national_id || <span className="text-slate-300">—</span>}</td>
-                        <td className="px-3 py-2 text-slate-700">{student.class_name || "—"}</td>
-                        <td className="px-3 py-2 text-slate-700">{student.academic_year || "—"}</td>
-                        <td className="px-3 py-2 text-slate-600">{student.status || "—"}</td>
+                        <td className="px-3 py-2 text-slate-400">
+                          {student.row_number}
+                        </td>
+                        <td className="px-3 py-2 font-mono text-xs text-slate-700">
+                          {student.student_code || "—"}
+                        </td>
+                        <td className="px-3 py-2 font-medium text-slate-900">
+                          {student.full_name || "—"}
+                        </td>
+                        <td className="px-3 py-2 font-mono text-xs text-slate-600">
+                          {student.national_id || (
+                            <span className="text-slate-300">—</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-slate-700">
+                          {student.class_name || "—"}
+                        </td>
+                        <td className="px-3 py-2 text-slate-700">
+                          {student.academic_year || "—"}
+                        </td>
+                        <td className="px-3 py-2 text-slate-600">
+                          {student.status || "—"}
+                        </td>
                         <td className="px-3 py-2">
                           {student.has_errors && student.errors.length > 0 ? (
                             <ul className="space-y-0.5">
                               {student.errors.map((err, i) => (
-                                <li key={i} className="text-xs text-amber-700">• {err}</li>
+                                <li key={i} className="text-xs text-amber-700">
+                                  • {err}
+                                </li>
                               ))}
                             </ul>
                           ) : (
@@ -207,7 +245,9 @@ export function StudentImportPreview({
                         <td className="px-3 py-2 text-center">
                           <button
                             type="button"
-                            onClick={() => toggleDelete("student", student.row_number)}
+                            onClick={() =>
+                              toggleDelete("student", student.row_number)
+                            }
                             className={`text-xs font-medium ${isDeleted ? "text-sky-600 hover:text-sky-800" : "text-rose-500 hover:text-rose-700"}`}
                           >
                             {isDeleted ? "Khôi phục" : "Xóa"}
@@ -226,7 +266,9 @@ export function StudentImportPreview({
         {activeTab === "parents" && (
           <div className="overflow-x-auto rounded-xl border border-slate-200">
             {previewData.parents.length === 0 ? (
-              <div className="p-6 text-center text-sm text-slate-500">Không có dữ liệu phụ huynh</div>
+              <div className="p-6 text-center text-sm text-slate-500">
+                Không có dữ liệu phụ huynh
+              </div>
             ) : (
               <table className="min-w-full text-sm">
                 <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -243,7 +285,9 @@ export function StudentImportPreview({
                 </thead>
                 <tbody>
                   {previewData.parents.map((parent) => {
-                    const isDeleted = deletedRows.has(`parent-${parent.row_number}`);
+                    const isDeleted = deletedRows.has(
+                      `parent-${parent.row_number}`,
+                    );
                     return (
                       <tr
                         key={parent.row_number}
@@ -255,17 +299,31 @@ export function StudentImportPreview({
                               : ""
                         }`}
                       >
-                        <td className="px-3 py-2 text-slate-400">{parent.row_number}</td>
-                        <td className="px-3 py-2 font-mono text-xs text-slate-700">{parent.student_code || "—"}</td>
-                        <td className="px-3 py-2 font-medium text-slate-900">{parent.parent_name || "—"}</td>
-                        <td className="px-3 py-2 font-mono text-xs text-slate-600">{parent.parent_phone || "—"}</td>
-                        <td className="px-3 py-2 text-slate-600">{parent.parent_email || "—"}</td>
-                        <td className="px-3 py-2 text-slate-700">{parent.relation || "—"}</td>
+                        <td className="px-3 py-2 text-slate-400">
+                          {parent.row_number}
+                        </td>
+                        <td className="px-3 py-2 font-mono text-xs text-slate-700">
+                          {parent.student_code || "—"}
+                        </td>
+                        <td className="px-3 py-2 font-medium text-slate-900">
+                          {parent.parent_name || "—"}
+                        </td>
+                        <td className="px-3 py-2 font-mono text-xs text-slate-600">
+                          {parent.parent_phone || "—"}
+                        </td>
+                        <td className="px-3 py-2 text-slate-600">
+                          {parent.parent_email || "—"}
+                        </td>
+                        <td className="px-3 py-2 text-slate-700">
+                          {parent.relation || "—"}
+                        </td>
                         <td className="px-3 py-2">
                           {parent.has_errors && parent.errors.length > 0 ? (
                             <ul className="space-y-0.5">
                               {parent.errors.map((err, i) => (
-                                <li key={i} className="text-xs text-amber-700">• {err}</li>
+                                <li key={i} className="text-xs text-amber-700">
+                                  • {err}
+                                </li>
                               ))}
                             </ul>
                           ) : (
@@ -275,7 +333,9 @@ export function StudentImportPreview({
                         <td className="px-3 py-2 text-center">
                           <button
                             type="button"
-                            onClick={() => toggleDelete("parent", parent.row_number)}
+                            onClick={() =>
+                              toggleDelete("parent", parent.row_number)
+                            }
                             className={`text-xs font-medium ${isDeleted ? "text-sky-600 hover:text-sky-800" : "text-rose-500 hover:text-rose-700"}`}
                           >
                             {isDeleted ? "Khôi phục" : "Xóa"}

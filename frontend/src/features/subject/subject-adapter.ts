@@ -1,9 +1,14 @@
-import type { SubjectMetric, SubjectRecord } from "@/features/subject/subject-data";
+import type {
+  SubjectMetric,
+  SubjectRecord,
+} from "@/features/subject/subject-data";
 
 type UnknownRecord = Record<string, unknown>;
 
 function asRecord(value: unknown): UnknownRecord {
-  return typeof value === "object" && value !== null ? (value as UnknownRecord) : {};
+  return typeof value === "object" && value !== null
+    ? (value as UnknownRecord)
+    : {};
 }
 
 function asString(value: unknown, fallback = "") {
@@ -18,9 +23,9 @@ export function mapSubjectRecord(raw: unknown): SubjectRecord {
   const record = asRecord(raw);
   return {
     code: asString(record.code, ""),
-    name: asString(record.name, "Chua cap nhat"),
+    name: asString(record.name, "Chưa cập nhật"),
     departmentCode: asString(record.departmentCode, ""),
-    departmentName: asString(record.departmentName, "Chua cap nhat"),
+    departmentName: asString(record.departmentName, "Chưa cập nhật"),
     gradeLevel: asNumber(record.gradeLevel),
     status: asString(record.status, "ACTIVE"),
     assignmentCount: asNumber(record.assignmentCount),

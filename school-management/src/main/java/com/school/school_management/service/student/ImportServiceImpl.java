@@ -1,11 +1,25 @@
 package com.school.school_management.service.student;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.school.school_management.dto.student.BulkImportRequest;
 import com.school.school_management.dto.student.BulkImportResponse;
 import com.school.school_management.dto.student.ImportErrorRecord;
 import com.school.school_management.dto.student.ParentImportRequest;
-import com.school.school_management.dto.student.StudentImportRequest;
 import com.school.school_management.dto.student.StudentImportPreviewResponse;
+import com.school.school_management.dto.student.StudentImportRequest;
 import com.school.school_management.dto.student.StudentUpsertRequest;
 import com.school.school_management.entity.Parent;
 import com.school.school_management.entity.ParentStudent;
@@ -19,18 +33,8 @@ import com.school.school_management.repository.RoleRepository;
 import com.school.school_management.repository.StudentRepository;
 import com.school.school_management.repository.UserRepository;
 import com.school.school_management.util.ExcelImportUtil;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +48,7 @@ public class ImportServiceImpl implements ImportService {
     private final ParentRepository parentRepository;
     private final ParentStudentRepository parentStudentRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PlatformTransactionManager transactionManager;
 
     private final Map<String, byte[]> errorReportStore = new HashMap<>();
 
@@ -131,13 +136,19 @@ public class ImportServiceImpl implements ImportService {
     }
 
     @Override
-    @Transactional
     public BulkImportResponse processBulkImport(MultipartFile file) {
         try {
             BulkImportRequest request = excelImportUtil.parseExcelFile(file.getInputStream());
             List<ImportErrorRecord> errors = new ArrayList<>();
             int success = 0;
             Map<String, Student> importedStudents = new HashMap<>();
+
+            // Each row runs in its OWN transaction (REQUIRES_NEW). A failed row rolls back
+            // only itself, so valid rows still commit and the "skip bad rows + partial
+            // success" design works. (Previously the whole batch shared one transaction,
+            // so one bad row marked it rollback-only and discarded every row at commit.)
+            TransactionTemplate rowTx = new TransactionTemplate(transactionManager);
+            rowTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 
             for (StudentImportRequest row : request.getStudents()) {
                 List<ImportErrorRecord> rowErrors = excelImportUtil.validateStudentData(row);
@@ -151,6 +162,7 @@ public class ImportServiceImpl implements ImportService {
                     if (studentCode == null) {
                         studentCode = generateStudentCode();
                     }
+                    final String resolvedCode = studentCode;
 
                     StudentUpsertRequest upsert = StudentUpsertRequest.builder()
                         .studentCode(studentCode)
@@ -164,10 +176,13 @@ public class ImportServiceImpl implements ImportService {
                         .academicYear(row.getAcademicYear())
                         .status(row.getStatus())
                         .nationalId(row.getNationalId())
+                        .enrollmentDate(row.getEnrollmentDate())
                         .build();
 
-                    studentService.createStudent(upsert);
-                    Student student = studentRepository.findByStudentCodeAndDeletedAtIsNull(studentCode).orElse(null);
+                    Student student = rowTx.execute(status -> {
+                        studentService.createStudent(upsert);
+                        return studentRepository.findByStudentCodeAndDeletedAtIsNull(resolvedCode).orElse(null);
+                    });
                     if (student != null) {
                         importedStudents.put(studentCode, student);
                     }
@@ -177,7 +192,7 @@ public class ImportServiceImpl implements ImportService {
                         .row(row.getRowNumber())
                         .studentCode(row.getStudentCode())
                         .field("general")
-                        .error(ex.getMessage())
+                        .error(rootMessage(ex))
                         .build());
                 }
             }
@@ -205,13 +220,14 @@ public class ImportServiceImpl implements ImportService {
                 }
 
                 try {
-                    createParentAndLink(student, row);
+                    final Student linkedStudent = student;
+                    rowTx.executeWithoutResult(status -> createParentAndLink(linkedStudent, row));
                 } catch (Exception ex) {
                     errors.add(ImportErrorRecord.builder()
                         .row(row.getRowNumber())
                         .studentCode(row.getStudentCode())
                         .field("general")
-                        .error(ex.getMessage())
+                        .error(rootMessage(ex))
                         .build());
                 }
             }
@@ -242,6 +258,15 @@ public class ImportServiceImpl implements ImportService {
             throw new RuntimeException("Error report not found");
         }
         return data;
+    }
+
+    /** Deepest cause message — the per-row transaction may wrap the original exception. */
+    private String rootMessage(Throwable ex) {
+        Throwable cause = ex;
+        while (cause.getCause() != null && cause.getCause() != cause) {
+            cause = cause.getCause();
+        }
+        return cause.getMessage() != null ? cause.getMessage() : ex.getMessage();
     }
 
     private void createParentAndLink(Student student, ParentImportRequest row) {
@@ -281,12 +306,20 @@ public class ImportServiceImpl implements ImportService {
             return parentRepository.save(newParent);
         });
 
+        // Respect the explicit "Là PH chính" (is_primary) column when provided;
+        // otherwise fall back to inferring from the relation (father/mother => primary).
+        boolean isPrimary;
+        if (!isBlank(row.getIsPrimary())) {
+            isPrimary = "true".equalsIgnoreCase(row.getIsPrimary().trim());
+        } else {
+            isPrimary = "father".equalsIgnoreCase(row.getRelation()) || "mother".equalsIgnoreCase(row.getRelation());
+        }
         Optional<ParentStudent> existing = parentStudentRepository.findByParentAndStudent(parent, student);
         if (existing.isEmpty()) {
             ParentStudent relation = ParentStudent.builder()
                 .parent(parent)
                 .student(student)
-                .isPrimaryContact("father".equalsIgnoreCase(row.getRelation()) || "mother".equalsIgnoreCase(row.getRelation()))
+                .isPrimaryContact(isPrimary)
                 .canViewScore(true)
                 .build();
             parentStudentRepository.save(relation);

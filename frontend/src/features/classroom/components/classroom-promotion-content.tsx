@@ -49,32 +49,44 @@ export function ClassroomPromotionContent() {
   const [autoCalcClass, setAutoCalcClass] = useState("");
   const [autoCalcSemester, setAutoCalcSemester] = useState("");
   const [isCalculating, setIsCalculating] = useState(false);
-  const [autoCalcResults, setAutoCalcResults] = useState<PromotionPlanApiRecord[]>([]);
+  const [autoCalcResults, setAutoCalcResults] = useState<
+    PromotionPlanApiRecord[]
+  >([]);
   const [autoCalcError, setAutoCalcError] = useState("");
 
   // Dropdown options for auto-calculate
-  const [classOptions, setClassOptions] = useState<{ value: string; label: string }[]>([]);
+  const [classOptions, setClassOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
 
   // Load class list when auto-calc panel opens
   useEffect(() => {
     if (!showAutoCalc || classOptions.length > 0) return;
     setLoadingOptions(true);
-    classroomApi.list({ scope: "all", limit: 500 })
+    classroomApi
+      .list({ scope: "all", limit: 500 })
       .then((res) => {
         const rows = res.data ?? [];
         const opts = rows
           .filter((r) => r.classCode)
           .map((r) => ({
             value: r.classCode!,
-            label: r.classCode! + (r.className && r.className !== r.classCode ? ` — ${r.className}` : "") + (r.academicYear ? ` (${r.academicYear})` : ""),
+            label:
+              r.classCode! +
+              (r.className && r.className !== r.classCode
+                ? ` — ${r.className}`
+                : "") +
+              (r.academicYear ? ` (${r.academicYear})` : ""),
           }));
         setClassOptions(opts);
         if (opts.length > 0 && !autoCalcClass) {
           setAutoCalcClass(opts[0].value);
         }
       })
-      .catch(() => { /* silent */ })
+      .catch(() => {
+        /* silent */
+      })
       .finally(() => setLoadingOptions(false));
   }, [showAutoCalc]);
 
@@ -93,7 +105,9 @@ export function ClassroomPromotionContent() {
       URL.revokeObjectURL(url);
     } catch (err) {
       showToast(
-        err instanceof Error ? err.message : "Không tải được template xét lên lớp",
+        err instanceof Error
+          ? err.message
+          : "Không tải được template xét lên lớp",
         "error",
       );
     }
@@ -103,7 +117,9 @@ export function ClassroomPromotionContent() {
     importFileRef.current?.click();
   };
 
-  const handleImportFileChanged = async (event: ChangeEvent<HTMLInputElement>) => {
+  const handleImportFileChanged = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
@@ -116,7 +132,9 @@ export function ClassroomPromotionContent() {
       setShowImportPreview(true);
     } catch (err) {
       showToast(
-        err instanceof Error ? err.message : "Không tạo được preview xét lên lớp",
+        err instanceof Error
+          ? err.message
+          : "Không tạo được preview xét lên lớp",
         "error",
       );
     } finally {
@@ -166,7 +184,9 @@ export function ClassroomPromotionContent() {
       );
       const rows = response.data ?? [];
       if (rows.length === 0) {
-        setAutoCalcError("Không có dữ liệu để tính toán. Kiểm tra lại mã lớp và học kỳ.");
+        setAutoCalcError(
+          "Không có dữ liệu để tính toán. Kiểm tra lại mã lớp và học kỳ.",
+        );
       } else {
         setAutoCalcResults(rows);
         showToast(`Đã tính toán ${rows.length} học sinh`, "success");
@@ -180,11 +200,14 @@ export function ClassroomPromotionContent() {
     }
   };
 
-  const promoteCounts = autoCalcResults.reduce<Record<string, number>>((acc, r) => {
-    const key = r.action ?? "unknown";
-    acc[key] = (acc[key] ?? 0) + 1;
-    return acc;
-  }, {});
+  const promoteCounts = autoCalcResults.reduce<Record<string, number>>(
+    (acc, r) => {
+      const key = r.action ?? "unknown";
+      acc[key] = (acc[key] ?? 0) + 1;
+      return acc;
+    },
+    {},
+  );
 
   return (
     <div className="grid gap-4">
@@ -214,7 +237,7 @@ export function ClassroomPromotionContent() {
                   onClick={handleSelectImportFile}
                   disabled={isPreviewingImport || isImporting}
                 >
-                  {isPreviewingImport ? "Đang xem trước..." : "Import Excel"}
+                  {isPreviewingImport ? "Đang xem trước..." : "Nhập từ Excel"}
                 </Button>
                 <Button
                   tone={showAutoCalc ? "ghost" : "secondary"}
@@ -257,7 +280,8 @@ export function ClassroomPromotionContent() {
                 Tính toán tự động xét lên lớp
               </h3>
               <p className="mt-1 text-sm text-slate-500">
-                Hệ thống tự động tính dựa trên điểm trung bình, hạnh kiểm và quy tắc xếp loại đã cấu hình.
+                Hệ thống tự động tính dựa trên điểm trung bình, hạnh kiểm và quy
+                tắc xếp loại đã cấu hình.
               </p>
             </div>
           </div>
@@ -273,9 +297,13 @@ export function ClassroomPromotionContent() {
                 disabled={loadingOptions}
                 className="h-9 rounded-lg border border-slate-200 px-2 text-sm focus:border-sky-400 focus:outline-none"
               >
-                <option value="">{loadingOptions ? "Đang tải..." : "Chọn lớp"}</option>
+                <option value="">
+                  {loadingOptions ? "Đang tải..." : "Chọn lớp"}
+                </option>
                 {classOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -346,20 +374,34 @@ export function ClassroomPromotionContent() {
                         className="border-t border-slate-100 hover:bg-slate-50"
                       >
                         <td className="px-4 py-3">
-                          <p className="font-medium text-slate-900">{row.studentName}</p>
-                          <p className="text-xs text-slate-500">{row.studentCode}</p>
+                          <p className="font-medium text-slate-900">
+                            {row.studentName}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {row.studentCode}
+                          </p>
                         </td>
-                        <td className="px-4 py-3 text-slate-700">{row.currentClass ?? "—"}</td>
-                        <td className="px-4 py-3 text-slate-700">{row.proposedClass ?? "—"}</td>
-                        <td className="px-4 py-3 text-slate-700">{row.nextAcademicYear ?? "—"}</td>
+                        <td className="px-4 py-3 text-slate-700">
+                          {row.currentClass ?? "—"}
+                        </td>
+                        <td className="px-4 py-3 text-slate-700">
+                          {row.proposedClass ?? "—"}
+                        </td>
+                        <td className="px-4 py-3 text-slate-700">
+                          {row.nextAcademicYear ?? "—"}
+                        </td>
                         <td className="px-4 py-3">
                           <span
                             className={`rounded-full px-2.5 py-1 text-xs font-semibold ${ACTION_STYLE[row.action ?? ""] ?? "bg-slate-100 text-slate-700"}`}
                           >
-                            {ACTION_LABEL[row.action ?? ""] ?? row.action ?? "—"}
+                            {ACTION_LABEL[row.action ?? ""] ??
+                              row.action ??
+                              "—"}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-xs text-slate-600">{row.reason ?? "—"}</td>
+                        <td className="px-4 py-3 text-xs text-slate-600">
+                          {row.reason ?? "—"}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -367,7 +409,8 @@ export function ClassroomPromotionContent() {
               </div>
 
               <p className="text-xs text-slate-400">
-                Kết quả trên chỉ là đề xuất tự động. Vui lòng rà soát trước khi xác nhận chính thức qua Import Excel.
+                Kết quả trên chỉ là đề xuất tự động. Vui lòng rà soát trước khi
+                xác nhận chính thức qua chức năng Nhập từ Excel.
               </p>
             </div>
           ) : null}

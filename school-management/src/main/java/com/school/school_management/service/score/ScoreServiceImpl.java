@@ -1,15 +1,27 @@
 package com.school.school_management.service.score;
 
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.school.school_management.dto.score.ScoreHistoryResponse;
 import com.school.school_management.dto.score.ScoreResponse;
 import com.school.school_management.dto.score.ScoreUpsertRequest;
 import com.school.school_management.entity.Exam;
+import com.school.school_management.entity.ParentStudent;
 import com.school.school_management.entity.Score;
 import com.school.school_management.entity.ScoreApprovalLog;
 import com.school.school_management.entity.ScoreHistory;
 import com.school.school_management.entity.Teacher;
 import com.school.school_management.entity.User;
-import com.school.school_management.entity.ParentStudent;
 import com.school.school_management.exception.CustomException;
 import com.school.school_management.repository.ExamRepository;
 import com.school.school_management.repository.ParentStudentRepository;
@@ -20,16 +32,6 @@ import com.school.school_management.repository.TeacherRepository;
 import com.school.school_management.repository.UserRepository;
 import com.school.school_management.service.notification.NotificationAutomationService;
 import com.school.school_management.service.system.SystemSettingService;
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -154,7 +156,9 @@ public class ScoreServiceImpl implements ScoreService {
         if (isCurrentUserAdmin()) {
             boolean hasSubmitted = false;
             for (Score score : scores) {
-                if (!LOCKED.equalsIgnoreCase(score.getStatus())) {
+                // Only DRAFT scores advance to SUBMITTED. Never pull an already
+                // APPROVED/PUBLISHED score backward in the workflow.
+                if (DRAFT.equalsIgnoreCase(score.getStatus())) {
                     score.setStatus(SUBMITTED);
                     scoreRepository.save(score);
                     hasSubmitted = true;
@@ -177,7 +181,8 @@ public class ScoreServiceImpl implements ScoreService {
             if (score.getTeacher() == null || !score.getTeacher().getId().equals(teacher.getId())) {
                 continue;
             }
-            if (!LOCKED.equalsIgnoreCase(score.getStatus())) {
+            // Only DRAFT scores advance to SUBMITTED; leave APPROVED/PUBLISHED untouched.
+            if (DRAFT.equalsIgnoreCase(score.getStatus())) {
                 score.setStatus(SUBMITTED);
                 scoreRepository.save(score);
                 hasSubmitted = true;
@@ -201,8 +206,10 @@ public class ScoreServiceImpl implements ScoreService {
         if (LOCKED.equalsIgnoreCase(score.getStatus())) {
             throw new CustomException("Locked score cannot be approved", 409);
         }
-        if (!SUBMITTED.equalsIgnoreCase(score.getStatus()) && !DRAFT.equalsIgnoreCase(score.getStatus())) {
-            throw new CustomException("Only draft or submitted score can be approved", 409);
+        // Workflow: DRAFT -> SUBMITTED -> APPROVED. Approval requires a SUBMITTED score;
+        // it cannot skip the submit step straight from DRAFT.
+        if (!SUBMITTED.equalsIgnoreCase(score.getStatus())) {
+            throw new CustomException("Only a submitted score can be approved", 409);
         }
 
         score.setStatus(APPROVED);
@@ -349,18 +356,32 @@ public class ScoreServiceImpl implements ScoreService {
             throw new CustomException("Score is locked", 409);
         }
 
-        if (PUBLISHED.equalsIgnoreCase(score.getStatus())) {
-            Integer editWindowDays = score.getExam() != null ? score.getExam().getEditWindowDays() : 0;
-            OffsetDateTime publishedAt = score.getPublishedAt();
-
-            if (publishedAt != null && editWindowDays != null && editWindowDays >= 0) {
-                if (OffsetDateTime.now().isAfter(publishedAt.plusDays(editWindowDays))) {
-                    score.setStatus(LOCKED);
-                    scoreRepository.save(score);
-                    throw new CustomException("Edit window expired", 409);
-                }
-            }
+        if (PUBLISHED.equalsIgnoreCase(score.getStatus()) && !isWithinEditWindow(score)) {
+            score.setStatus(LOCKED);
+            scoreRepository.save(score);
+            throw new CustomException("Edit window expired", 409);
         }
+    }
+
+    /** True if a PUBLISHED score is still inside its post-publish edit window. */
+    private boolean isWithinEditWindow(Score score) {
+        Integer editWindowDays = score.getExam() != null ? score.getExam().getEditWindowDays() : 0;
+        OffsetDateTime publishedAt = score.getPublishedAt();
+        if (publishedAt == null || editWindowDays == null || editWindowDays < 0) {
+            return true;
+        }
+        return !OffsetDateTime.now().isAfter(publishedAt.plusDays(editWindowDays));
+    }
+
+    /** A score is editable unless locked, or published past its edit window. */
+    private boolean isEditable(Score score) {
+        if (LOCKED.equalsIgnoreCase(score.getStatus())) {
+            return false;
+        }
+        if (PUBLISHED.equalsIgnoreCase(score.getStatus())) {
+            return isWithinEditWindow(score);
+        }
+        return true;
     }
 
     private void assertCanAccessScore(Score score) {
@@ -454,17 +475,17 @@ public class ScoreServiceImpl implements ScoreService {
         return ScoreResponse.builder()
             .scoreId(score.getId().toString())
             .studentCode(score.getStudent() != null ? score.getStudent().getStudentCode() : "")
-            .studentName(studentName == null ? "Chua cap nhat" : studentName)
+            .studentName(studentName == null ? "Chưa cập nhật" : studentName)
             .examId(score.getExam() != null && score.getExam().getId() != null ? score.getExam().getId().toString() : "")
             .examTitle(score.getExam() != null ? score.getExam().getTitle() : "")
             .examType(score.getExam() != null ? score.getExam().getExamType() : "")
             .classCode(score.getSchoolClass() != null ? score.getSchoolClass().getClassCode() : "")
             .teacherCode(score.getTeacher() != null ? score.getTeacher().getTeacherCode() : "")
-            .teacherName(teacherName == null ? "Chua cap nhat" : teacherName)
+            .teacherName(teacherName == null ? "Chưa cập nhật" : teacherName)
             .scoreValue(score.getScoreValue())
             .status(score.getStatus())
             .publishedAt(score.getPublishedAt())
-            .editable(!LOCKED.equalsIgnoreCase(score.getStatus()))
+            .editable(isEditable(score))
             .history(getScoreHistory(score.getId().toString()))
             .build();
     }

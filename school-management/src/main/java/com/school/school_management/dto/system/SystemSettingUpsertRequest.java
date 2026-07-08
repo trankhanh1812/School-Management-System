@@ -1,9 +1,10 @@
 package com.school.school_management.dto.system;
 
+import java.util.List;
+
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -43,4 +44,21 @@ public class SystemSettingUpsertRequest {
     private int scoreEditWindowDays;
 
     private boolean requireAdminApproval;
+
+    // ── Chính sách xét lên lớp (nullable; service áp mặc định nếu thiếu) ──
+    @Min(0)
+    @Max(10)
+    private Double passMark;
+
+    @Min(0)
+    @Max(10)
+    private Double failingSubjectMark;
+
+    @Min(0)
+    @Max(30)
+    private Integer maxFailedSubjectsToPromote;
+
+    @Min(1)
+    @Max(12)
+    private Integer graduationGradeLevel;
 }

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { PageIntro } from "@/features/dashboard/components/page-intro";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { systemConfigApi } from "@/features/system-config/api";
+import { AcademicCalendarSection } from "@/features/system-config/academic-calendar-section";
 import { apiClient } from "@/lib/api/api-client";
 import type { SystemSettingsRecord } from "@/features/system-config/types";
 import type { ApiResponse } from "@/types/api";
@@ -21,16 +22,27 @@ const DEFAULT_SETTINGS: SystemSettingsRecord = {
   finalWeight: 3,
   scoreEditWindowDays: 3,
   requireAdminApproval: true,
+  passMark: 5,
+  failingSubjectMark: 5,
+  maxFailedSubjectsToPromote: 2,
+  graduationGradeLevel: 12,
 };
 
-type SettingsModal = "ips" | "weights" | "window" | "approval" | null;
+type SettingsModal =
+  | "ips"
+  | "weights"
+  | "window"
+  | "approval"
+  | "promotion"
+  | null;
 
 export default function SystemSettingsPage() {
   const { session } = useAuthSession();
   const { showToast } = useToast();
   const isAdmin = session?.user.role === "ADMIN";
 
-  const [settings, setSettings] = useState<SystemSettingsRecord>(DEFAULT_SETTINGS);
+  const [settings, setSettings] =
+    useState<SystemSettingsRecord>(DEFAULT_SETTINGS);
   const [draft, setDraft] = useState<SystemSettingsRecord>(DEFAULT_SETTINGS);
   const [activeModal, setActiveModal] = useState<SettingsModal>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,7 +66,10 @@ export default function SystemSettingsPage() {
         setSettings(payload);
         setDraft(payload);
       } catch (error) {
-        showToast(error instanceof Error ? error.message : "Không tải được cấu hình", "error");
+        showToast(
+          error instanceof Error ? error.message : "Không tải được cấu hình",
+          "error",
+        );
       } finally {
         setIsLoading(false);
       }
@@ -71,7 +86,12 @@ export default function SystemSettingsPage() {
     );
   }
 
-  const totalWeight = settings.oralWeight + settings.quiz15Weight + settings.onePeriodWeight + settings.midtermWeight + settings.finalWeight;
+  const totalWeight =
+    settings.oralWeight +
+    settings.quiz15Weight +
+    settings.onePeriodWeight +
+    settings.midtermWeight +
+    settings.finalWeight;
 
   function openModal(modal: Exclude<SettingsModal, null>) {
     setDraft(settings);
@@ -82,7 +102,10 @@ export default function SystemSettingsPage() {
     setActiveModal(null);
   }
 
-  function updateDraft<K extends keyof SystemSettingsRecord>(key: K, value: SystemSettingsRecord[K]) {
+  function updateDraft<K extends keyof SystemSettingsRecord>(
+    key: K,
+    value: SystemSettingsRecord[K],
+  ) {
     setDraft((prev) => ({ ...prev, [key]: value }));
   }
 
@@ -100,7 +123,10 @@ export default function SystemSettingsPage() {
       showToast("Đã lưu cấu hình hệ thống", "success");
       closeModal();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Không lưu được cấu hình", "error");
+      showToast(
+        error instanceof Error ? error.message : "Không lưu được cấu hình",
+        "error",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -119,7 +145,11 @@ export default function SystemSettingsPage() {
           title="Danh sách IP mạng trường"
           description="Dùng để kiểm tra IP khi học sinh quét QR điểm danh."
           summary={`${settings.allowedSchoolIps.length} IP / CIDR`}
-          value={settings.allowedSchoolIps.length > 0 ? settings.allowedSchoolIps.join(", ") : "Chưa cấu hình"}
+          value={
+            settings.allowedSchoolIps.length > 0
+              ? settings.allowedSchoolIps.join(", ")
+              : "Chưa cấu hình"
+          }
           actionLabel="Chỉnh sửa IP"
           onAction={() => openModal("ips")}
         />
@@ -146,9 +176,22 @@ export default function SystemSettingsPage() {
           title="Phê duyệt công bố điểm"
           description="Bật / tắt yêu cầu ADMIN duyệt trước khi công bố."
           summary={settings.requireAdminApproval ? "Đang bật" : "Đang tắt"}
-          value={settings.requireAdminApproval ? "Bắt buộc ADMIN phê duyệt trước khi công bố điểm." : "Giáo viên có thể công bố trực tiếp."}
+          value={
+            settings.requireAdminApproval
+              ? "Bắt buộc ADMIN phê duyệt trước khi công bố điểm."
+              : "Giáo viên có thể công bố trực tiếp."
+          }
           actionLabel="Chỉnh sửa quy tắc"
           onAction={() => openModal("approval")}
+        />
+
+        <ConfigCard
+          title="Chính sách xét lên lớp"
+          description="Ngưỡng dùng cho tính năng xét lên lớp / tốt nghiệp tự động."
+          summary={`Đạt từ ${settings.passMark}`}
+          value={`Điểm đạt ${settings.passMark} · Điểm liệt môn < ${settings.failingSubjectMark} · Tối đa ${settings.maxFailedSubjectsToPromote} môn trượt · Tốt nghiệp từ khối ${settings.graduationGradeLevel}`}
+          actionLabel="Chỉnh sửa chính sách"
+          onAction={() => openModal("promotion")}
         />
       </div>
 
@@ -157,9 +200,17 @@ export default function SystemSettingsPage() {
           <p className="text-sm text-slate-600">Đang tải cấu hình...</p>
         ) : (
           <div className="grid gap-3 md:grid-cols-3">
-            <InfoTile label="IP mạng trường" value={settings.allowedSchoolIps.join(" · ")} />
+            <InfoTile
+              label="IP mạng trường"
+              value={settings.allowedSchoolIps.join(" · ")}
+            />
             <InfoTile label="Tổng trọng số" value={totalWeight.toFixed(1)} />
-            <InfoTile label="Phê duyệt" value={settings.requireAdminApproval ? "Bắt buộc" : "Không bắt buộc"} />
+            <InfoTile
+              label="Phê duyệt"
+              value={
+                settings.requireAdminApproval ? "Bắt buộc" : "Không bắt buộc"
+              }
+            />
           </div>
         )}
       </Panel>
@@ -181,7 +232,9 @@ export default function SystemSettingsPage() {
         }
       >
         <div className="grid gap-3">
-          <label className="text-sm font-semibold text-slate-800">Danh sách IP / CIDR</label>
+          <label className="text-sm font-semibold text-slate-800">
+            Danh sách IP / CIDR
+          </label>
           <textarea
             value={draft.allowedSchoolIps.join("\n")}
             onChange={(event) =>
@@ -190,7 +243,7 @@ export default function SystemSettingsPage() {
                 event.target.value
                   .split("\n")
                   .map((item) => item.trim())
-                  .filter(Boolean)
+                  .filter(Boolean),
               )
             }
             className="min-h-44 rounded-2xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-400"
@@ -209,22 +262,54 @@ export default function SystemSettingsPage() {
             <Button tone="secondary" onClick={closeModal} disabled={isSaving}>
               Hủy
             </Button>
-            <Button onClick={() => void handleSave("weights")} disabled={isSaving}>
+            <Button
+              onClick={() => void handleSave("weights")}
+              disabled={isSaving}
+            >
               {isSaving ? "Đang lưu..." : "Lưu cấu hình"}
             </Button>
           </>
         }
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <WeightInput label="Điểm miệng" value={draft.oralWeight} onChange={(value) => updateDraft("oralWeight", value)} />
-          <WeightInput label="Điểm 15 phút" value={draft.quiz15Weight} onChange={(value) => updateDraft("quiz15Weight", value)} />
-          <WeightInput label="Điểm 1 tiết" value={draft.onePeriodWeight} onChange={(value) => updateDraft("onePeriodWeight", value)} />
-          <WeightInput label="Điểm giữa kỳ" value={draft.midtermWeight} onChange={(value) => updateDraft("midtermWeight", value)} />
-          <WeightInput label="Điểm cuối kỳ" value={draft.finalWeight} onChange={(value) => updateDraft("finalWeight", value)} />
+          <WeightInput
+            label="Điểm miệng"
+            value={draft.oralWeight}
+            onChange={(value) => updateDraft("oralWeight", value)}
+          />
+          <WeightInput
+            label="Điểm 15 phút"
+            value={draft.quiz15Weight}
+            onChange={(value) => updateDraft("quiz15Weight", value)}
+          />
+          <WeightInput
+            label="Điểm 1 tiết"
+            value={draft.onePeriodWeight}
+            onChange={(value) => updateDraft("onePeriodWeight", value)}
+          />
+          <WeightInput
+            label="Điểm giữa kỳ"
+            value={draft.midtermWeight}
+            onChange={(value) => updateDraft("midtermWeight", value)}
+          />
+          <WeightInput
+            label="Điểm cuối kỳ"
+            value={draft.finalWeight}
+            onChange={(value) => updateDraft("finalWeight", value)}
+          />
         </div>
 
         <div className="mt-5 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm text-sky-900">
-          Tổng hệ số hiện tại: <span className="font-semibold">{(draft.oralWeight + draft.quiz15Weight + draft.onePeriodWeight + draft.midtermWeight + draft.finalWeight).toFixed(1)}</span>
+          Tổng hệ số hiện tại:{" "}
+          <span className="font-semibold">
+            {(
+              draft.oralWeight +
+              draft.quiz15Weight +
+              draft.onePeriodWeight +
+              draft.midtermWeight +
+              draft.finalWeight
+            ).toFixed(1)}
+          </span>
         </div>
       </Modal>
 
@@ -238,20 +323,30 @@ export default function SystemSettingsPage() {
             <Button tone="secondary" onClick={closeModal} disabled={isSaving}>
               Hủy
             </Button>
-            <Button onClick={() => void handleSave("window")} disabled={isSaving}>
+            <Button
+              onClick={() => void handleSave("window")}
+              disabled={isSaving}
+            >
               {isSaving ? "Đang lưu..." : "Lưu cấu hình"}
             </Button>
           </>
         }
       >
         <div className="grid max-w-sm gap-3">
-          <label className="text-sm font-semibold text-slate-800">Số ngày được sửa</label>
+          <label className="text-sm font-semibold text-slate-800">
+            Số ngày được sửa
+          </label>
           <input
             type="number"
             min={0}
             max={90}
             value={draft.scoreEditWindowDays}
-            onChange={(event) => updateDraft("scoreEditWindowDays", Number(event.target.value) || 0)}
+            onChange={(event) =>
+              updateDraft(
+                "scoreEditWindowDays",
+                Number(event.target.value) || 0,
+              )
+            }
             className="h-11 rounded-2xl border border-slate-200 px-3 text-sm outline-none focus:border-sky-400"
           />
         </div>
@@ -267,7 +362,10 @@ export default function SystemSettingsPage() {
             <Button tone="secondary" onClick={closeModal} disabled={isSaving}>
               Hủy
             </Button>
-            <Button onClick={() => void handleSave("approval")} disabled={isSaving}>
+            <Button
+              onClick={() => void handleSave("approval")}
+              disabled={isSaving}
+            >
               {isSaving ? "Đang lưu..." : "Lưu cấu hình"}
             </Button>
           </>
@@ -277,27 +375,105 @@ export default function SystemSettingsPage() {
           <input
             type="checkbox"
             checked={draft.requireAdminApproval}
-            onChange={(event) => updateDraft("requireAdminApproval", event.target.checked)}
+            onChange={(event) =>
+              updateDraft("requireAdminApproval", event.target.checked)
+            }
             className="mt-1 h-4 w-4"
           />
           <span>
-            <span className="block font-semibold text-slate-900">Bắt buộc ADMIN phê duyệt</span>
-            <span className="mt-1 block text-slate-600">Khi bật, giáo viên chỉ được submit; ADMIN là người duyệt và công bố.</span>
+            <span className="block font-semibold text-slate-900">
+              Bắt buộc ADMIN phê duyệt
+            </span>
+            <span className="mt-1 block text-slate-600">
+              Khi bật, giáo viên chỉ được submit; ADMIN là người duyệt và công
+              bố.
+            </span>
           </span>
         </label>
       </Modal>
+
+      <Modal
+        open={activeModal === "promotion"}
+        title="Chính sách xét lên lớp"
+        description="Các ngưỡng này áp dụng cho tính năng xét lên lớp / tốt nghiệp tự động. Giữ mặc định nếu không chắc."
+        onClose={closeModal}
+        size="lg"
+        footer={
+          <>
+            <Button tone="secondary" onClick={closeModal} disabled={isSaving}>
+              Hủy
+            </Button>
+            <Button
+              onClick={() => void handleSave("promotion")}
+              disabled={isSaving}
+            >
+              {isSaving ? "Đang lưu..." : "Lưu cấu hình"}
+            </Button>
+          </>
+        }
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          <PromotionInput
+            label="Điểm trung bình đạt (lên lớp / tốt nghiệp)"
+            value={draft.passMark}
+            min={0}
+            max={10}
+            step={0.1}
+            onChange={(value) => updateDraft("passMark", value)}
+          />
+          <PromotionInput
+            label="Điểm liệt môn (dưới mức này là trượt môn)"
+            value={draft.failingSubjectMark}
+            min={0}
+            max={10}
+            step={0.1}
+            onChange={(value) => updateDraft("failingSubjectMark", value)}
+          />
+          <PromotionInput
+            label="Số môn trượt tối đa vẫn được lên lớp"
+            value={draft.maxFailedSubjectsToPromote}
+            min={0}
+            max={30}
+            step={1}
+            onChange={(value) =>
+              updateDraft("maxFailedSubjectsToPromote", value)
+            }
+          />
+          <PromotionInput
+            label="Khối xét tốt nghiệp (thay vì lên lớp)"
+            value={draft.graduationGradeLevel}
+            min={1}
+            max={12}
+            step={1}
+            onChange={(value) => updateDraft("graduationGradeLevel", value)}
+          />
+        </div>
+        <div className="mt-5 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          Học sinh lên lớp khi điểm TB ≥ {draft.passMark} và có tối đa{" "}
+          {draft.maxFailedSubjectsToPromote} môn dưới {draft.failingSubjectMark}
+          . Học sinh khối {draft.graduationGradeLevel} được xét tốt nghiệp.
+        </div>
+      </Modal>
+
+      <AcademicCalendarSection />
 
       <AcademicRankRulesSection />
     </div>
   );
 }
 
-function buildPayloadForModal(modal: Exclude<SettingsModal, null>, current: SystemSettingsRecord, draft: SystemSettingsRecord): SystemSettingsRecord {
+function buildPayloadForModal(
+  modal: Exclude<SettingsModal, null>,
+  current: SystemSettingsRecord,
+  draft: SystemSettingsRecord,
+): SystemSettingsRecord {
   switch (modal) {
     case "ips":
       return {
         ...current,
-        allowedSchoolIps: draft.allowedSchoolIps.map((item) => item.trim()).filter(Boolean),
+        allowedSchoolIps: draft.allowedSchoolIps
+          .map((item) => item.trim())
+          .filter(Boolean),
       };
     case "weights":
       return {
@@ -317,6 +493,14 @@ function buildPayloadForModal(modal: Exclude<SettingsModal, null>, current: Syst
       return {
         ...current,
         requireAdminApproval: draft.requireAdminApproval,
+      };
+    case "promotion":
+      return {
+        ...current,
+        passMark: draft.passMark,
+        failingSubjectMark: draft.failingSubjectMark,
+        maxFailedSubjectsToPromote: draft.maxFailedSubjectsToPromote,
+        graduationGradeLevel: draft.graduationGradeLevel,
       };
     default:
       return current;
@@ -344,10 +528,16 @@ function ConfigCard({
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h3 className="text-base font-semibold text-slate-900">{title}</h3>
-              <p className="mt-1 text-sm leading-6 text-slate-600">{description}</p>
+              <h3 className="text-base font-semibold text-slate-900">
+                {title}
+              </h3>
+              <p className="mt-1 text-sm leading-6 text-slate-600">
+                {description}
+              </p>
             </div>
-            <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-800">{summary}</span>
+            <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-800">
+              {summary}
+            </span>
           </div>
 
           <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700">
@@ -368,7 +558,9 @@ function ConfigCard({
 function InfoTile({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">{label}</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+        {label}
+      </p>
       <p className="mt-2 text-sm font-semibold text-slate-900">{value}</p>
     </div>
   );
@@ -390,6 +582,37 @@ function WeightInput({
         type="number"
         min={0}
         step={0.1}
+        value={value}
+        onChange={(event) => onChange(Number(event.target.value) || 0)}
+        className="h-10 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-sky-400"
+      />
+    </div>
+  );
+}
+
+function PromotionInput({
+  label,
+  value,
+  min,
+  max,
+  step,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <div className="grid gap-2">
+      <label className="text-sm font-semibold text-slate-800">{label}</label>
+      <input
+        type="number"
+        min={min}
+        max={max}
+        step={step}
         value={value}
         onChange={(event) => onChange(Number(event.target.value) || 0)}
         className="h-10 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-sky-400"
@@ -436,13 +659,21 @@ function AcademicRankRulesSection() {
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await apiClient.get<ApiResponse<RankRule[]>>("/academic-rank-rules", { authenticated: true });
+      const res = await apiClient.get<ApiResponse<RankRule[]>>(
+        "/academic-rank-rules",
+        { authenticated: true },
+      );
       setRules(Array.isArray(res.data) ? res.data : []);
-    } catch {/* ignore */}
-    finally { setIsLoading(false); }
+    } catch {
+      /* ignore */
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   function startEdit(rule: RankRule) {
     setEditingId(rule.id);
@@ -482,10 +713,14 @@ function AcademicRankRulesSection() {
         appliesToGrade: form.appliesToGrade || null,
       };
       if (editingId === "new") {
-        await apiClient.post("/academic-rank-rules", payload, { authenticated: true });
+        await apiClient.post("/academic-rank-rules", payload, {
+          authenticated: true,
+        });
         showToast("Đã tạo quy tắc xếp loại.", "success");
       } else {
-        await apiClient.put(`/academic-rank-rules/${editingId}`, payload, { authenticated: true });
+        await apiClient.put(`/academic-rank-rules/${editingId}`, payload, {
+          authenticated: true,
+        });
         showToast("Đã cập nhật quy tắc xếp loại.", "success");
       }
       cancelEdit();
@@ -501,7 +736,9 @@ function AcademicRankRulesSection() {
     if (!window.confirm("Xóa quy tắc xếp loại này?")) return;
     setDeletingId(id);
     try {
-      await apiClient.delete(`/academic-rank-rules/${id}`, { authenticated: true });
+      await apiClient.delete(`/academic-rank-rules/${id}`, {
+        authenticated: true,
+      });
       showToast("Đã xóa quy tắc.", "success");
       await load();
     } catch (err) {
@@ -515,13 +752,20 @@ function AcademicRankRulesSection() {
     <Panel className="p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
-          <h3 className="text-base font-semibold text-slate-900">Quy tắc xếp loại học lực</h3>
+          <h3 className="text-base font-semibold text-slate-900">
+            Quy tắc xếp loại học lực
+          </h3>
           <p className="text-sm text-slate-500">
-            Định nghĩa điều kiện xếp loại Giỏi/Khá/Trung bình/Yếu. Dùng trong tính toán xét lên lớp tự động.
+            Định nghĩa điều kiện xếp loại Giỏi/Khá/Trung bình/Yếu. Dùng trong
+            tính toán xét lên lớp tự động.
           </p>
         </div>
         {isAdmin && (
-          <Button tone="secondary" onClick={startCreate} disabled={editingId !== null}>
+          <Button
+            tone="secondary"
+            onClick={startCreate}
+            disabled={editingId !== null}
+          >
             + Thêm quy tắc
           </Button>
         )}
@@ -539,88 +783,197 @@ function AcademicRankRulesSection() {
               </p>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 <div className="grid gap-1">
-                  <label className="text-xs font-semibold text-slate-600">Mã *</label>
-                  <input value={form.code} onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
-                    placeholder="VD: GIOI" className="h-9 rounded-lg border border-slate-200 px-3 text-sm" />
+                  <label className="text-xs font-semibold text-slate-600">
+                    Mã *
+                  </label>
+                  <input
+                    value={form.code}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, code: e.target.value }))
+                    }
+                    placeholder="VD: GIOI"
+                    className="h-9 rounded-lg border border-slate-200 px-3 text-sm"
+                  />
                 </div>
                 <div className="grid gap-1">
-                  <label className="text-xs font-semibold text-slate-600">Tên *</label>
-                  <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                    placeholder="VD: Giỏi" className="h-9 rounded-lg border border-slate-200 px-3 text-sm" />
+                  <label className="text-xs font-semibold text-slate-600">
+                    Tên *
+                  </label>
+                  <input
+                    value={form.name}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, name: e.target.value }))
+                    }
+                    placeholder="VD: Giỏi"
+                    className="h-9 rounded-lg border border-slate-200 px-3 text-sm"
+                  />
                 </div>
                 <div className="grid gap-1">
-                  <label className="text-xs font-semibold text-slate-600">Điểm TB tối thiểu</label>
-                  <input type="number" min={0} max={10} step={0.1} value={form.minAverage}
-                    onChange={(e) => setForm((f) => ({ ...f, minAverage: Number(e.target.value) }))}
-                    className="h-9 rounded-lg border border-slate-200 px-3 text-sm" />
+                  <label className="text-xs font-semibold text-slate-600">
+                    Điểm TB tối thiểu
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={10}
+                    step={0.1}
+                    value={form.minAverage}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        minAverage: Number(e.target.value),
+                      }))
+                    }
+                    className="h-9 rounded-lg border border-slate-200 px-3 text-sm"
+                  />
                 </div>
                 <div className="grid gap-1">
-                  <label className="text-xs font-semibold text-slate-600">Số môn dưới 5 tối đa</label>
-                  <input type="number" min={0} value={form.maxFailedSubjects}
-                    onChange={(e) => setForm((f) => ({ ...f, maxFailedSubjects: Number(e.target.value) }))}
-                    className="h-9 rounded-lg border border-slate-200 px-3 text-sm" />
+                  <label className="text-xs font-semibold text-slate-600">
+                    Số môn dưới 5 tối đa
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={form.maxFailedSubjects}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        maxFailedSubjects: Number(e.target.value),
+                      }))
+                    }
+                    className="h-9 rounded-lg border border-slate-200 px-3 text-sm"
+                  />
                 </div>
                 <div className="grid gap-1">
-                  <label className="text-xs font-semibold text-slate-600">Hạnh kiểm tối thiểu</label>
-                  <select value={form.minConductLevel}
-                    onChange={(e) => setForm((f) => ({ ...f, minConductLevel: e.target.value }))}
-                    className="h-9 rounded-lg border border-slate-200 px-3 text-sm">
+                  <label className="text-xs font-semibold text-slate-600">
+                    Hạnh kiểm tối thiểu
+                  </label>
+                  <select
+                    value={form.minConductLevel}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        minConductLevel: e.target.value,
+                      }))
+                    }
+                    className="h-9 rounded-lg border border-slate-200 px-3 text-sm"
+                  >
                     {CONDUCT_LEVELS.map((l) => (
-                      <option key={l} value={l}>{l || "Không yêu cầu"}</option>
+                      <option key={l} value={l}>
+                        {l || "Không yêu cầu"}
+                      </option>
                     ))}
                   </select>
                 </div>
                 <div className="grid gap-1">
-                  <label className="text-xs font-semibold text-slate-600">Áp dụng khối (0 = tất cả)</label>
-                  <input type="number" min={0} max={12} value={form.appliesToGrade}
-                    onChange={(e) => setForm((f) => ({ ...f, appliesToGrade: Number(e.target.value) }))}
-                    className="h-9 rounded-lg border border-slate-200 px-3 text-sm" />
+                  <label className="text-xs font-semibold text-slate-600">
+                    Áp dụng khối (0 = tất cả)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={12}
+                    value={form.appliesToGrade}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        appliesToGrade: Number(e.target.value),
+                      }))
+                    }
+                    className="h-9 rounded-lg border border-slate-200 px-3 text-sm"
+                  />
                 </div>
               </div>
               <div className="flex gap-2 mt-1">
                 <Button onClick={() => void handleSave()} disabled={saving}>
                   {saving ? "Đang lưu..." : "Lưu"}
                 </Button>
-                <Button tone="secondary" onClick={cancelEdit} disabled={saving}>Hủy</Button>
+                <Button tone="secondary" onClick={cancelEdit} disabled={saving}>
+                  Hủy
+                </Button>
               </div>
             </div>
           )}
 
           {/* Rules table */}
           {rules.length === 0 ? (
-            <p className="text-sm text-slate-500">Chưa có quy tắc nào. Thêm quy tắc để hệ thống tự động xếp loại học lực.</p>
+            <p className="text-sm text-slate-500">
+              Chưa có quy tắc nào. Thêm quy tắc để hệ thống tự động xếp loại học
+              lực.
+            </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50">
-                    <th className="px-3 py-2 text-left font-semibold text-slate-700">Mã</th>
-                    <th className="px-3 py-2 text-left font-semibold text-slate-700">Tên</th>
-                    <th className="px-3 py-2 text-right font-semibold text-slate-700">TB tối thiểu</th>
-                    <th className="px-3 py-2 text-right font-semibold text-slate-700">Môn dưới 5 tối đa</th>
-                    <th className="px-3 py-2 text-left font-semibold text-slate-700">HK tối thiểu</th>
-                    <th className="px-3 py-2 text-left font-semibold text-slate-700">Khối</th>
-                    {isAdmin && <th className="px-3 py-2 text-left font-semibold text-slate-700">Thao tác</th>}
+                    <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                      Mã
+                    </th>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                      Tên
+                    </th>
+                    <th className="px-3 py-2 text-right font-semibold text-slate-700">
+                      TB tối thiểu
+                    </th>
+                    <th className="px-3 py-2 text-right font-semibold text-slate-700">
+                      Môn dưới 5 tối đa
+                    </th>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                      HK tối thiểu
+                    </th>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                      Khối
+                    </th>
+                    {isAdmin && (
+                      <th className="px-3 py-2 text-left font-semibold text-slate-700">
+                        Thao tác
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
                   {rules.map((r) => (
-                    <tr key={r.id} className="border-b border-slate-100 hover:bg-slate-50">
-                      <td className="px-3 py-2 font-mono text-xs text-slate-700">{r.code}</td>
-                      <td className="px-3 py-2 font-medium text-slate-900">{r.name}</td>
-                      <td className="px-3 py-2 text-right text-slate-700">{r.minAverage}</td>
-                      <td className="px-3 py-2 text-right text-slate-700">{r.maxFailedSubjects}</td>
-                      <td className="px-3 py-2 text-slate-600">{r.minConductLevel || "—"}</td>
-                      <td className="px-3 py-2 text-slate-600">{r.appliesToGrade ? `Khối ${r.appliesToGrade}` : "Tất cả"}</td>
+                    <tr
+                      key={r.id}
+                      className="border-b border-slate-100 hover:bg-slate-50"
+                    >
+                      <td className="px-3 py-2 font-mono text-xs text-slate-700">
+                        {r.code}
+                      </td>
+                      <td className="px-3 py-2 font-medium text-slate-900">
+                        {r.name}
+                      </td>
+                      <td className="px-3 py-2 text-right text-slate-700">
+                        {r.minAverage}
+                      </td>
+                      <td className="px-3 py-2 text-right text-slate-700">
+                        {r.maxFailedSubjects}
+                      </td>
+                      <td className="px-3 py-2 text-slate-600">
+                        {r.minConductLevel || "—"}
+                      </td>
+                      <td className="px-3 py-2 text-slate-600">
+                        {r.appliesToGrade
+                          ? `Khối ${r.appliesToGrade}`
+                          : "Tất cả"}
+                      </td>
                       {isAdmin && (
                         <td className="px-3 py-2">
                           <div className="flex items-center gap-2">
-                            <button type="button" onClick={() => startEdit(r)} disabled={editingId !== null}
-                              className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 transition disabled:opacity-40">
+                            <button
+                              type="button"
+                              onClick={() => startEdit(r)}
+                              disabled={editingId !== null}
+                              className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 transition disabled:opacity-40"
+                            >
                               Sửa
                             </button>
-                            <button type="button" onClick={() => void handleDelete(r.id)} disabled={deletingId === r.id}
-                              className="rounded-lg border border-rose-200 px-3 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50 transition disabled:opacity-40">
+                            <button
+                              type="button"
+                              onClick={() => void handleDelete(r.id)}
+                              disabled={deletingId === r.id}
+                              className="rounded-lg border border-rose-200 px-3 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50 transition disabled:opacity-40"
+                            >
                               {deletingId === r.id ? "..." : "Xóa"}
                             </button>
                           </div>

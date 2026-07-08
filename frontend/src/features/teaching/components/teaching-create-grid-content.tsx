@@ -7,7 +7,10 @@ import { Button } from "@/shared/ui/button";
 import { useToast } from "@/shared/components/toast-provider";
 import { classroomApi } from "@/features/classroom/api";
 import { subjectApi } from "@/features/subject/api";
-import { teachingApi, type TimetableImportPreviewResponse } from "@/features/teaching/api";
+import {
+  teachingApi,
+  type TimetableImportPreviewResponse,
+} from "@/features/teaching/api";
 import { ImportPreviewModal } from "@/shared/components/import-preview-modal";
 
 type GradeLevel = "all" | "10" | "11" | "12";
@@ -65,7 +68,10 @@ function toYearCode(raw?: string) {
   return text.toUpperCase();
 }
 
-function parseGrade(classCode?: string, grade?: string): "10" | "11" | "12" | null {
+function parseGrade(
+  classCode?: string,
+  grade?: string,
+): "10" | "11" | "12" | null {
   const byGrade = (grade ?? "").match(/10|11|12/);
   if (byGrade) {
     return byGrade[0] as "10" | "11" | "12";
@@ -97,7 +103,12 @@ function toIsoDate(raw?: string) {
   return date.toISOString().slice(0, 10);
 }
 
-function rangesOverlap(leftFrom: string, leftTo: string, rightFrom: string, rightTo: string) {
+function rangesOverlap(
+  leftFrom: string,
+  leftTo: string,
+  rightFrom: string,
+  rightTo: string,
+) {
   if (!leftFrom || !leftTo || !rightFrom || !rightTo) {
     return false;
   }
@@ -105,19 +116,26 @@ function rangesOverlap(leftFrom: string, leftTo: string, rightFrom: string, righ
   return leftFrom <= rightTo && rightFrom <= leftTo;
 }
 
-export function TeachingCreateGridContent({ mode = "edit", initialVersionId = "" }: TeachingCreateGridContentProps) {
+export function TeachingCreateGridContent({
+  mode = "edit",
+  initialVersionId = "",
+}: TeachingCreateGridContentProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast } = useToast();
 
   const [subjectOptions, setSubjectOptions] = useState<SubjectOption[]>([]);
   const [yearOptions, setYearOptions] = useState<YearOption[]>([]);
-  const [classesByGrade, setClassesByGrade] = useState<Record<"10" | "11" | "12", string[]>>({
+  const [classesByGrade, setClassesByGrade] = useState<
+    Record<"10" | "11" | "12", string[]>
+  >({
     "10": [],
     "11": [],
     "12": [],
   });
-  const [timetableVersions, setTimetableVersions] = useState<TimetableVersionOption[]>([]);
+  const [timetableVersions, setTimetableVersions] = useState<
+    TimetableVersionOption[]
+  >([]);
 
   const [selectedAcademicYear, setSelectedAcademicYear] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("HK1");
@@ -133,15 +151,24 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
   const [isSaving, setIsSaving] = useState(false);
   const [isPreviewingImport, setIsPreviewingImport] = useState(false);
   const [showImportPreview, setShowImportPreview] = useState(false);
-  const [importPreviewData, setImportPreviewData] = useState<TimetableImportPreviewResponse | null>(null);
+  const [importPreviewData, setImportPreviewData] =
+    useState<TimetableImportPreviewResponse | null>(null);
 
   const importFileInputRef = useRef<HTMLInputElement | null>(null);
 
   const prefilledAcademicYear = searchParams.get("academicYear")?.trim() ?? "";
-  const prefilledSemester = searchParams.get("semester")?.trim().toUpperCase() ?? "";
-  const prefilledVersionId = initialVersionId.trim() || (searchParams.get("sourceVersionId")?.trim() ?? searchParams.get("versionId")?.trim() ?? "");
+  const prefilledSemester =
+    searchParams.get("semester")?.trim().toUpperCase() ?? "";
+  const prefilledVersionId =
+    initialVersionId.trim() ||
+    (searchParams.get("sourceVersionId")?.trim() ??
+      searchParams.get("versionId")?.trim() ??
+      "");
 
-  const periods = useMemo(() => PERIODS_BY_SHIFT[selectedShift], [selectedShift]);
+  const periods = useMemo(
+    () => PERIODS_BY_SHIFT[selectedShift],
+    [selectedShift],
+  );
 
   const classesForDisplay = useMemo<Record<string, string[]>>(() => {
     if (selectedGrade === "all") {
@@ -170,17 +197,30 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
       return false;
     }
 
-    return timetableVersions.some((item) => item.status === "LOCKED" && rangesOverlap(effectiveFrom, effectiveTo, item.effectiveFrom, item.effectiveTo));
+    return timetableVersions.some(
+      (item) =>
+        item.status === "LOCKED" &&
+        rangesOverlap(
+          effectiveFrom,
+          effectiveTo,
+          item.effectiveFrom,
+          item.effectiveTo,
+        ),
+    );
   }, [effectiveFrom, effectiveTo, hasInvalidDateRange, timetableVersions]);
 
   const selectedVersionMeta = useMemo(
-    () => timetableVersions.find((item) => item.versionId === selectedVersionId),
+    () =>
+      timetableVersions.find((item) => item.versionId === selectedVersionId),
     [timetableVersions, selectedVersionId],
   );
 
   const isViewMode = mode === "view";
   const isReadOnlyVersion = isViewMode;
-  const sourceVersionLabel = !isViewMode && selectedVersionMeta ? `Đang sao chép từ phiên bản ${selectedVersionMeta.versionName} (${selectedVersionMeta.status})` : "Tạo một phiên bản mới từ dữ liệu hiện tại hoặc từ phiên bản nguồn đã chọn.";
+  const sourceVersionLabel =
+    !isViewMode && selectedVersionMeta
+      ? `Đang sao chép từ phiên bản ${selectedVersionMeta.versionName} (${selectedVersionMeta.status})`
+      : "Tạo một phiên bản mới từ dữ liệu hiện tại hoặc từ phiên bản nguồn đã chọn.";
 
   useEffect(() => {
     void (async () => {
@@ -191,7 +231,9 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
           classroomApi.list({ scope: "all" }),
         ]);
 
-        const subjects = Array.isArray(subjectsRes.data) ? subjectsRes.data : [];
+        const subjects = Array.isArray(subjectsRes.data)
+          ? subjectsRes.data
+          : [];
         const classes = Array.isArray(classesRes.data) ? classesRes.data : [];
 
         setSubjectOptions(
@@ -203,7 +245,11 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
             })),
         );
 
-        const nextClasses: Record<"10" | "11" | "12", string[]> = { "10": [], "11": [], "12": [] };
+        const nextClasses: Record<"10" | "11" | "12", string[]> = {
+          "10": [],
+          "11": [],
+          "12": [],
+        };
         const yearSet = new Set<string>();
 
         classes.forEach((item) => {
@@ -267,7 +313,10 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
     void (async () => {
       try {
         setIsLoadingVersions(true);
-        const response = await teachingApi.listTimetableVersions(selectedSemester, selectedAcademicYear);
+        const response = await teachingApi.listTimetableVersions(
+          selectedSemester,
+          selectedAcademicYear,
+        );
         const rows = Array.isArray(response.data) ? response.data : [];
 
         if (cancelled) {
@@ -277,9 +326,13 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
         const mapped = rows
           .map((item) => ({
             versionId: (item.versionId ?? "").trim(),
-            versionName: (item.versionName ?? "").trim() || `Phiên bản ${item.versionNo ?? 0}`,
+            versionName:
+              (item.versionName ?? "").trim() ||
+              `Phiên bản ${item.versionNo ?? 0}`,
             versionNo: Number(item.versionNo ?? 0),
-            status: ((item.status ?? "LOCKED").toUpperCase() === "DRAFT" ? "DRAFT" : "LOCKED") as "DRAFT" | "LOCKED",
+            status: ((item.status ?? "LOCKED").toUpperCase() === "DRAFT"
+              ? "DRAFT"
+              : "LOCKED") as "DRAFT" | "LOCKED",
             active: Boolean(item.active),
             effectiveFrom: toIsoDate(item.effectiveFrom),
             effectiveTo: toIsoDate(item.effectiveTo),
@@ -289,14 +342,18 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
 
         setTimetableVersions(mapped);
 
-        const preferredVersionId = prefilledVersionId && mapped.some((item) => item.versionId === prefilledVersionId)
-          ? prefilledVersionId
-          : mapped[0]?.versionId ?? "";
+        const preferredVersionId =
+          prefilledVersionId &&
+          mapped.some((item) => item.versionId === prefilledVersionId)
+            ? prefilledVersionId
+            : (mapped[0]?.versionId ?? "");
 
         setSelectedVersionId(preferredVersionId);
 
         if (preferredVersionId) {
-          const selectedVersion = mapped.find((item) => item.versionId === preferredVersionId);
+          const selectedVersion = mapped.find(
+            (item) => item.versionId === preferredVersionId,
+          );
           if (selectedVersion) {
             setVersionName(selectedVersion.versionName);
             setEffectiveFrom(selectedVersion.effectiveFrom);
@@ -332,7 +389,11 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
 
     void (async () => {
       try {
-        const response = await teachingApi.getTimetableGrid(selectedSemester, selectedAcademicYear, selectedVersionId || undefined);
+        const response = await teachingApi.getTimetableGrid(
+          selectedSemester,
+          selectedAcademicYear,
+          selectedVersionId || undefined,
+        );
         const rows = Array.isArray(response.data) ? response.data : [];
 
         const next: Record<string, string> = {};
@@ -343,7 +404,13 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
           const periodStart = Number(item.periodStart);
           const periodEnd = Number(item.periodEnd);
 
-          if (!classCode || !subjectCode || !day || !periodStart || !periodEnd) {
+          if (
+            !classCode ||
+            !subjectCode ||
+            !day ||
+            !periodStart ||
+            !periodEnd
+          ) {
             return;
           }
 
@@ -359,7 +426,12 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
     })();
   }, [selectedAcademicYear, selectedSemester, selectedVersionId]);
 
-  const handleSubjectChange = (classCode: string, day: number, period: number, subjectCode: string) => {
+  const handleSubjectChange = (
+    classCode: string,
+    day: number,
+    period: number,
+    subjectCode: string,
+  ) => {
     const key = `${classCode}_${day}_${period}`;
 
     setCellData((prev) => {
@@ -376,7 +448,9 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
 
   const handleVersionSelectionChange = (versionId: string) => {
     setSelectedVersionId(versionId);
-    const selectedVersion = timetableVersions.find((item) => item.versionId === versionId);
+    const selectedVersion = timetableVersions.find(
+      (item) => item.versionId === versionId,
+    );
     if (!selectedVersion) {
       return;
     }
@@ -411,7 +485,9 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
     importFileInputRef.current?.click();
   };
 
-  const handleImportFileChanged = async (event: ChangeEvent<HTMLInputElement>) => {
+  const handleImportFileChanged = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     // Reset input immediately before any await — currentTarget is nullified after async
     if (importFileInputRef.current) {
@@ -427,9 +503,14 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
       const preview = response.data;
       setImportPreviewData(preview);
       setShowImportPreview(true);
-      showToast("Đã tạo preview import thời khóa biểu", "success");
+      showToast("Đã tạo bản xem trước nhập thời khóa biểu", "success");
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Không thể preview file import", "error");
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "Không thể preview file import",
+        "error",
+      );
     } finally {
       setIsPreviewingImport(false);
     }
@@ -440,7 +521,9 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
       return;
     }
 
-    const importedEntries = Array.isArray(importPreviewData.entries) ? importPreviewData.entries : [];
+    const importedEntries = Array.isArray(importPreviewData.entries)
+      ? importPreviewData.entries
+      : [];
     if (importedEntries.length === 0) {
       showToast("Không có dữ liệu hợp lệ để áp dụng", "error");
       return;
@@ -476,7 +559,10 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
     setCellData(nextCellData);
     setShowImportPreview(false);
     setImportPreviewData(null);
-    showToast(`Đã áp dụng ${importedEntries.length} dòng TKB vào lưới`, "success");
+    showToast(
+      `Đã áp dụng ${importedEntries.length} dòng TKB vào lưới`,
+      "success",
+    );
   };
 
   const handleCloseImportPreview = () => {
@@ -486,7 +572,10 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
 
   const handleSave = async (status: "DRAFT" | "LOCKED") => {
     if (isReadOnlyVersion) {
-      showToast("Phiên bản này chỉ xem, không thể chỉnh sửa hoặc lưu.", "error");
+      showToast(
+        "Phiên bản này chỉ xem, không thể chỉnh sửa hoặc lưu.",
+        "error",
+      );
       return;
     }
 
@@ -511,7 +600,10 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
     }
 
     if (status === "LOCKED" && hasLockedOverlap) {
-      showToast("Khoảng thời gian đang trùng với thời khóa biểu đã khóa. Chỉ có thể lưu nháp.", "error");
+      showToast(
+        "Khoảng thời gian đang trùng với thời khóa biểu đã khóa. Chỉ có thể lưu nháp.",
+        "error",
+      );
       return;
     }
 
@@ -558,7 +650,10 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
         router.push("/schedule");
       }
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Lỗi lưu thời khóa biểu", "error");
+      showToast(
+        error instanceof Error ? error.message : "Lỗi lưu thời khóa biểu",
+        "error",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -568,22 +663,32 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
     if (classes.length === 0) {
       return (
         <div key={gradeLevel} className="grid gap-2">
-          <h3 className="text-lg font-semibold text-slate-900">Khối {gradeLevel}</h3>
-          <p className="text-sm text-slate-500">Không có lớp cho bộ lọc hiện tại.</p>
+          <h3 className="text-lg font-semibold text-slate-900">
+            Khối {gradeLevel}
+          </h3>
+          <p className="text-sm text-slate-500">
+            Không có lớp cho bộ lọc hiện tại.
+          </p>
         </div>
       );
     }
 
     return (
       <div key={gradeLevel} className="grid gap-4">
-        <h3 className="text-lg font-semibold text-slate-900">Khối {gradeLevel}</h3>
+        <h3 className="text-lg font-semibold text-slate-900">
+          Khối {gradeLevel}
+        </h3>
 
         <div className="overflow-x-auto rounded-lg border border-slate-300">
           <table className="min-w-max border-collapse">
             <thead>
               <tr>
-                <th className="w-[72px] border border-slate-300 bg-slate-100 px-1 py-2 text-center text-xs font-semibold">Thứ</th>
-                <th className="w-[64px] border border-slate-300 bg-slate-100 px-1 py-2 text-center text-xs font-semibold">Tiết</th>
+                <th className="w-[72px] border border-slate-300 bg-slate-100 px-1 py-2 text-center text-xs font-semibold">
+                  Thứ
+                </th>
+                <th className="w-[64px] border border-slate-300 bg-slate-100 px-1 py-2 text-center text-xs font-semibold">
+                  Tiết
+                </th>
                 {classes.map((classCode) => (
                   <th
                     key={classCode}
@@ -612,7 +717,8 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
                     {classes.map((classCode) => {
                       const cellKey = `${classCode}_${day.value}_${period}`;
                       const currentSubjectCode = cellData[cellKey] ?? "";
-                      const hasSelectedValue = currentSubjectCode.trim().length > 0;
+                      const hasSelectedValue =
+                        currentSubjectCode.trim().length > 0;
 
                       return (
                         <td
@@ -623,7 +729,14 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
                         >
                           <select
                             value={currentSubjectCode}
-                            onChange={(event) => handleSubjectChange(classCode, day.value, period, event.target.value)}
+                            onChange={(event) =>
+                              handleSubjectChange(
+                                classCode,
+                                day.value,
+                                period,
+                                event.target.value,
+                              )
+                            }
                             disabled={isReadOnlyVersion}
                             className={`h-8 w-full rounded border px-1.5 text-xs transition ${
                               hasSelectedValue
@@ -654,7 +767,9 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
   return (
     <div className="grid gap-6">
       <Panel className="p-6">
-        <h2 className="mb-4 text-lg font-semibold text-slate-900">Tạo thời khóa biểu</h2>
+        <h2 className="mb-4 text-lg font-semibold text-slate-900">
+          Tạo thời khóa biểu
+        </h2>
 
         {!isViewMode ? (
           <div className="mb-4 flex flex-wrap gap-2">
@@ -666,9 +781,13 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
               onChange={handleImportFileChanged}
             />
             <Button tone="secondary" onClick={handleDownloadImportTemplate}>
-              Tải template import
+              Tải mẫu nhập
             </Button>
-            <Button tone="secondary" onClick={handleSelectImportFile} disabled={isPreviewingImport}>
+            <Button
+              tone="secondary"
+              onClick={handleSelectImportFile}
+              disabled={isPreviewingImport}
+            >
               {isPreviewingImport ? "Đang đọc file..." : "Import từ Excel"}
             </Button>
           </div>
@@ -676,7 +795,8 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
 
         {isViewMode ? (
           <div className="mb-4 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-800">
-            Đây là màn hình xem chi tiết phiên bản thời khóa biểu. Header và lưới đã bị khóa chỉnh sửa.
+            Đây là màn hình xem chi tiết phiên bản thời khóa biểu. Header và
+            lưới đã bị khóa chỉnh sửa.
           </div>
         ) : (
           <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
@@ -684,11 +804,15 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
           </div>
         )}
 
-        {isLoading ? <p className="mb-4 text-xs text-slate-500">Đang tải dữ liệu...</p> : null}
+        {isLoading ? (
+          <p className="mb-4 text-xs text-slate-500">Đang tải dữ liệu...</p>
+        ) : null}
 
         <div className="mb-6 grid gap-4 md:grid-cols-4">
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">Năm học</label>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Năm học
+            </label>
             <select
               value={selectedAcademicYear}
               onChange={(event) => setSelectedAcademicYear(event.target.value)}
@@ -705,7 +829,9 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">Học kỳ</label>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Học kỳ
+            </label>
             <select
               value={selectedSemester}
               onChange={(event) => setSelectedSemester(event.target.value)}
@@ -718,10 +844,14 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">Ca học</label>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Ca học
+            </label>
             <select
               value={selectedShift}
-              onChange={(event) => setSelectedShift(event.target.value as Shift)}
+              onChange={(event) =>
+                setSelectedShift(event.target.value as Shift)
+              }
               disabled={isReadOnlyVersion}
               className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm"
             >
@@ -731,10 +861,14 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">Khối</label>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Khối
+            </label>
             <select
               value={selectedGrade}
-              onChange={(event) => setSelectedGrade(event.target.value as GradeLevel)}
+              onChange={(event) =>
+                setSelectedGrade(event.target.value as GradeLevel)
+              }
               disabled={isReadOnlyVersion}
               className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm"
             >
@@ -748,7 +882,9 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <div className="xl:col-span-2">
-            <label className="mb-2 block text-sm font-medium text-slate-700">Tên thời khóa biểu</label>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Tên thời khóa biểu
+            </label>
             <input
               value={versionName}
               onChange={(event) => setVersionName(event.target.value)}
@@ -759,7 +895,9 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">Hiệu lực từ ngày</label>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Hiệu lực từ ngày
+            </label>
             <input
               type="date"
               value={effectiveFrom}
@@ -770,7 +908,9 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">Hiệu lực đến ngày</label>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Hiệu lực đến ngày
+            </label>
             <input
               type="date"
               value={effectiveTo}
@@ -781,17 +921,22 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
           </div>
 
           <div className="xl:col-span-2">
-            <label className="mb-2 block text-sm font-medium text-slate-700">Phiên bản đã có (mặc định mới nhất)</label>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Phiên bản đã có (mặc định mới nhất)
+            </label>
             <select
               value={selectedVersionId}
-              onChange={(event) => handleVersionSelectionChange(event.target.value)}
+              onChange={(event) =>
+                handleVersionSelectionChange(event.target.value)
+              }
               disabled={isLoadingVersions || isReadOnlyVersion}
               className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm"
             >
               <option value="">-- Chọn phiên bản để xem/chỉnh --</option>
               {timetableVersions.map((item) => (
                 <option key={item.versionId} value={item.versionId}>
-                  {item.versionName} (v{item.versionNo} - {item.status} - {item.effectiveFrom || "?"} đến {item.effectiveTo || "?"})
+                  {item.versionName} (v{item.versionNo} - {item.status} -{" "}
+                  {item.effectiveFrom || "?"} đến {item.effectiveTo || "?"})
                 </option>
               ))}
             </select>
@@ -801,7 +946,7 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
             {isViewMode
               ? "Chế độ xem chi tiết chỉ mở dữ liệu của phiên bản đã chọn."
               : selectedVersionId
-                ? "Đang nạp dữ liệu từ phiên bản nguồn. Lưu sẽ tạo một version mới dựa trên header hiện tại."
+                ? "Đang nạp dữ liệu từ phiên bản nguồn. Lưu sẽ tạo một phiên bản mới dựa trên tiêu đề hiện tại."
                 : "Chưa chọn phiên bản nguồn. Bạn đang tạo mới từ dữ liệu trống hoặc theo dữ liệu active hiện tại."}
           </div>
         </div>
@@ -814,7 +959,8 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
 
         {!hasInvalidDateRange && hasLockedOverlap ? (
           <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-            Khoảng thời gian này trùng với ít nhất một thời khóa biểu đã khóa. Nút lưu thật sẽ bị khóa, nhưng vẫn có thể lưu nháp.
+            Khoảng thời gian này trùng với ít nhất một thời khóa biểu đã khóa.
+            Nút lưu thật sẽ bị khóa, nhưng vẫn có thể lưu nháp.
           </div>
         ) : null}
       </Panel>
@@ -827,7 +973,12 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
 
       {isViewMode ? null : (
         <div className="flex flex-wrap gap-2">
-          <Button className="h-11 px-5" tone="secondary" onClick={() => void handleSave("DRAFT")} disabled={isSaving}>
+          <Button
+            className="h-11 px-5"
+            tone="secondary"
+            onClick={() => void handleSave("DRAFT")}
+            disabled={isSaving}
+          >
             {isSaving ? "Đang lưu..." : "Lưu nháp"}
           </Button>
           <Button
@@ -843,43 +994,68 @@ export function TeachingCreateGridContent({ mode = "edit", initialVersionId = ""
 
       <ImportPreviewModal
         open={showImportPreview && Boolean(importPreviewData)}
-        title="Preview import thời khóa biểu"
+        title="Xem trước nhập thời khóa biểu"
         description="Xem trước dữ liệu parse từ file Excel trước khi áp dụng vào lưới."
         onClose={handleCloseImportPreview}
         onConfirm={handleApplyImportedData}
         confirmLabel="Áp dụng vào lưới"
-        confirmDisabled={!importPreviewData || (importPreviewData.validEntries ?? 0) === 0}
+        confirmDisabled={
+          !importPreviewData || (importPreviewData.validEntries ?? 0) === 0
+        }
       >
         <div className="grid gap-4">
           <div className="grid grid-cols-1 gap-3 rounded-lg bg-slate-50 p-4 sm:grid-cols-3">
             <div>
               <p className="text-xs text-slate-500">Ô môn phát hiện</p>
-              <p className="text-lg font-semibold text-slate-900">{importPreviewData?.totalDetectedCells ?? 0}</p>
+              <p className="text-lg font-semibold text-slate-900">
+                {importPreviewData?.totalDetectedCells ?? 0}
+              </p>
             </div>
             <div>
               <p className="text-xs text-slate-500">Dòng hợp lệ</p>
-              <p className="text-lg font-semibold text-emerald-700">{importPreviewData?.validEntries ?? 0}</p>
+              <p className="text-lg font-semibold text-emerald-700">
+                {importPreviewData?.validEntries ?? 0}
+              </p>
             </div>
             <div>
               <p className="text-xs text-slate-500">Dòng lỗi</p>
-              <p className="text-lg font-semibold text-rose-700">{importPreviewData?.invalidEntries ?? 0}</p>
+              <p className="text-lg font-semibold text-rose-700">
+                {importPreviewData?.invalidEntries ?? 0}
+              </p>
             </div>
           </div>
 
           <div className="grid gap-2 rounded-lg border border-slate-200 p-3 text-sm sm:grid-cols-2">
-            <p><span className="font-medium">Tên TKB:</span> {importPreviewData?.versionName || "-"}</p>
-            <p><span className="font-medium">Năm học:</span> {importPreviewData?.academicYearCode || "-"}</p>
-            <p><span className="font-medium">Học kỳ:</span> {importPreviewData?.semesterCode || "-"}</p>
-            <p><span className="font-medium">Hiệu lực:</span> {importPreviewData?.effectiveFrom || "-"} → {importPreviewData?.effectiveTo || "-"}</p>
+            <p>
+              <span className="font-medium">Tên TKB:</span>{" "}
+              {importPreviewData?.versionName || "-"}
+            </p>
+            <p>
+              <span className="font-medium">Năm học:</span>{" "}
+              {importPreviewData?.academicYearCode || "-"}
+            </p>
+            <p>
+              <span className="font-medium">Học kỳ:</span>{" "}
+              {importPreviewData?.semesterCode || "-"}
+            </p>
+            <p>
+              <span className="font-medium">Hiệu lực:</span>{" "}
+              {importPreviewData?.effectiveFrom || "-"} →{" "}
+              {importPreviewData?.effectiveTo || "-"}
+            </p>
           </div>
 
           {(importPreviewData?.issues?.length ?? 0) > 0 ? (
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-              <p className="mb-2 text-sm font-semibold text-amber-900">Các lỗi cần lưu ý (hiển thị tối đa 30 dòng)</p>
+              <p className="mb-2 text-sm font-semibold text-amber-900">
+                Các lỗi cần lưu ý (hiển thị tối đa 30 dòng)
+              </p>
               <ul className="max-h-56 list-disc space-y-1 overflow-y-auto pl-5 text-xs text-amber-900">
                 {importPreviewData?.issues?.slice(0, 30).map((issue, idx) => (
                   <li key={`${issue.row}-${issue.column}-${idx}`}>
-                    R{issue.row} C{issue.column}: {issue.classCode || "?"} - {issue.subjectCode || "?"} ({issue.message || "Lỗi dữ liệu"})
+                    R{issue.row} C{issue.column}: {issue.classCode || "?"} -{" "}
+                    {issue.subjectCode || "?"} ({issue.message || "Lỗi dữ liệu"}
+                    )
                   </li>
                 ))}
               </ul>

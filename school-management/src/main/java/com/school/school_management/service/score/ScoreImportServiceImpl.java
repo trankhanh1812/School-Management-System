@@ -1,27 +1,15 @@
 package com.school.school_management.service.score;
 
-import com.school.school_management.dto.score.ScoreImportPreviewResponse;
-import com.school.school_management.entity.Exam;
-import com.school.school_management.entity.ExamClass;
-import com.school.school_management.entity.SchoolClass;
-import com.school.school_management.entity.Score;
-import com.school.school_management.entity.Student;
-import com.school.school_management.entity.StudentClass;
-import com.school.school_management.exception.CustomException;
-import com.school.school_management.repository.ExamClassRepository;
-import com.school.school_management.repository.ExamRepository;
-import com.school.school_management.repository.SchoolClassRepository;
-import com.school.school_management.repository.ScoreRepository;
-import com.school.school_management.repository.StudentClassRepository;
-import com.school.school_management.repository.StudentRepository;
-import com.school.school_management.repository.SubjectRepository;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DataFormatter;
@@ -29,9 +17,34 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.school.school_management.dto.score.ScoreImportPreviewResponse;
+import com.school.school_management.entity.Exam;
+import com.school.school_management.entity.ExamClass;
+import com.school.school_management.entity.ParentStudent;
+import com.school.school_management.entity.SchoolClass;
+import com.school.school_management.entity.Score;
+import com.school.school_management.entity.ScoreHistory;
+import com.school.school_management.entity.Student;
+import com.school.school_management.entity.StudentClass;
+import com.school.school_management.entity.User;
+import com.school.school_management.exception.CustomException;
+import com.school.school_management.repository.ExamClassRepository;
+import com.school.school_management.repository.ExamRepository;
+import com.school.school_management.repository.ParentStudentRepository;
+import com.school.school_management.repository.SchoolClassRepository;
+import com.school.school_management.repository.ScoreHistoryRepository;
+import com.school.school_management.repository.ScoreRepository;
+import com.school.school_management.repository.StudentClassRepository;
+import com.school.school_management.repository.StudentRepository;
+import com.school.school_management.repository.SubjectRepository;
+import com.school.school_management.repository.UserRepository;
+import com.school.school_management.service.notification.NotificationAutomationService;
 
 @Service
 @Transactional
@@ -46,6 +59,10 @@ public class ScoreImportServiceImpl implements ScoreImportService {
     private final SchoolClassRepository schoolClassRepository;
     private final StudentClassRepository studentClassRepository;
     private final SubjectRepository subjectRepository;
+    private final ScoreHistoryRepository scoreHistoryRepository;
+    private final UserRepository userRepository;
+    private final ParentStudentRepository parentStudentRepository;
+    private final NotificationAutomationService notificationAutomationService;
 
     public ScoreImportServiceImpl(
             ScoreRepository scoreRepository,
@@ -54,7 +71,11 @@ public class ScoreImportServiceImpl implements ScoreImportService {
             StudentRepository studentRepository,
             SchoolClassRepository schoolClassRepository,
             StudentClassRepository studentClassRepository,
-            SubjectRepository subjectRepository) {
+            SubjectRepository subjectRepository,
+            ScoreHistoryRepository scoreHistoryRepository,
+            UserRepository userRepository,
+            ParentStudentRepository parentStudentRepository,
+            NotificationAutomationService notificationAutomationService) {
         this.scoreRepository = scoreRepository;
         this.examRepository = examRepository;
         this.examClassRepository = examClassRepository;
@@ -62,6 +83,10 @@ public class ScoreImportServiceImpl implements ScoreImportService {
         this.schoolClassRepository = schoolClassRepository;
         this.studentClassRepository = studentClassRepository;
         this.subjectRepository = subjectRepository;
+        this.scoreHistoryRepository = scoreHistoryRepository;
+        this.userRepository = userRepository;
+        this.parentStudentRepository = parentStudentRepository;
+        this.notificationAutomationService = notificationAutomationService;
     }
 
     @Override
@@ -73,6 +98,8 @@ public class ScoreImportServiceImpl implements ScoreImportService {
     @Override
     public ScoreImportPreviewResponse processImport(MultipartFile file) {
         ScoreImportPreviewResponse response = parseWorkbook(file);
+        // Aggregate one notification per affected student (not one per score) to avoid spam.
+        Map<UUID, Student> changedStudents = new LinkedHashMap<>();
         for (ScoreImportPreviewResponse.ScoreImportPreviewItem row : response.getRows()) {
             if (Boolean.TRUE.equals(row.getHasErrors())) {
                 continue;
@@ -91,16 +118,70 @@ public class ScoreImportServiceImpl implements ScoreImportService {
             BigDecimal nextValue = Boolean.TRUE.equals(row.getAbsentFlag())
                 ? BigDecimal.ZERO
                 : row.getScoreValue();
+            BigDecimal oldValue = score.getScoreValue() == null ? BigDecimal.ZERO : score.getScoreValue();
 
             score.setScoreValue(nextValue);
             score.setAbsentFlag(Boolean.TRUE.equals(row.getAbsentFlag()));
             if (score.getStatus() == null || (!"PUBLISHED".equalsIgnoreCase(score.getStatus()) && !"LOCKED".equalsIgnoreCase(score.getStatus()))) {
                 score.setStatus("DRAFT");
             }
-            scoreRepository.save(score);
+            Score saved = scoreRepository.save(score);
+
+            // Record an audit trail for every value change, same as the manual edit path.
+            BigDecimal normalizedNext = nextValue == null ? BigDecimal.ZERO : nextValue;
+            if (oldValue.compareTo(normalizedNext) != 0) {
+                scoreHistoryRepository.save(ScoreHistory.builder()
+                    .score(saved)
+                    .oldValue(oldValue)
+                    .newValue(normalizedNext)
+                    .changedBy(getCurrentUser())
+                    .changeReason("Nhập điểm từ file import")
+                    .changedAt(OffsetDateTime.now())
+                    .build());
+                if (student.getId() != null) {
+                    changedStudents.put(student.getId(), student);
+                }
+            }
+        }
+
+        // Notify each affected student + their parents once (spec: notify after score change).
+        for (Student student : changedStudents.values()) {
+            List<User> audience = resolveScoreAudience(student);
+            if (!audience.isEmpty()) {
+                notificationAutomationService.notifyUsers(
+                    audience,
+                    "Điểm số đã được cập nhật",
+                    String.format("Điểm của học sinh %s vừa được cập nhật từ file nhập điểm.",
+                        student.getStudentCode() != null ? student.getStudentCode() : ""),
+                    "SCORE_UPDATE");
+            }
         }
 
         return response;
+    }
+
+    /** Student's own user + linked parents' users — same audience as the manual score-edit path. */
+    private List<User> resolveScoreAudience(Student student) {
+        Map<UUID, User> recipients = new LinkedHashMap<>();
+        if (student.getUser() != null && student.getUser().getDeletedAt() == null) {
+            recipients.put(student.getUser().getId(), student.getUser());
+        }
+        for (ParentStudent link : parentStudentRepository.findByStudentIn(List.of(student))) {
+            if (link.getParent() != null && link.getParent().getUser() != null
+                    && link.getParent().getUser().getDeletedAt() == null) {
+                recipients.put(link.getParent().getUser().getId(), link.getParent().getUser());
+            }
+        }
+        return new ArrayList<>(recipients.values());
+    }
+
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
+            throw new CustomException("Unauthenticated", 401);
+        }
+        return userRepository.findByEmail(authentication.getName().trim().toLowerCase(Locale.ROOT))
+            .orElseThrow(() -> new CustomException("Current user not found", 404));
     }
 
     private ScoreImportPreviewResponse parseWorkbook(MultipartFile file) {

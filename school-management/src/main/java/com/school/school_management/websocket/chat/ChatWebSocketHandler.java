@@ -1,39 +1,40 @@
 package com.school.school_management.websocket.chat;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.school.school_management.dto.chat.ChatWebSocketMessage;
-import com.school.school_management.entity.User;
-import com.school.school_management.repository.UserRepository;
-import com.school.school_management.security.JwtProvider;
 import java.net.URI;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.school.school_management.dto.chat.ChatWebSocketMessage;
+import com.school.school_management.entity.User;
+import com.school.school_management.repository.ChatGroupMemberRepository;
+import com.school.school_management.repository.UserRepository;
+import com.school.school_management.security.JwtProvider;
+
 @Component
 public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
+    private final ChatGroupMemberRepository chatGroupMemberRepository;
     private final ObjectMapper objectMapper;
     private final ConcurrentHashMap<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
 
     public ChatWebSocketHandler(
         JwtProvider jwtProvider,
         UserRepository userRepository,
+        ChatGroupMemberRepository chatGroupMemberRepository,
         ObjectMapper objectMapper
     ) {
         this.jwtProvider = jwtProvider;
         this.userRepository = userRepository;
+        this.chatGroupMemberRepository = chatGroupMemberRepository;
         this.objectMapper = objectMapper;
     }
 
@@ -84,28 +85,36 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     }
 
     private void broadcastToGroup(ChatWebSocketMessage message) throws Exception {
-        String groupPath = "/topic/chat/" + message.getChatGroupId();
-        for (WebSocketSession session : sessions.values()) {
-            if (session.isOpen()) {
-                session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
-            }
-        }
+        sendToGroupMembers(message.getChatGroupId(), objectMapper.writeValueAsString(message));
     }
 
     private void broadcastTypingIndicator(ChatWebSocketMessage message) throws Exception {
         message.setAction("user_typing");
-        for (WebSocketSession session : sessions.values()) {
-            if (session.isOpen()) {
-                session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
-            }
-        }
+        sendToGroupMembers(message.getChatGroupId(), objectMapper.writeValueAsString(message));
     }
 
     private void broadcastReadReceipt(ChatWebSocketMessage message) throws Exception {
         message.setAction("message_read");
+        sendToGroupMembers(message.getChatGroupId(), objectMapper.writeValueAsString(message));
+    }
+
+    /**
+     * Deliver a payload only to connected sessions whose user is a member of the group.
+     * Previously every event was sent to all sessions, leaking messages/typing/read
+     * receipts to users who were not in the group.
+     */
+    private void sendToGroupMembers(UUID groupId, String payload) throws Exception {
+        if (groupId == null) {
+            return;
+        }
         for (WebSocketSession session : sessions.values()) {
-            if (session.isOpen()) {
-                session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
+            if (!session.isOpen()) {
+                continue;
+            }
+            UUID sessionUserId = (UUID) session.getAttributes().get("userId");
+            if (sessionUserId != null
+                    && chatGroupMemberRepository.existsByChatGroupIdAndUserId(groupId, sessionUserId)) {
+                session.sendMessage(new TextMessage(payload));
             }
         }
     }
@@ -136,10 +145,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     }
 
     public void sendToGroup(UUID groupId, String message) throws Exception {
-        for (WebSocketSession session : sessions.values()) {
-            if (session.isOpen()) {
-                session.sendMessage(new TextMessage(message));
-            }
-        }
+        sendToGroupMembers(groupId, message);
     }
 }

@@ -10,7 +10,7 @@ public interface ChatMessageService {
 
     ChatMessageResponse sendMessage(UUID groupId, UUID senderId, SendMessageRequest request);
 
-    ChatMessageResponse getMessageById(UUID messageId);
+    ChatMessageResponse getMessageById(UUID messageId, UUID currentUserId);
 
     Page<ChatMessageResponse> getGroupMessages(UUID groupId, UUID currentUserId, Pageable pageable);
 

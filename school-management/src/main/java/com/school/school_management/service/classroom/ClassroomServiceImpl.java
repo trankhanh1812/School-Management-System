@@ -5,12 +5,16 @@ import com.school.school_management.dto.classroom.ClassroomMetricResponse;
 import com.school.school_management.dto.classroom.ClassroomResponse;
 import com.school.school_management.dto.classroom.ClassroomUpsertRequest;
 import com.school.school_management.dto.classroom.PromotionPlanResponse;
+import com.school.school_management.dto.system.SystemSettingResponse;
+import com.school.school_management.entity.AcademicRankRule;
 import com.school.school_management.entity.AcademicYear;
 import com.school.school_management.entity.SchoolClass;
+import com.school.school_management.entity.Semester;
 import com.school.school_management.entity.Student;
 import com.school.school_management.entity.StudentClass;
 import com.school.school_management.entity.Teacher;
 import com.school.school_management.entity.User;
+import com.school.school_management.service.score.AcademicScoringService;
 import com.school.school_management.exception.CustomException;
 import com.school.school_management.repository.AcademicRankRuleRepository;
 import com.school.school_management.repository.AcademicYearRepository;
@@ -25,6 +29,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
@@ -44,6 +49,8 @@ public class ClassroomServiceImpl implements ClassroomService {
     private final ConductRepository conductRepository;
     private final AcademicRankRuleRepository academicRankRuleRepository;
     private final SemesterRepository semesterRepository;
+    private final com.school.school_management.service.system.SystemSettingService systemSettingService;
+    private final AcademicScoringService academicScoringService;
 
     public ClassroomServiceImpl(
             SchoolClassRepository schoolClassRepository,
@@ -53,7 +60,9 @@ public class ClassroomServiceImpl implements ClassroomService {
             UserRepository userRepository,
             ConductRepository conductRepository,
             AcademicRankRuleRepository academicRankRuleRepository,
-            SemesterRepository semesterRepository) {
+            SemesterRepository semesterRepository,
+            com.school.school_management.service.system.SystemSettingService systemSettingService,
+            AcademicScoringService academicScoringService) {
         this.schoolClassRepository = schoolClassRepository;
         this.studentClassRepository = studentClassRepository;
         this.academicYearRepository = academicYearRepository;
@@ -62,6 +71,8 @@ public class ClassroomServiceImpl implements ClassroomService {
         this.conductRepository = conductRepository;
         this.academicRankRuleRepository = academicRankRuleRepository;
         this.semesterRepository = semesterRepository;
+        this.systemSettingService = systemSettingService;
+        this.academicScoringService = academicScoringService;
     }
 
     @Override
@@ -215,20 +226,15 @@ public class ClassroomServiceImpl implements ClassroomService {
         SchoolClass schoolClass = getClassEntity(classCode);
         String nextAcademicYear = buildNextAcademicYear(schoolClass);
 
-        return getStudentsByClassCode(classCode).stream()
-            .map(student -> {
-                String action = resolveAction(schoolClass, student);
-                return PromotionPlanResponse.builder()
-                    .studentCode(student.getStudentCode())
-                    .studentName(student.getFullName())
-                    .currentClass(safe(schoolClass.getClassName(), "Chưa cập nhật"))
-                    .nextAcademicYear(nextAcademicYear)
-                    .proposedClass(resolveProposedClass(schoolClass, action))
-                    .action(action)
-                    .reason(resolveReason(action))
-                    .status(resolvePlanStatus(student.getStudentCode()))
-                    .build();
-            })
+        // Uses the SAME scoring + decision logic as autoCalculatePromotion so both
+        // endpoints agree on every student's promotion result.
+        List<AcademicRankRule> rankRules = loadRankRules();
+        SystemSettingResponse settings = systemSettingService.getSettings();
+
+        return loadCurrentStudents(schoolClass).stream()
+            .map(student -> buildPromotionPlan(
+                schoolClass, student, Optional.empty(), rankRules, settings, nextAcademicYear,
+                resolvePlanStatus(student.getStudentCode())))
             .toList();
     }
 
@@ -282,38 +288,108 @@ public class ClassroomServiceImpl implements ClassroomService {
     }
 
     private String calculateScoreAverage(Student student) {
-        double average = student.getScores().stream()
-            .filter(score -> score != null && score.getDeletedAt() == null && score.getScoreValue() != null)
-            .mapToDouble(score -> score.getScoreValue().doubleValue())
-            .average()
-            .orElse(0.0);
-
+        // Weighted, SURVEY-excluded, published-only average — same number as the transcript.
+        double average = academicScoringService.compute(student).overallAverage();
         return String.format(Locale.US, "%.1f", average);
     }
 
-    private String resolveAction(SchoolClass schoolClass, ClassStudentResponse student) {
-        Short grade = schoolClass.getGradeLevel();
-        short gradeLevel = grade != null ? grade : 0;
-        double average = parseNumber(student.getScoreAverage());
-
-        if (gradeLevel >= 12) {
-            return "graduate";
-        }
-
-        if (average < 5.0) {
-            return "repeat";
-        }
-
-        return "promote";
+    private List<AcademicRankRule> loadRankRules() {
+        return academicRankRuleRepository.findAllByOrderByCodeAsc().stream()
+            .filter(r -> r.getMinAverage() != null)
+            .sorted(Comparator.comparing(r -> r.getMinAverage().doubleValue(), Comparator.reverseOrder()))
+            .toList();
     }
 
-    private String resolveReason(String action) {
-        return switch (action) {
-            case "graduate" -> "Đủ điều kiện hoàn thành chương trình học.";
-            case "repeat" -> "Cần thêm thời gian củng cố học lực trước khi lên lớp.";
-            case "transfer" -> "Điều chỉnh để cân bằng sĩ số giữa các lớp.";
-            default -> "Đủ điều kiện học lực và hạnh kiểm để lên lớp kế tiếp.";
-        };
+    private List<Student> loadCurrentStudents(SchoolClass schoolClass) {
+        return studentClassRepository.findBySchoolClassAndEndDateIsNull(schoolClass).stream()
+            .map(StudentClass::getStudent)
+            .filter(s -> s != null && s.getDeletedAt() == null)
+            .sorted(Comparator.comparing(Student::getStudentCode, Comparator.nullsLast(Comparator.naturalOrder())))
+            .toList();
+    }
+
+    private Optional<Semester> resolveSemesterOpt(String semesterCode) {
+        if (semesterCode == null || semesterCode.isBlank()) {
+            return Optional.empty();
+        }
+        return semesterRepository.findAllByOrderByStartDateDesc().stream()
+            .filter(s -> semesterCode.equalsIgnoreCase(s.getCode()))
+            .findFirst();
+    }
+
+    /**
+     * Single promotion/graduation decision used by BOTH promotion endpoints.
+     * Score average is the weighted transcript average; "failed subjects" counts
+     * subject-groups whose average is below the configured failing mark; thresholds
+     * (pass mark, failing mark, max failed, graduation grade) come from System Settings.
+     */
+    private PromotionPlanResponse buildPromotionPlan(
+            SchoolClass schoolClass,
+            Student student,
+            Optional<Semester> semesterOpt,
+            List<AcademicRankRule> rankRules,
+            SystemSettingResponse settings,
+            String nextAcademicYear,
+            String planStatus) {
+
+        var scoring = academicScoringService.compute(student);
+        double avg = scoring.overallAverage();
+        double failingSubjectMark = settings.getFailingSubjectMark();
+        long failedSubjects = scoring.failedSubjectCount(failingSubjectMark);
+
+        String conductLevel = conductRepository.findByStudentOrderByIdDesc(student).stream()
+            .filter(c -> semesterOpt.isEmpty() || semesterOpt.get().equals(c.getSemester()))
+            .map(c -> c.getConductLevel())
+            .filter(l -> l != null && !l.isBlank())
+            .findFirst()
+            .orElse("Chưa cập nhật");
+
+        double passMark = settings.getPassMark();
+        int maxFailedSubjects = settings.getMaxFailedSubjectsToPromote();
+        int graduationGradeLevel = settings.getGraduationGradeLevel();
+        Short grade = schoolClass.getGradeLevel();
+        short gradeLevel = grade != null ? grade : 10;
+
+        String action;
+        String reason;
+        if (gradeLevel >= graduationGradeLevel) {
+            action = avg >= passMark ? "graduate" : "repeat";
+            reason = avg >= passMark
+                ? "Đủ điều kiện tốt nghiệp."
+                : String.format("Điểm TB %.1f < %.1f, chưa đủ điều kiện tốt nghiệp.", avg, passMark);
+        } else if (avg < passMark || failedSubjects > maxFailedSubjects) {
+            action = "repeat";
+            reason = avg < passMark
+                ? String.format("Điểm TB %.1f < %.1f, cần lưu ban.", avg, passMark)
+                : String.format("Có %d môn dưới %.1f, cần lưu ban.", failedSubjects, failingSubjectMark);
+        } else {
+            boolean passesRankRule = rankRules.isEmpty() || rankRules.stream().anyMatch(r -> {
+                boolean avgOk = avg >= r.getMinAverage().doubleValue();
+                boolean failOk = r.getMaxFailedSubjects() == null || failedSubjects <= r.getMaxFailedSubjects();
+                boolean conductOk = r.getMinConductLevel() == null
+                    || conductMeetsMinimum(conductLevel, r.getMinConductLevel());
+                return avgOk && failOk && conductOk;
+            });
+            action = passesRankRule ? "promote" : "repeat";
+            reason = passesRankRule
+                ? String.format("Điểm TB %.1f, hạnh kiểm %s — đủ điều kiện lên lớp.", avg, conductLevel)
+                : String.format("Điểm TB %.1f, hạnh kiểm %s — chưa đủ điều kiện lên lớp.", avg, conductLevel);
+        }
+
+        String studentName = student.getUser() != null && !isBlank(student.getUser().getFullName())
+            ? student.getUser().getFullName()
+            : (safe(student.getLastName(), "") + " " + safe(student.getFirstName(), "")).trim();
+
+        return PromotionPlanResponse.builder()
+            .studentCode(student.getStudentCode())
+            .studentName(isBlank(studentName) ? "Học sinh" : studentName)
+            .currentClass(safe(schoolClass.getClassName(), "Chưa cập nhật"))
+            .nextAcademicYear(nextAcademicYear)
+            .proposedClass(resolveProposedClass(schoolClass, action))
+            .action(action)
+            .reason(reason)
+            .status(planStatus)
+            .build();
     }
 
     private String resolvePlanStatus(String studentCode) {
@@ -463,113 +539,21 @@ public class ClassroomServiceImpl implements ClassroomService {
         return value.replaceAll("\\s*-\\s*", " - ");
     }
 
-    private double parseNumber(String value) {
-        if (isBlank(value)) {
-            return 0.0;
-        }
-
-        try {
-            return Double.parseDouble(value);
-        } catch (NumberFormatException exception) {
-            return 0.0;
-        }
-    }
-
     @Override
     @Transactional(readOnly = true)
     public List<PromotionPlanResponse> autoCalculatePromotion(String classCode, String semesterCode) {
         SchoolClass schoolClass = getClassEntity(classCode);
         String nextAcademicYear = buildNextAcademicYear(schoolClass);
 
-        // Load academic rank rules sorted by minAverage desc
-        var rankRules = academicRankRuleRepository.findAllByOrderByCodeAsc().stream()
-            .filter(r -> r.getMinAverage() != null)
-            .sorted(Comparator.comparing(r -> r.getMinAverage().doubleValue(), Comparator.reverseOrder()))
+        // Chính sách + thang điểm xét lên lớp dùng chung với getPromotionPlansByClassCode.
+        List<AcademicRankRule> rankRules = loadRankRules();
+        SystemSettingResponse settings = systemSettingService.getSettings();
+        Optional<Semester> semesterOpt = resolveSemesterOpt(semesterCode);
+
+        return loadCurrentStudents(schoolClass).stream()
+            .map(student -> buildPromotionPlan(
+                schoolClass, student, semesterOpt, rankRules, settings, nextAcademicYear, "draft"))
             .toList();
-
-        // Load semester if provided
-        var semesterOpt = (semesterCode != null && !semesterCode.isBlank())
-            ? semesterRepository.findAllByOrderByStartDateDesc().stream()
-                .filter(s -> semesterCode.equalsIgnoreCase(s.getCode()))
-                .findFirst()
-            : java.util.Optional.empty();
-
-        List<Student> students = studentClassRepository.findBySchoolClassAndEndDateIsNull(schoolClass)
-            .stream()
-            .map(StudentClass::getStudent)
-            .filter(s -> s != null && s.getDeletedAt() == null)
-            .toList();
-
-        return students.stream().map(student -> {
-            // Calculate score average
-            double avg = student.getScores().stream()
-                .filter(sc -> sc != null && sc.getDeletedAt() == null && sc.getScoreValue() != null
-                    && "PUBLISHED".equals(sc.getStatus()))
-                .mapToDouble(sc -> sc.getScoreValue().doubleValue())
-                .average().orElse(0.0);
-
-            // Get latest conduct for this semester/class
-            String conductLevel = conductRepository
-                .findByStudentOrderByIdDesc(student).stream()
-                .filter(c -> semesterOpt.isEmpty() || semesterOpt.get().equals(c.getSemester()))
-                .map(c -> c.getConductLevel())
-                .filter(l -> l != null && !l.isBlank())
-                .findFirst()
-                .orElse("Chưa cập nhật");
-
-            // Count failed subjects (score < 5.0)
-            long failedSubjects = student.getScores().stream()
-                .filter(sc -> sc != null && sc.getDeletedAt() == null && sc.getScoreValue() != null
-                    && "PUBLISHED".equals(sc.getStatus()))
-                .filter(sc -> sc.getScoreValue().doubleValue() < 5.0)
-                .count();
-
-            // Determine action
-            Short grade = schoolClass.getGradeLevel();
-            short gradeLevel = grade != null ? grade : 10;
-            String action;
-            String reason;
-
-            if (gradeLevel >= 12) {
-                action = avg >= 5.0 ? "graduate" : "repeat";
-                reason = avg >= 5.0
-                    ? "Đủ điều kiện tốt nghiệp."
-                    : String.format("Điểm TB %.1f < 5.0, chưa đủ điều kiện tốt nghiệp.", avg);
-            } else if (avg < 5.0 || failedSubjects > 2) {
-                action = "repeat";
-                reason = avg < 5.0
-                    ? String.format("Điểm TB %.1f < 5.0, cần lưu ban.", avg)
-                    : String.format("Có %d môn dưới 5.0, cần lưu ban.", failedSubjects);
-            } else {
-                // Check rank rules
-                boolean passesRankRule = rankRules.isEmpty() || rankRules.stream().anyMatch(r -> {
-                    boolean avgOk = avg >= r.getMinAverage().doubleValue();
-                    boolean failOk = r.getMaxFailedSubjects() == null || failedSubjects <= r.getMaxFailedSubjects();
-                    boolean conductOk = r.getMinConductLevel() == null
-                        || conductMeetsMinimum(conductLevel, r.getMinConductLevel());
-                    return avgOk && failOk && conductOk;
-                });
-                action = passesRankRule ? "promote" : "repeat";
-                reason = passesRankRule
-                    ? String.format("Điểm TB %.1f, hạnh kiểm %s — đủ điều kiện lên lớp.", avg, conductLevel)
-                    : String.format("Điểm TB %.1f, hạnh kiểm %s — chưa đủ điều kiện lên lớp.", avg, conductLevel);
-            }
-
-            String studentName = student.getUser() != null && !isBlank(student.getUser().getFullName())
-                ? student.getUser().getFullName()
-                : (safe(student.getLastName(), "") + " " + safe(student.getFirstName(), "")).trim();
-
-            return PromotionPlanResponse.builder()
-                .studentCode(student.getStudentCode())
-                .studentName(studentName)
-                .currentClass(safe(schoolClass.getClassName(), classCode))
-                .nextAcademicYear(nextAcademicYear)
-                .proposedClass(resolveProposedClass(schoolClass, action))
-                .action(action)
-                .reason(reason)
-                .status("draft")
-                .build();
-        }).toList();
     }
 
     /** So sánh mức hạnh kiểm: Tốt > Khá > Trung bình > Yếu */

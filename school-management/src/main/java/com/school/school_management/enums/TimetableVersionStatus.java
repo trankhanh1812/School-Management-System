@@ -10,7 +10,7 @@ public enum TimetableVersionStatus {
 
     public static TimetableVersionStatus from(String value) {
         if (value == null || value.isBlank()) {
-            return LOCKED;
+            return DRAFT;
         }
 
         String normalized = value.trim().toUpperCase(Locale.ROOT);

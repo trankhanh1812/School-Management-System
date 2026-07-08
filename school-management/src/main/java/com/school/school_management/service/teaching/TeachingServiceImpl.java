@@ -1,5 +1,24 @@
 package com.school.school_management.service.teaching;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.school.school_management.dto.teaching.TeachingAssignmentResponse;
 import com.school.school_management.dto.teaching.TeachingAssignmentUpsertRequest;
 import com.school.school_management.dto.teaching.TeachingConflictCheckRequest;
@@ -16,8 +35,8 @@ import com.school.school_management.entity.TeachingAssignment;
 import com.school.school_management.entity.Timetable;
 import com.school.school_management.entity.TimetableVersion;
 import com.school.school_management.entity.User;
-import com.school.school_management.exception.CustomException;
 import com.school.school_management.enums.TimetableVersionStatus;
+import com.school.school_management.exception.CustomException;
 import com.school.school_management.repository.SchoolClassRepository;
 import com.school.school_management.repository.SemesterRepository;
 import com.school.school_management.repository.SubjectRepository;
@@ -27,23 +46,6 @@ import com.school.school_management.repository.TimetableRepository;
 import com.school.school_management.repository.TimetableVersionRepository;
 import com.school.school_management.repository.UserRepository;
 import com.school.school_management.service.notification.NotificationAutomationService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -116,6 +118,7 @@ public class TeachingServiceImpl implements TeachingService {
             .build();
 
         TeachingAssignment saved = teachingAssignmentRepository.save(assignment);
+        syncTimetableTeacher(request, saved);
 
         notificationAutomationService.notifyUsers(
             List.of(saved.getTeacher().getUser()),
@@ -151,6 +154,7 @@ public class TeachingServiceImpl implements TeachingService {
         current.setScheduleData(serializeScheduleData(request.getScheduleData()));
 
         TeachingAssignment saved = teachingAssignmentRepository.save(current);
+        syncTimetableTeacher(request, saved);
 
         notificationAutomationService.notifyUsers(
             List.of(saved.getTeacher().getUser()),
@@ -182,6 +186,29 @@ public class TeachingServiceImpl implements TeachingService {
             );
         }
         teachingAssignmentRepository.delete(assignment);
+    }
+
+    /**
+     * Step 2 of the timetable flow: after assigning a teacher to a subject/class/semester,
+     * write that teacher onto the matching timetable slots (which were created with
+     * teacher_id = NULL in step 1). Without this the timetable grid never shows the
+     * assigned teacher. Applies to all versions of the semester (draft + locked).
+     */
+    private void syncTimetableTeacher(TeachingAssignmentUpsertRequest request, TeachingAssignment saved) {
+        if (saved.getTeacher() == null) {
+            return;
+        }
+        List<Timetable> slots = timetableRepository
+            .findByVersion_Semester_CodeIgnoreCaseAndVersion_Semester_AcademicYear_CodeIgnoreCaseAndSchoolClass_ClassCodeIgnoreCaseAndSubject_CodeIgnoreCase(
+                request.getSemesterCode(),
+                request.getAcademicYearCode(),
+                request.getClassCode(),
+                request.getSubjectCode());
+        if (slots.isEmpty()) {
+            return;
+        }
+        slots.forEach(slot -> slot.setTeacher(saved.getTeacher()));
+        timetableRepository.saveAll(slots);
     }
 
     @Override
@@ -423,26 +450,30 @@ public class TeachingServiceImpl implements TeachingService {
             .distinct()
             .toList();
 
-        notificationAutomationService.notifyClassCodes(
-            affectedClasses,
-            status.isLocked() ? "Thời khóa biểu mới đã được khóa" : "Thời khóa biểu bản nháp đã được cập nhật",
-            String.format(
-                "Thời khóa biểu %s cho %s - %s đã được cập nhật (hiệu lực từ %s đến %s).",
-                safe(request.getVersionName(), "mới"),
-                semesterCode,
-                academicYearCode,
-                effectiveFrom,
-                effectiveTo
-            ),
-            "SCHEDULE_CHANGE"
-        );
+        // Only a LOCKED (official) timetable notifies students/teachers. A DRAFT is a
+        // work-in-progress and must not spam every class and teacher.
+        if (status.isLocked()) {
+            notificationAutomationService.notifyClassCodes(
+                affectedClasses,
+                "Thời khóa biểu mới đã được khóa",
+                String.format(
+                    "Thời khóa biểu %s cho %s - %s đã được cập nhật (hiệu lực từ %s đến %s).",
+                    safe(request.getVersionName(), "mới"),
+                    semesterCode,
+                    academicYearCode,
+                    effectiveFrom,
+                    effectiveTo
+                ),
+                "SCHEDULE_CHANGE"
+            );
 
-        notificationAutomationService.notifyRole(
-            "TEACHER",
-            "Cập nhật thời khóa biểu",
-            String.format("Đã có cập nhật thời khóa biểu %s - %s.", semesterCode, academicYearCode),
-            "SCHEDULE_CHANGE"
-        );
+            notificationAutomationService.notifyRole(
+                "TEACHER",
+                "Cập nhật thời khóa biểu",
+                String.format("Đã có cập nhật thời khóa biểu %s - %s.", semesterCode, academicYearCode),
+                "SCHEDULE_CHANGE"
+            );
+        }
     }
 
     @Override
@@ -519,6 +550,15 @@ public class TeachingServiceImpl implements TeachingService {
             for (TeachingAssignment existing : assignmentsByTeacher.getOrDefault(teacherCode, List.of())) {
                 String existingClassCode = existing.getSchoolClass() != null ? safe(existing.getSchoolClass().getClassCode(), "") : "";
                 String existingSubjectCode = existing.getSubject() != null ? safe(existing.getSubject().getCode(), "") : "";
+
+                // Skip the candidate's OWN assignment (same class + same subject). On a
+                // re-check/edit its timetable slots equal the candidate's, which would
+                // otherwise register as a bogus self-conflict and wrongly block saving.
+                if (existingClassCode.equalsIgnoreCase(classCode)
+                        && existingSubjectCode.equalsIgnoreCase(subjectCode)) {
+                    continue;
+                }
+
                 List<Timetable> existingSlots = activeSlotsByKey.getOrDefault(timetableKey(existingClassCode, existingSubjectCode), List.of());
 
                 if (existingSlots.isEmpty()) {

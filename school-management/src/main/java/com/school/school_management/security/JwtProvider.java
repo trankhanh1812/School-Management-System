@@ -1,20 +1,22 @@
 package com.school.school_management.security;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-import lombok.extern.slf4j.Slf4j;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.crypto.SecretKey;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * JwtProvider - Utility for JWT token generation, validation, and extraction
@@ -30,7 +32,7 @@ import java.util.Map;
 @Component
 public class JwtProvider {
     
-    @Value("${app.jwt.secret:my-super-secret-key-that-needs-to-be-at-least-256-bits-long-for-security}")
+    @Value("${app.jwt.secret}")
     private String jwtSecret;
     
     @Value("${app.jwt.expiration:3600}")       // 1 hour
@@ -203,6 +205,9 @@ public class JwtProvider {
      * @return SecretKey for signing JWT
      */
     private SecretKey getSigningKey() {
+        if (jwtSecret == null || jwtSecret.isBlank()) {
+            throw new IllegalStateException("app.jwt.secret must be configured and non-empty");
+        }
         byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }

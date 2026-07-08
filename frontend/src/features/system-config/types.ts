@@ -7,6 +7,11 @@ export type SystemSettingsRecord = {
   finalWeight: number;
   scoreEditWindowDays: number;
   requireAdminApproval: boolean;
+  // Chính sách xét lên lớp
+  passMark: number;
+  failingSubjectMark: number;
+  maxFailedSubjectsToPromote: number;
+  graduationGradeLevel: number;
 };
 
 export type SystemSettingsUpsertPayload = SystemSettingsRecord;

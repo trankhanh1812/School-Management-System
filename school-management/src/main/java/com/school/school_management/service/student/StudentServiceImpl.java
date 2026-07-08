@@ -1,31 +1,5 @@
 package com.school.school_management.service.student;
 
-import com.school.school_management.dto.student.StudentResponse;
-import com.school.school_management.dto.student.StudentTranscriptResponse;
-import com.school.school_management.dto.student.StudentUpsertRequest;
-import com.school.school_management.dto.student.PromotionHistoryResponse;
-import com.school.school_management.dto.student.ScoreHistoryResponse;
-import com.school.school_management.entity.AcademicYear;
-import com.school.school_management.entity.AcademicRankRule;
-import com.school.school_management.entity.ParentStudent;
-import com.school.school_management.entity.Role;
-import com.school.school_management.entity.SchoolClass;
-import com.school.school_management.entity.Score;
-import com.school.school_management.entity.Student;
-import com.school.school_management.entity.StudentClass;
-import com.school.school_management.entity.User;
-import com.school.school_management.entity.UserRole;
-import com.school.school_management.entity.PromotionLog;
-import com.school.school_management.exception.CustomException;
-import com.school.school_management.repository.AcademicYearRepository;
-import com.school.school_management.repository.AcademicRankRuleRepository;
-import com.school.school_management.repository.RoleRepository;
-import com.school.school_management.repository.SchoolClassRepository;
-import com.school.school_management.repository.StudentClassRepository;
-import com.school.school_management.repository.StudentRepository;
-import com.school.school_management.repository.PromotionLogRepository;
-import com.school.school_management.repository.ScoreHistoryRepository;
-import com.school.school_management.repository.UserRepository;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -37,13 +11,43 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.school.school_management.dto.student.PromotionHistoryResponse;
+import com.school.school_management.dto.student.ScoreHistoryResponse;
+import com.school.school_management.dto.student.StudentResponse;
+import com.school.school_management.dto.student.StudentTranscriptResponse;
+import com.school.school_management.dto.student.StudentUpsertRequest;
+import com.school.school_management.entity.AcademicRankRule;
+import com.school.school_management.entity.AcademicYear;
+import com.school.school_management.entity.ParentStudent;
+import com.school.school_management.entity.PromotionLog;
+import com.school.school_management.entity.Role;
+import com.school.school_management.entity.SchoolClass;
+import com.school.school_management.entity.Score;
+import com.school.school_management.entity.Student;
+import com.school.school_management.entity.StudentClass;
+import com.school.school_management.entity.User;
+import com.school.school_management.entity.UserRole;
+import com.school.school_management.enums.ExamType;
+import com.school.school_management.exception.CustomException;
+import com.school.school_management.repository.AcademicRankRuleRepository;
+import com.school.school_management.repository.AcademicYearRepository;
+import com.school.school_management.repository.PromotionLogRepository;
+import com.school.school_management.repository.RoleRepository;
+import com.school.school_management.repository.SchoolClassRepository;
+import com.school.school_management.repository.ScoreHistoryRepository;
+import com.school.school_management.repository.StudentClassRepository;
+import com.school.school_management.repository.StudentRepository;
+import com.school.school_management.repository.UserRepository;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -214,7 +218,7 @@ public class StudentServiceImpl implements StudentService {
             .gender(normalizeOptionalText(request.getGender()))
             .phone(normalizeOptionalText(request.getPhone()))
             .address(normalizeOptionalText(request.getAddress()))
-            .enrollmentDate(LocalDate.now())
+            .enrollmentDate(resolveEnrollmentDate(request.getEnrollmentDate()))
             .status(defaultStatus(request.getStatus()))
             .build();
 
@@ -291,9 +295,9 @@ public class StudentServiceImpl implements StudentService {
             .filter(parent -> parent != null)
             .map(parent -> StudentResponse.ParentSummary.builder()
                 .role(Boolean.TRUE.equals(findPrimaryContact(student, parent.getParentCode())) ? "Lien he chinh" : "Phu huynh")
-                .fullName(nullSafe(parent.getFullName(), "Chua cap nhat"))
-                .phone(nullSafe(parent.getPhone(), "Chua cap nhat"))
-                .email(parent.getUser() != null ? nullSafe(parent.getUser().getEmail(), "Chua cap nhat") : "Chua cap nhat")
+                .fullName(nullSafe(parent.getFullName(), "Chưa cập nhật"))
+                .phone(nullSafe(parent.getPhone(), "Chưa cập nhật"))
+                .email(parent.getUser() != null ? nullSafe(parent.getUser().getEmail(), "Chưa cập nhật") : "Chưa cập nhật")
                 .accountStatus(parent.getUser() != null ? nullSafe(parent.getUser().getStatus(), ACTIVE_STATUS) : ACTIVE_STATUS)
                 .build())
             .toList();
@@ -301,8 +305,8 @@ public class StudentServiceImpl implements StudentService {
         List<StudentResponse.AcademicHistoryItem> academicHistory = studentClassRepository.findByStudentOrderByStartDateDesc(student)
             .stream()
             .map(item -> StudentResponse.AcademicHistoryItem.builder()
-                .academicYear(item.getAcademicYear() != null ? nullSafe(item.getAcademicYear().getCode(), "Chua cap nhat") : "Chua cap nhat")
-                .className(item.getSchoolClass() != null ? nullSafe(item.getSchoolClass().getClassName(), "Chua cap nhat") : "Chua cap nhat")
+                .academicYear(item.getAcademicYear() != null ? nullSafe(item.getAcademicYear().getCode(), "Chưa cập nhật") : "Chưa cập nhật")
+                .className(item.getSchoolClass() != null ? nullSafe(item.getSchoolClass().getClassName(), "Chưa cập nhật") : "Chưa cập nhật")
                 .result(mapHistoryResult(item.getStatus()))
                 .note(nullSafe(item.getTransferReason(), "Cap nhat tu lich su lop hoc"))
                 .build())
@@ -314,20 +318,20 @@ public class StudentServiceImpl implements StudentService {
             .studentCode(student.getStudentCode())
             .fullName(fullName)
             .className(currentClass != null && currentClass.getSchoolClass() != null
-                ? nullSafe(currentClass.getSchoolClass().getClassName(), "Chua phan lop")
-                : "Chua phan lop")
+                ? nullSafe(currentClass.getSchoolClass().getClassName(), "Chưa phân lớp")
+                : "Chưa phân lớp")
             .academicYear(currentClass != null && currentClass.getAcademicYear() != null
-                ? nullSafe(currentClass.getAcademicYear().getCode(), "2026-2027")
-                : "2026-2027")
+                ? nullSafe(currentClass.getAcademicYear().getCode(), "Chưa cập nhật")
+                : "Chưa cập nhật")
             .conduct(resolveConduct(student))
             .scoreAverage(scoreAverage)
             .status(nullSafe(student.getStatus(), ACTIVE_STATUS))
             .homeroomTeacher(resolveHomeroomTeacher(currentClass))
-            .dateOfBirth(student.getDateOfBirth() != null ? student.getDateOfBirth().format(DISPLAY_DATE) : "Chua cap nhat")
-            .gender(nullSafe(student.getGender(), "Chua cap nhat"))
-            .phone(nullSafe(student.getPhone(), "Chua cap nhat"))
-            .email(student.getUser() != null ? nullSafe(student.getUser().getEmail(), "Chua cap nhat") : "Chua cap nhat")
-            .address(nullSafe(student.getAddress(), "Chua cap nhat"))
+            .dateOfBirth(student.getDateOfBirth() != null ? student.getDateOfBirth().format(DISPLAY_DATE) : "Chưa cập nhật")
+            .gender(nullSafe(student.getGender(), "Chưa cập nhật"))
+            .phone(nullSafe(student.getPhone(), "Chưa cập nhật"))
+            .email(student.getUser() != null ? nullSafe(student.getUser().getEmail(), "Chưa cập nhật") : "Chưa cập nhật")
+            .address(nullSafe(student.getAddress(), "Chưa cập nhật"))
             .avatarLabel(buildAvatarLabel(fullName))
             .parents(parents)
             .academicHistory(academicHistory)
@@ -341,8 +345,13 @@ public class StudentServiceImpl implements StudentService {
         private List<StudentResponse.SubjectResultItem> buildSubjectResults(Student student) {
             Map<String, List<Score>> grouped = new LinkedHashMap<>();
 
+            // STUDENT/PARENT may only see published (and subsequently locked) scores.
+            // ADMIN/TEACHER see every workflow state.
+            boolean privileged = isPrivilegedScoreViewer();
+
             student.getScores().stream()
                 .filter(score -> score != null && score.getDeletedAt() == null)
+                .filter(score -> privileged || isVisibleToStudent(score))
                 .forEach(score -> {
                     String academicYear = resolveAcademicYear(score);
                     String semester = resolveSemester(score);
@@ -364,13 +373,13 @@ public class StudentServiceImpl implements StudentService {
         private StudentResponse.SubjectResultItem buildSubjectResultItem(List<Score> scores) {
             if (scores == null || scores.isEmpty()) {
                 return StudentResponse.SubjectResultItem.builder()
-                    .academicYear("2026-2027")
-                    .subject("Chua cap nhat")
-                    .teacher("Chua cap nhat")
-                    .semester("Hoc ky I")
+                    .academicYear("Chưa cập nhật")
+                    .subject("Chưa cập nhật")
+                    .teacher("Chưa cập nhật")
+                    .semester("Học kỳ I")
                     .officialAverage("0.0")
                     .surveyAverage("0.0")
-                    .rank("Chua xep loai")
+                    .rank("Chưa xếp loại")
                     .assessments(List.of())
                     .build();
             }
@@ -381,22 +390,39 @@ public class StudentServiceImpl implements StudentService {
                 .map(this::toAssessmentItem)
                 .toList();
 
-            double average = scores.stream()
-                .map(Score::getScoreValue)
-                .filter(value -> value != null)
-                .mapToDouble(value -> value.doubleValue())
-                .average()
-                .orElse(0.0);
+            // Official subject average = weighted average over the weighted exam types
+            // (ORAL/QUIZ_15/ONE_PERIOD/MIDTERM/FINAL). SURVEY scores are excluded and
+            // reported separately as a plain average (khảo sát, không tính học bạ chính thức).
+            double weightedSum = 0.0;
+            double weightTotal = 0.0;
+            double surveySum = 0.0;
+            int surveyCount = 0;
+            for (Score score : scores) {
+                if (score.getScoreValue() == null) {
+                    continue;
+                }
+                double value = score.getScoreValue().doubleValue();
+                ExamType examType = examTypeOf(score);
+                if (examType.isWeighted()) {
+                    double weight = weightOf(score, examType);
+                    weightedSum += value * weight;
+                    weightTotal += weight;
+                } else {
+                    surveySum += value;
+                    surveyCount++;
+                }
+            }
+            double officialAverage = weightTotal > 0 ? weightedSum / weightTotal : 0.0;
+            double surveyAverage = surveyCount > 0 ? surveySum / surveyCount : 0.0;
 
-            String averageDisplay = formatDecimal(average);
             return StudentResponse.SubjectResultItem.builder()
                 .academicYear(resolveAcademicYear(representative))
                 .subject(resolveSubject(representative))
                 .teacher(resolveTeacher(representative))
                 .semester(resolveSemester(representative))
-                .officialAverage(averageDisplay)
-                .surveyAverage(averageDisplay)
-                .rank(mapAcademicRank(average))
+                .officialAverage(formatDecimal(officialAverage))
+                .surveyAverage(formatDecimal(surveyAverage))
+                .rank(mapAcademicRank(officialAverage))
                 .assessments(assessments)
                 .build();
         }
@@ -474,12 +500,12 @@ public class StudentServiceImpl implements StudentService {
             double average = parseNumber(scoreAverage);
 
             if (average > 0 && average < 5.0) {
-                alerts.add("Canh bao hoc luc: diem trung binh duoi 5.0");
+                alerts.add("Cảnh báo học lực: điểm trung bình dưới 5.0");
             }
 
             long absences = countAbsences(student);
             if (absences >= 5) {
-                alerts.add("Canh bao chuyen can: vang " + absences + " buoi");
+                alerts.add("Cảnh báo chuyên cần: vắng " + absences + " buổi");
             }
 
             return alerts;
@@ -497,23 +523,23 @@ public class StudentServiceImpl implements StudentService {
             if (score.getExam() != null
                     && score.getExam().getSemester() != null
                     && score.getExam().getSemester().getAcademicYear() != null) {
-                return nullSafe(score.getExam().getSemester().getAcademicYear().getCode(), "2026-2027");
+                return nullSafe(score.getExam().getSemester().getAcademicYear().getCode(), "Chưa cập nhật");
             }
-            return "2026-2027";
+            return "Chưa cập nhật";
         }
 
         private String resolveSemester(Score score) {
             if (score.getExam() != null && score.getExam().getSemester() != null) {
                 return normalizeSemesterCode(score.getExam().getSemester().getCode());
             }
-            return "Hoc ky I";
+            return "Học kỳ I";
         }
 
         private String resolveSubject(Score score) {
             if (score.getExam() != null && score.getExam().getSubject() != null) {
-                return nullSafe(score.getExam().getSubject().getName(), "Chua cap nhat");
+                return nullSafe(score.getExam().getSubject().getName(), "Chưa cập nhật");
             }
-            return "Chua cap nhat";
+            return "Chưa cập nhật";
         }
 
         private String resolveTeacher(Score score) {
@@ -524,9 +550,9 @@ public class StudentServiceImpl implements StudentService {
                 String firstName = nullSafe(score.getTeacher().getFirstName(), "");
                 String lastName = nullSafe(score.getTeacher().getLastName(), "");
                 String fullName = (lastName + " " + firstName).trim();
-                return isBlank(fullName) ? "Chua cap nhat" : fullName;
+                return isBlank(fullName) ? "Chưa cập nhật" : fullName;
             }
-            return "Chua cap nhat";
+            return "Chưa cập nhật";
         }
 
         private String resolveAssessmentName(Score score) {
@@ -536,7 +562,7 @@ public class StudentServiceImpl implements StudentService {
             if (score.getExam() != null && !isBlank(score.getExam().getExamType())) {
                 return score.getExam().getExamType();
             }
-            return "Dau diem";
+            return "Đầu điểm";
         }
 
         private String resolveAssessmentCategory(Score score) {
@@ -553,23 +579,59 @@ public class StudentServiceImpl implements StudentService {
             return "1.0";
         }
 
+        private ExamType examTypeOf(Score score) {
+            String rawType = score.getExam() != null ? score.getExam().getExamType() : null;
+            return ExamType.fromString(rawType);
+        }
+
+        /** Weight of a weighted score: the exam's configured weight if positive, else the exam-type default. */
+        private double weightOf(Score score, ExamType examType) {
+            if (score.getExam() != null && score.getExam().getWeight() != null) {
+                double configured = score.getExam().getWeight().doubleValue();
+                if (configured > 0) {
+                    return configured;
+                }
+            }
+            return examType.getWeight();
+        }
+
+        /** ADMIN/TEACHER see all workflow states; everyone else (STUDENT/PARENT) only published scores. */
+        private boolean isPrivilegedScoreViewer() {
+            return getCurrentUser().getUserRoles().stream()
+                .map(UserRole::getRole)
+                .filter(role -> role != null)
+                .map(Role::getCode)
+                .filter(code -> !isBlank(code))
+                .map(code -> code.toUpperCase(Locale.ROOT))
+                .anyMatch(code -> code.equals("ADMIN") || code.equals("TEACHER"));
+        }
+
+        /** A score is visible to a student/parent once it has been published (PUBLISHED or later LOCKED). */
+        private boolean isVisibleToStudent(Score score) {
+            if (score.getStatus() == null) {
+                return false;
+            }
+            String status = score.getStatus().trim().toUpperCase(Locale.ROOT);
+            return status.equals("PUBLISHED") || status.equals("LOCKED");
+        }
+
         private String normalizeSemesterCode(String rawCode) {
             if (isBlank(rawCode)) {
-                return "Hoc ky I";
+                return "Học kỳ I";
             }
             String code = rawCode.trim().toUpperCase(Locale.ROOT);
             if (code.contains("2") || code.contains("II")) {
-                return "Hoc ky II";
+                return "Học kỳ II";
             }
-            return "Hoc ky I";
+            return "Học kỳ I";
         }
 
         private String resolveCurrentClassName(Student student) {
             return studentClassRepository.findFirstByStudentAndEndDateIsNullOrderByStartDateDesc(student)
                 .map(studentClass -> studentClass.getSchoolClass() != null
-                    ? nullSafe(studentClass.getSchoolClass().getClassName(), "Chua phan lop")
-                    : "Chua phan lop")
-                .orElse("Chua phan lop");
+                    ? nullSafe(studentClass.getSchoolClass().getClassName(), "Chưa phân lớp")
+                    : "Chưa phân lớp")
+                .orElse("Chưa phân lớp");
         }
 
         private String resolveConduct(Student student) {
@@ -578,7 +640,7 @@ public class StudentServiceImpl implements StudentService {
                 .filter(level -> !isBlank(level))
                 .findFirst()
                 .map(String::trim)
-                .orElse("Chua cap nhat");
+                .orElse("Chưa cập nhật");
         }
 
         private String mapAcademicRank(double score) {
@@ -646,7 +708,7 @@ public class StudentServiceImpl implements StudentService {
 
         private String formatDateTime(OffsetDateTime value) {
             if (value == null) {
-                return "Chua cap nhat";
+                return "Chưa cập nhật";
             }
             return value.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
         }
@@ -716,7 +778,7 @@ public class StudentServiceImpl implements StudentService {
             }
 
             private void consume(String semester, double value) {
-                if ("Hoc ky II".equalsIgnoreCase(semester)) {
+                if ("Học kỳ II".equalsIgnoreCase(semester)) {
                     semester2 = value;
                 } else {
                     semester1 = value;
@@ -790,7 +852,7 @@ public class StudentServiceImpl implements StudentService {
             roleRepository.save(
                 Role.builder()
                     .code("STUDENT")
-                    .name("Hoc sinh")
+                    .name("Học sinh")
                     .description("Default student role")
                     .build()
             )
@@ -865,6 +927,12 @@ public class StudentServiceImpl implements StudentService {
         return value == null || value.trim().isEmpty();
     }
 
+    /** Enrollment date from the request if parseable, otherwise today. */
+    private LocalDate resolveEnrollmentDate(String value) {
+        LocalDate parsed = parseDate(value);
+        return parsed != null ? parsed : LocalDate.now();
+    }
+
     private LocalDate parseDate(String value) {
         if (isBlank(value)) {
             return null;
@@ -919,7 +987,7 @@ public class StudentServiceImpl implements StudentService {
 
     private String resolveHomeroomTeacher(StudentClass studentClass) {
         if (studentClass == null || studentClass.getSchoolClass() == null || studentClass.getSchoolClass().getHomeroomTeacher() == null) {
-            return "Chua cap nhat";
+            return "Chưa cập nhật";
         }
 
         if (studentClass.getSchoolClass().getHomeroomTeacher().getUser() != null
@@ -937,7 +1005,7 @@ public class StudentServiceImpl implements StudentService {
 
     private String mapHistoryResult(String status) {
         if (isBlank(status)) {
-            return "Dang hoc";
+            return "Đang học";
         }
         return status;
     }

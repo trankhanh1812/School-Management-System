@@ -18,11 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * DataInitializer - Automatically initialize system admin account on application startup.
- * 
+ *
  * This component runs after the application context is fully created and initializes:
  * - ADMIN role (if not exists)
  * - admin/admin user account with ADMIN role (if not exists)
- * 
+ *
  * The initialization is idempotent and only runs once per application startup.
  */
 @Slf4j
@@ -42,40 +42,43 @@ public class DataInitializer {
 
         // Step 1: Ensure ADMIN role exists
         Role adminRole = roleRepository.findByCode("ADMIN")
-            .orElseGet(() -> {
-                log.info("Creating ADMIN role...");
-                return roleRepository.save(
-                    Role.builder()
-                        .code("ADMIN")
-                        .name("Administrator")
-                        .description("System administrator with full access")
-                        .build()
-                );
-            });
+                .orElseGet(() -> {
+                    log.info("Creating ADMIN role...");
+                    return roleRepository.save(
+                            Role.builder()
+                                    .code("ADMIN")
+                                    .name("Administrator")
+                                    .description("System administrator with full access")
+                                    .build()
+                    );
+                });
 
         // Step 2: Ensure admin user exists
         if (userRepository.findByUsername("admin").isEmpty()) {
             log.info("Creating admin user account...");
 
             User adminUser = User.builder()
-                .username("admin")
-                .email("admin@school.local")
-                .passwordHash(passwordEncoder.encode("admin123"))
-                .fullName("System Administrator")
-                .status("ACTIVE")
-                .build();
+                    .username("admin")
+                    .email("admin@school.local")
+                    .passwordHash(passwordEncoder.encode("admin"))
+                    .fullName("System Administrator")
+                    .status("ACTIVE")
+                    // Force the default password to be changed on first login so the
+                    // well-known bootstrap credential cannot remain valid.
+                    .forcePasswordChange(true)
+                    .build();
 
             adminUser = userRepository.save(adminUser);
 
             // Step 3: Assign ADMIN role to admin user
             UserRole userRole = UserRole.builder()
-                .user(adminUser)
-                .role(adminRole)
-                .build();
+                    .user(adminUser)
+                    .role(adminRole)
+                    .build();
 
             userRoleRepository.save(userRole);
-            
-            log.info("Admin account created successfully: username=admin, password=admin, roles=[ADMIN]");
+
+            log.info("Admin account created (username=admin). Default password must be changed on first login.");
         } else {
             log.debug("Admin user already exists, skipping initialization");
         }

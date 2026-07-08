@@ -228,7 +228,7 @@ export const classroomApi = {
     );
 
     if (!response.ok) {
-      throw new Error("Khong the tai template xet len lop");
+      throw new Error("Không thể tải mẫu xét lên lớp");
     }
 
     return response.blob();
@@ -253,7 +253,7 @@ export const classroomApi = {
     );
 
     if (!response.ok) {
-      throw new Error("Khong the tao preview xet len lop");
+      throw new Error("Không thể tạo bản xem trước xét lên lớp");
     }
 
     const payload =
@@ -277,7 +277,7 @@ export const classroomApi = {
     });
 
     if (!response.ok) {
-      throw new Error("Import xet len lop that bai");
+      throw new Error("Nhập dữ liệu xét lên lớp thất bại");
     }
 
     const payload =

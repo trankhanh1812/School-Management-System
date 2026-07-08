@@ -1,23 +1,10 @@
 package com.school.school_management.controller;
 
-import com.school.school_management.dto.ApiResponse;
-import com.school.school_management.dto.exam.ExamPermissionResponse;
-import com.school.school_management.dto.exam.ExamPermissionUpsertRequest;
-import com.school.school_management.entity.Exam;
-import com.school.school_management.entity.ExamPermission;
-import com.school.school_management.entity.Student;
-import com.school.school_management.entity.User;
-import com.school.school_management.exception.CustomException;
-import com.school.school_management.repository.ExamPermissionRepository;
-import com.school.school_management.repository.ExamRepository;
-import com.school.school_management.repository.StudentRepository;
-import com.school.school_management.repository.UserRepository;
-import jakarta.validation.Valid;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,11 +14,28 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.school.school_management.dto.ApiResponse;
+import com.school.school_management.dto.exam.ExamPermissionResponse;
+import com.school.school_management.dto.exam.ExamPermissionUpsertRequest;
+import com.school.school_management.entity.Exam;
+import com.school.school_management.entity.ExamPermission;
+import com.school.school_management.entity.Parent;
+import com.school.school_management.entity.Student;
+import com.school.school_management.entity.User;
+import com.school.school_management.exception.CustomException;
+import com.school.school_management.repository.ExamPermissionRepository;
+import com.school.school_management.repository.ExamRepository;
+import com.school.school_management.repository.ParentRepository;
+import com.school.school_management.repository.ParentStudentRepository;
+import com.school.school_management.repository.StudentRepository;
+import com.school.school_management.repository.UserRepository;
+
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
@@ -42,16 +46,22 @@ public class ExamPermissionController {
     private final ExamRepository examRepository;
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
+    private final ParentRepository parentRepository;
+    private final ParentStudentRepository parentStudentRepository;
 
     public ExamPermissionController(
             ExamPermissionRepository examPermissionRepository,
             ExamRepository examRepository,
             StudentRepository studentRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            ParentRepository parentRepository,
+            ParentStudentRepository parentStudentRepository) {
         this.examPermissionRepository = examPermissionRepository;
         this.examRepository = examRepository;
         this.studentRepository = studentRepository;
         this.userRepository = userRepository;
+        this.parentRepository = parentRepository;
+        this.parentStudentRepository = parentStudentRepository;
     }
 
     /** Danh sách tất cả exam permissions — ADMIN */
@@ -80,6 +90,7 @@ public class ExamPermissionController {
     public ResponseEntity<ApiResponse<List<ExamPermissionResponse>>> listByStudent(
             @PathVariable String studentCode) {
         Student student = resolveStudent(studentCode);
+        assertCanViewStudentPermissions(student);
         var result = examPermissionRepository.findByStudentOrderByIdDesc(student)
             .stream().map(this::toResponse).toList();
         return ResponseEntity.ok(ApiResponse.success(result, "Student exam permissions fetched"));
@@ -122,6 +133,40 @@ public class ExamPermissionController {
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /**
+     * Ownership guard for reading a student's exam permissions.
+     * ADMIN/TEACHER: allowed. PARENT: only if linked. STUDENT: only their own
+     * (prevents reading another student's permissions via a different studentCode).
+     */
+    private void assertCanViewStudentPermissions(Student student) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) {
+            throw new CustomException("Unauthenticated", 401);
+        }
+        boolean isAdmin = auth.getAuthorities().stream()
+            .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+        boolean isTeacher = auth.getAuthorities().stream()
+            .anyMatch(a -> "ROLE_TEACHER".equals(a.getAuthority()));
+        if (isAdmin || isTeacher) {
+            return;
+        }
+        boolean isParent = auth.getAuthorities().stream()
+            .anyMatch(a -> "ROLE_PARENT".equals(a.getAuthority()));
+        User currentUser = getCurrentUser();
+        if (isParent) {
+            Parent parent = parentRepository.findByUser(currentUser)
+                .orElseThrow(() -> new CustomException("Parent profile not found", 403));
+            if (parentStudentRepository.findByParentAndStudent(parent, student).isEmpty()) {
+                throw new CustomException("Forbidden", 403);
+            }
+            return;
+        }
+        // STUDENT (or any other role): only their own permissions.
+        if (student.getUser() == null || !student.getUser().getId().equals(currentUser.getId())) {
+            throw new CustomException("Forbidden", 403);
+        }
+    }
 
     private Exam resolveExam(String examId) {
         return examRepository.findByIdAndDeletedAtIsNull(parseUuid(examId))

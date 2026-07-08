@@ -11,7 +11,9 @@ export function TeacherDetailContent({ teacherCode }: { teacherCode: string }) {
 
   if (isLoading) {
     return (
-      <Panel className="p-6 text-sm text-slate-500">Đang tải hồ sơ giáo viên...</Panel>
+      <Panel className="p-6 text-sm text-slate-500">
+        Đang tải hồ sơ giáo viên...
+      </Panel>
     );
   }
 
@@ -68,7 +70,7 @@ export function TeacherDetailContent({ teacherCode }: { teacherCode: string }) {
         </Panel>
 
         <DataTable
-          title="Teaching assignment"
+          title="Phân công giảng dạy"
           description="Một giáo viên có thể dạy nhiều môn, nhiều lớp và nhiều khối trong cùng năm học."
           columns={["Năm học", "Học kỳ", "Lớp", "Môn học", "Phòng", "Lịch dạy"]}
           rows={teacher.assignments.map((assignment) => [

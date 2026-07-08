@@ -1,7 +1,8 @@
 package com.school.school_management.dto.student;
 
-import jakarta.validation.constraints.NotBlank;
 import java.util.List;
+
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,6 +29,9 @@ public class StudentUpsertRequest {
     private String className;
     private String status;
     private String conduct;
+
+    /** Ngày nhập học (YYYY-MM-DD). Nếu trống, mặc định là ngày tạo. */
+    private String enrollmentDate;
 
     /**
      * Mã căn cước công dân / CMND.

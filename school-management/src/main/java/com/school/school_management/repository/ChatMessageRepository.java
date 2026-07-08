@@ -1,15 +1,26 @@
 package com.school.school_management.repository;
 
-import com.school.school_management.entity.ChatMessage;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import com.school.school_management.entity.ChatMessage;
 
 @Repository
 public interface ChatMessageRepository extends BaseRepository<ChatMessage, UUID> {
+
+    @Query("SELECT m FROM ChatMessage m WHERE m.chatGroup.id = :groupId AND m.deletedAt IS NULL "
+        + "AND (LOWER(m.messageText) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+        + "OR LOWER(m.fileName) LIKE LOWER(CONCAT('%', :keyword, '%'))) "
+        + "ORDER BY m.createdAt DESC")
+    Page<ChatMessage> searchInGroup(
+        @Param("groupId") UUID groupId, @Param("keyword") String keyword, Pageable pageable);
 
     Optional<ChatMessage> findByIdAndDeletedAtIsNull(UUID id);
 

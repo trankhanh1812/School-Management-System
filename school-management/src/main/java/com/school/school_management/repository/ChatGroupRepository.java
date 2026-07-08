@@ -17,6 +17,8 @@ public interface ChatGroupRepository extends BaseRepository<ChatGroup, UUID> {
 
     Page<ChatGroup> findByDeletedAtIsNullOrderByCreatedAtDesc(Pageable pageable);
 
+    Page<ChatGroup> findByIdInAndDeletedAtIsNullOrderByCreatedAtDesc(List<UUID> ids, Pageable pageable);
+
     List<ChatGroup> findByGroupTypeAndDeletedAtIsNull(String groupType);
 
     List<ChatGroup> findByScopeAndDeletedAtIsNull(String scope);

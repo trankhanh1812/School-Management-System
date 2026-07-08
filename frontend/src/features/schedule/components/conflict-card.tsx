@@ -7,9 +7,9 @@ const severityClasses: Record<ScheduleConflict["severity"], string> = {
 };
 
 const typeLabels: Record<ScheduleConflict["type"], string> = {
-  teacher: "Conflict giáo viên",
-  classroom: "Conflict lớp học",
-  room: "Conflict phòng học",
+  teacher: "Trùng lịch giáo viên",
+  classroom: "Trùng lịch lớp học",
+  room: "Trùng lịch phòng học",
 };
 
 export function ConflictCard({ conflict }: { conflict: ScheduleConflict }) {
@@ -25,12 +25,16 @@ export function ConflictCard({ conflict }: { conflict: ScheduleConflict }) {
               {conflict.title}
             </h3>
           </div>
-          <span className={`rounded-full px-3 py-1 text-sm font-semibold ${severityClasses[conflict.severity]}`}>
+          <span
+            className={`rounded-full px-3 py-1 text-sm font-semibold ${severityClasses[conflict.severity]}`}
+          >
             {conflict.severity === "high" ? "Cao" : "Trung bình"}
           </span>
         </div>
 
-        <p className="text-sm leading-7 text-slate-700">{conflict.description}</p>
+        <p className="text-sm leading-7 text-slate-700">
+          {conflict.description}
+        </p>
 
         <div className="flex flex-wrap gap-2">
           {conflict.affectedItems.map((item) => (

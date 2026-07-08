@@ -22,7 +22,7 @@ export function ImportPreviewModal({
   description,
   onClose,
   onConfirm,
-  confirmLabel = "Import",
+  confirmLabel = "Nhập dữ liệu",
   confirmDisabled = false,
   confirmLoading = false,
   children,
@@ -37,10 +37,13 @@ export function ImportPreviewModal({
       footer={
         <>
           <Button tone="ghost" onClick={onClose} disabled={confirmLoading}>
-            Huy
+            Hủy
           </Button>
-          <Button onClick={onConfirm} disabled={confirmDisabled || confirmLoading}>
-            {confirmLoading ? "Dang nhap..." : confirmLabel}
+          <Button
+            onClick={onConfirm}
+            disabled={confirmDisabled || confirmLoading}
+          >
+            {confirmLoading ? "Đang xử lý..." : confirmLabel}
           </Button>
         </>
       }

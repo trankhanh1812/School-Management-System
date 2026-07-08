@@ -1,6 +1,7 @@
 package com.school.school_management.service.impl;
 
 import java.time.OffsetDateTime;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -368,25 +369,32 @@ public class ChatGroupServiceImpl implements ChatGroupService {
     @Override
     @Transactional(readOnly = true)
     public Page<ChatGroupResponse> getUserGroups(UUID userId, Pageable pageable) {
-        List<UUID> groupIds = chatGroupMemberRepository
+        // Collect ALL of the user's non-deleted groups, then paginate in memory.
+        // (The previous version paginated the whole-group table first and filtered,
+        // which silently dropped a user's groups that fell outside the fetched page.)
+        List<ChatGroup> groups = chatGroupMemberRepository
             .findByUserId(userId)
             .stream()
-            .map(member -> member.getChatGroup().getId())
+            .map(ChatGroupMember::getChatGroup)
+            .filter(group -> group != null && group.getDeletedAt() == null)
+            .sorted(Comparator.comparing(ChatGroup::getCreatedAt,
+                Comparator.nullsLast(Comparator.reverseOrder())))
             .collect(Collectors.toList());
 
-        if (groupIds.isEmpty()) {
+        if (groups.isEmpty()) {
             return Page.empty(pageable);
         }
 
-        List<ChatGroupResponse> groups = chatGroupRepository
-            .findByDeletedAtIsNullOrderByCreatedAtDesc(pageable)
-            .getContent()
-            .stream()
-            .filter(group -> groupIds.contains(group.getId()))
+        int start = (int) pageable.getOffset();
+        if (start >= groups.size()) {
+            return new org.springframework.data.domain.PageImpl<>(List.of(), pageable, groups.size());
+        }
+        int end = Math.min(start + pageable.getPageSize(), groups.size());
+        List<ChatGroupResponse> content = groups.subList(start, end).stream()
             .map(this::mapToResponse)
             .collect(Collectors.toList());
 
-        return new org.springframework.data.domain.PageImpl<>(groups, pageable, groups.size());
+        return new org.springframework.data.domain.PageImpl<>(content, pageable, groups.size());
     }
 
     @Override
@@ -429,10 +437,6 @@ public class ChatGroupServiceImpl implements ChatGroupService {
 
     @Override
     public void addStudentMembersToGroup(UUID groupId, AddStudentMembersRequest request) {
-        System.out.println("[DEBUG] addStudentMembersToGroup called with groupId=" + groupId);
-        System.out.println("[DEBUG] Request studentCodes: " + request.getStudentCodes());
-        System.out.println("[DEBUG] Request classCode: " + request.getClassCode());
-        
         ChatGroup group = chatGroupRepository
             .findByIdAndDeletedAtIsNull(groupId)
             .orElseThrow(() -> new ResourceNotFoundException("Chat group not found"));
@@ -442,34 +446,20 @@ public class ChatGroupServiceImpl implements ChatGroupService {
         // If studentCodes are provided, find by code or by ID (trying both)
         if (request.getStudentCodes() != null && !request.getStudentCodes().isEmpty()) {
             for (String identifier : request.getStudentCodes()) {
-                System.out.println("[DEBUG] Looking for student identifier: '" + identifier + "'");
-                Student student = null;
-                
                 // First try to find by studentCode (string code like "S001")
-                student = studentRepository.findByStudentCodeAndDeletedAtIsNull(identifier).orElse(null);
-                if (student != null) {
-                    System.out.println("[DEBUG]   ✓ Found by studentCode");
-                } else {
-                    System.out.println("[DEBUG]   ✗ Not found by studentCode, trying UUID...");
-                }
-                
+                Student student = studentRepository.findByStudentCodeAndDeletedAtIsNull(identifier).orElse(null);
+
                 // If not found and identifier looks like a UUID, try to find by student ID
                 if (student == null) {
                     try {
                         UUID studentId = UUID.fromString(identifier);
                         student = studentRepository.findByIdAndDeletedAtIsNull(studentId).orElse(null);
-                        if (student != null) {
-                            System.out.println("[DEBUG]   ✓ Found by UUID");
-                        } else {
-                            System.out.println("[DEBUG]   ✗ Not found by UUID either");
-                        }
                     } catch (IllegalArgumentException e) {
-                        System.out.println("[DEBUG]   ✗ Not a valid UUID format");
+                        // identifier is neither a known studentCode nor a valid UUID
                     }
                 }
-                
+
                 if (student == null) {
-                    System.out.println("[DEBUG] ERROR: Student not found, throwing exception");
                     throw new ResourceNotFoundException("Student not found: " + identifier);
                 }
                 students.add(student);
@@ -478,17 +468,12 @@ public class ChatGroupServiceImpl implements ChatGroupService {
 
         // If classCode is provided, find all students in that class
         if (request.getClassCode() != null && !request.getClassCode().isEmpty()) {
-            System.out.println("[DEBUG] Finding students by classCode: " + request.getClassCode());
             students = studentRepository.findByClass(request.getClassCode());
-            System.out.println("[DEBUG] Found " + students.size() + " students in class");
         }
 
-        System.out.println("[DEBUG] Total students to add: " + students.size());
-        
         // Add each student's associated user to the group
         for (Student student : students) {
             User user = student.getUser();
-            System.out.println("[DEBUG] Student " + student.getStudentCode() + " -> User: " + (user != null ? user.getId() : "null"));
             if (user != null && !chatGroupMemberRepository.existsByChatGroupIdAndUserId(groupId, user.getId())) {
                 ChatGroupMember member = ChatGroupMember.builder()
                     .chatGroup(group)

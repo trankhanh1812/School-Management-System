@@ -12,7 +12,12 @@ type ScoreImportPreviewProps = {
   onCancel: () => void;
 };
 
-export function ScoreImportPreview({ open, previewData, onImportComplete, onCancel }: ScoreImportPreviewProps) {
+export function ScoreImportPreview({
+  open,
+  previewData,
+  onImportComplete,
+  onCancel,
+}: ScoreImportPreviewProps) {
   const { showToast } = useToast();
   const [importing, setImporting] = useState(false);
 
@@ -36,7 +41,7 @@ export function ScoreImportPreview({ open, previewData, onImportComplete, onCanc
   return (
     <ImportPreviewModal
       open={open}
-      title="Preview import điểm"
+      title="Xem trước nhập điểm"
       description="Kiểm tra dữ liệu điểm trước khi ghi vào hệ thống."
       onClose={onCancel}
       onConfirm={handleImport}
@@ -47,20 +52,36 @@ export function ScoreImportPreview({ open, previewData, onImportComplete, onCanc
       <div className="grid gap-4">
         <div className="grid gap-3 md:grid-cols-4">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Tổng dòng</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-950">{previewData.totalRecords ?? 0}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+              Tổng dòng
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-slate-950">
+              {previewData.totalRecords ?? 0}
+            </p>
           </div>
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Hợp lệ</p>
-            <p className="mt-2 text-2xl font-semibold text-emerald-700">{previewData.validRecords ?? 0}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+              Hợp lệ
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-emerald-700">
+              {previewData.validRecords ?? 0}
+            </p>
           </div>
           <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-700">Có lỗi</p>
-            <p className="mt-2 text-2xl font-semibold text-rose-700">{previewData.invalidRecords ?? 0}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-700">
+              Có lỗi
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-rose-700">
+              {previewData.invalidRecords ?? 0}
+            </p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Import ID</p>
-            <p className="mt-2 break-all text-sm font-medium text-slate-700">{previewData.importId || "-"}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+              Import ID
+            </p>
+            <p className="mt-2 break-all text-sm font-medium text-slate-700">
+              {previewData.importId || "-"}
+            </p>
           </div>
         </div>
 
@@ -92,19 +113,28 @@ export function ScoreImportPreview({ open, previewData, onImportComplete, onCanc
               </thead>
               <tbody>
                 {visibleRows.map((row) => (
-                  <tr key={`${row.rowNumber}-${row.studentCode}`} className={`border-t border-slate-100 ${row.hasErrors ? "bg-rose-50" : "bg-white"}`}>
+                  <tr
+                    key={`${row.rowNumber}-${row.studentCode}`}
+                    className={`border-t border-slate-100 ${row.hasErrors ? "bg-rose-50" : "bg-white"}`}
+                  >
                     <td className="px-4 py-3">{row.rowNumber}</td>
                     <td className="px-4 py-3">{row.examTitle}</td>
                     <td className="px-4 py-3">{row.classCode}</td>
                     <td className="px-4 py-3">{row.studentCode}</td>
                     <td className="px-4 py-3">{row.subjectCode}</td>
                     <td className="px-4 py-3">{row.scoreValue ?? "-"}</td>
-                    <td className="px-4 py-3">{row.absentFlag ? "Yes" : "No"}</td>
+                    <td className="px-4 py-3">
+                      {row.absentFlag ? "Có" : "Không"}
+                    </td>
                     <td className="px-4 py-3">
                       {row.hasErrors ? (
-                        <span className="font-medium text-rose-700">Có lỗi</span>
+                        <span className="font-medium text-rose-700">
+                          Có lỗi
+                        </span>
                       ) : (
-                        <span className="font-medium text-emerald-700">Hợp lệ</span>
+                        <span className="font-medium text-emerald-700">
+                          Hợp lệ
+                        </span>
                       )}
                     </td>
                   </tr>

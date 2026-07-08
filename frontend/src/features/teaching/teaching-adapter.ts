@@ -1,9 +1,14 @@
-import type { TeachingAssignmentRecord, TeachingMetric } from "@/features/teaching/teaching-data";
+import type {
+  TeachingAssignmentRecord,
+  TeachingMetric,
+} from "@/features/teaching/teaching-data";
 
 type UnknownRecord = Record<string, unknown>;
 
 function asRecord(value: unknown): UnknownRecord {
-  return typeof value === "object" && value !== null ? (value as UnknownRecord) : {};
+  return typeof value === "object" && value !== null
+    ? (value as UnknownRecord)
+    : {};
 }
 
 function asString(value: unknown, fallback = "") {
@@ -30,16 +35,18 @@ function asScheduleData(value: unknown) {
     .filter((row) => row.day > 0 && row.period > 0 && row.classCode.length > 0);
 }
 
-export function mapTeachingAssignmentRecord(raw: unknown): TeachingAssignmentRecord {
+export function mapTeachingAssignmentRecord(
+  raw: unknown,
+): TeachingAssignmentRecord {
   const record = asRecord(raw);
   return {
     assignmentId: asString(record.assignmentId, ""),
     teacherCode: asString(record.teacherCode, ""),
-    teacherName: asString(record.teacherName, "Chua cap nhat"),
+    teacherName: asString(record.teacherName, "Chưa cập nhật"),
     classCode: asString(record.classCode, ""),
-    className: asString(record.className, "Chua cap nhat"),
+    className: asString(record.className, "Chưa cập nhật"),
     subjectCode: asString(record.subjectCode, ""),
-    subjectName: asString(record.subjectName, "Chua cap nhat"),
+    subjectName: asString(record.subjectName, "Chưa cập nhật"),
     semesterCode: asString(record.semesterCode, ""),
     academicYearCode: asString(record.academicYearCode, ""),
     homeroom: asBoolean(record.homeroom),

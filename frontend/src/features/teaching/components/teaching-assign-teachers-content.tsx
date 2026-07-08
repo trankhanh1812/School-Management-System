@@ -11,7 +11,11 @@ import { useAuthSession } from "@/hooks/use-auth-session";
 import { teacherApi } from "@/features/teacher/api";
 import { subjectApi } from "@/features/subject/api";
 import { classroomApi } from "@/features/classroom/api";
-import { teachingApi, type TeachingAssignmentUpsertPayload, type TimetableEntryPayload } from "@/features/teaching/api";
+import {
+  teachingApi,
+  type TeachingAssignmentUpsertPayload,
+  type TimetableEntryPayload,
+} from "@/features/teaching/api";
 
 type GradeLevel = "10" | "11" | "12";
 
@@ -106,10 +110,15 @@ export function TeachingAssignTeachersContent() {
 
   const isAuthorized =
     session?.user.role === "ADMIN" ||
-    (session?.user.role === "TEACHER" && (session.user.departmentLevel === 1 || session.user.departmentLevel === 2));
+    (session?.user.role === "TEACHER" &&
+      (session.user.departmentLevel === 1 ||
+        session.user.departmentLevel === 2));
   const isDepartmentManager =
-    session?.user.role === "TEACHER" && (session.user.departmentLevel === 1 || session.user.departmentLevel === 2);
-  const currentDepartmentCode = (session?.user.departmentCode ?? "").trim().toUpperCase();
+    session?.user.role === "TEACHER" &&
+    (session.user.departmentLevel === 1 || session.user.departmentLevel === 2);
+  const currentDepartmentCode = (session?.user.departmentCode ?? "")
+    .trim()
+    .toUpperCase();
 
   const [teacherOptions, setTeacherOptions] = useState<TeacherOption[]>([]);
   const [subjectOptions, setSubjectOptions] = useState<SubjectOption[]>([]);
@@ -120,21 +129,35 @@ export function TeachingAssignTeachersContent() {
   const [selectedSubject, setSelectedSubject] = useState("");
   const [classQuery, setClassQuery] = useState("");
 
-  const [classesByGrade, setClassesByGrade] = useState<Record<GradeLevel, ClassByGrade[]>>({
+  const [classesByGrade, setClassesByGrade] = useState<
+    Record<GradeLevel, ClassByGrade[]>
+  >({
     "10": [],
     "11": [],
     "12": [],
   });
-  const [subjectTimetableByClass, setSubjectTimetableByClass] = useState<Record<string, TimetableEntryPayload[]>>({});
+  const [subjectTimetableByClass, setSubjectTimetableByClass] = useState<
+    Record<string, TimetableEntryPayload[]>
+  >({});
 
   const [assignments, setAssignments] = useState<Record<string, string>>({});
   const [notesByClass, setNotesByClass] = useState<Record<string, string>>({});
-  const [existingAssignmentIds, setExistingAssignmentIds] = useState<Record<string, string>>({});
-  const [duplicateConflicts, setDuplicateConflicts] = useState<DuplicateConflict[]>([]);
-  const [missingTimetableClasses, setMissingTimetableClasses] = useState<string[]>([]);
-  const [inlineIssuesByClass, setInlineIssuesByClass] = useState<Record<string, string[]>>({});
+  const [existingAssignmentIds, setExistingAssignmentIds] = useState<
+    Record<string, string>
+  >({});
+  const [duplicateConflicts, setDuplicateConflicts] = useState<
+    DuplicateConflict[]
+  >([]);
+  const [missingTimetableClasses, setMissingTimetableClasses] = useState<
+    string[]
+  >([]);
+  const [inlineIssuesByClass, setInlineIssuesByClass] = useState<
+    Record<string, string[]>
+  >({});
   const [showIssueModal, setShowIssueModal] = useState(false);
-  const [hoveredTeacher, setHoveredTeacher] = useState<HoveredTeacher | null>(null);
+  const [hoveredTeacher, setHoveredTeacher] = useState<HoveredTeacher | null>(
+    null,
+  );
   const [liveCheckError, setLiveCheckError] = useState("");
   const [isLiveChecking, setIsLiveChecking] = useState(false);
   const [canSave, setCanSave] = useState(false);
@@ -142,7 +165,11 @@ export function TeachingAssignTeachersContent() {
   const [isSaving, setIsSaving] = useState(false);
 
   const allClasses = useMemo(() => {
-    return [...classesByGrade["10"], ...classesByGrade["11"], ...classesByGrade["12"]];
+    return [
+      ...classesByGrade["10"],
+      ...classesByGrade["11"],
+      ...classesByGrade["12"],
+    ];
   }, [classesByGrade]);
 
   const filteredClassesByGrade = useMemo(() => {
@@ -152,9 +179,18 @@ export function TeachingAssignTeachersContent() {
     }
 
     return {
-      "10": classesByGrade["10"].filter((item) => item.code.includes(query) || item.name.toUpperCase().includes(query)),
-      "11": classesByGrade["11"].filter((item) => item.code.includes(query) || item.name.toUpperCase().includes(query)),
-      "12": classesByGrade["12"].filter((item) => item.code.includes(query) || item.name.toUpperCase().includes(query)),
+      "10": classesByGrade["10"].filter(
+        (item) =>
+          item.code.includes(query) || item.name.toUpperCase().includes(query),
+      ),
+      "11": classesByGrade["11"].filter(
+        (item) =>
+          item.code.includes(query) || item.name.toUpperCase().includes(query),
+      ),
+      "12": classesByGrade["12"].filter(
+        (item) =>
+          item.code.includes(query) || item.name.toUpperCase().includes(query),
+      ),
     } satisfies Record<GradeLevel, ClassByGrade[]>;
   }, [classQuery, classesByGrade]);
 
@@ -198,7 +234,10 @@ export function TeachingAssignTeachersContent() {
 
     Object.entries(subjectTimetableByClass).forEach(([classCode, slots]) => {
       periodMap[classCode] = slots.reduce((total, slot) => {
-        const periods = Math.max((slot.periodEnd ?? 0) - (slot.periodStart ?? 0) + 1, 0);
+        const periods = Math.max(
+          (slot.periodEnd ?? 0) - (slot.periodStart ?? 0) + 1,
+          0,
+        );
         return total + periods;
       }, 0);
     });
@@ -242,24 +281,32 @@ export function TeachingAssignTeachersContent() {
         };
       }
 
-      const dayLabel = DAYS_LABEL[conflict.dayOfWeek] ?? `Thứ ${conflict.dayOfWeek}`;
+      const dayLabel =
+        DAYS_LABEL[conflict.dayOfWeek] ?? `Thứ ${conflict.dayOfWeek}`;
       const conflictText = `${dayLabel} tiết ${conflict.periodStart}-${conflict.periodEnd}: ${conflict.affectedClasses.join(", ")}`;
       insights[teacherCode].conflicts.push(conflictText);
     });
 
     Object.values(insights).forEach((insight) => {
-      insight.classes = Array.from(new Set(insight.classes)).sort((a, b) => a.localeCompare(b));
+      insight.classes = Array.from(new Set(insight.classes)).sort((a, b) =>
+        a.localeCompare(b),
+      );
       insight.conflicts = Array.from(new Set(insight.conflicts));
     });
 
     return insights;
   }, [assignments, classPeriodCountByCode, duplicateConflicts]);
 
-  const hasAnyIssue = missingTimetableClasses.length > 0 || duplicateConflicts.length > 0;
+  const hasAnyIssue =
+    missingTimetableClasses.length > 0 || duplicateConflicts.length > 0;
 
   useEffect(() => {
-    const urlAcademicYear = toYearCode(searchParams.get("academicYear") ?? undefined);
-    const urlSemester = (searchParams.get("semester") ?? "").trim().toUpperCase();
+    const urlAcademicYear = toYearCode(
+      searchParams.get("academicYear") ?? undefined,
+    );
+    const urlSemester = (searchParams.get("semester") ?? "")
+      .trim()
+      .toUpperCase();
     const urlSubject = (searchParams.get("subject") ?? "").trim().toUpperCase();
 
     if (urlAcademicYear) {
@@ -287,13 +334,22 @@ export function TeachingAssignTeachersContent() {
           classroomApi.list({ scope: "all" }),
         ]);
 
-        const subjects = Array.isArray(subjectsRes.data) ? subjectsRes.data : [];
-        const teachers = Array.isArray(teachersRes.data) ? teachersRes.data : [];
+        const subjects = Array.isArray(subjectsRes.data)
+          ? subjectsRes.data
+          : [];
+        const teachers = Array.isArray(teachersRes.data)
+          ? teachersRes.data
+          : [];
         const classes = Array.isArray(classesRes.data) ? classesRes.data : [];
 
-        const visibleSubjects = isDepartmentManager && currentDepartmentCode
-          ? subjects.filter((s) => ((s.departmentCode ?? "").trim().toUpperCase() === currentDepartmentCode))
-          : subjects;
+        const visibleSubjects =
+          isDepartmentManager && currentDepartmentCode
+            ? subjects.filter(
+                (s) =>
+                  (s.departmentCode ?? "").trim().toUpperCase() ===
+                  currentDepartmentCode,
+              )
+            : subjects;
 
         setSubjectOptions(
           visibleSubjects
@@ -336,7 +392,10 @@ export function TeachingAssignTeachersContent() {
 
         setYearOptions(years);
         if (!selectedAcademicYear) {
-          const preferred = years.find((item) => item.code === currentYearCode)?.code ?? years[0]?.code ?? "";
+          const preferred =
+            years.find((item) => item.code === currentYearCode)?.code ??
+            years[0]?.code ??
+            "";
           setSelectedAcademicYear(preferred);
         }
       } catch {
@@ -345,10 +404,22 @@ export function TeachingAssignTeachersContent() {
         setIsLoading(false);
       }
     })();
-  }, [isAuthorized, isDepartmentManager, currentDepartmentCode, selectedAcademicYear, session?.user.departmentCode, showToast]);
+  }, [
+    isAuthorized,
+    isDepartmentManager,
+    currentDepartmentCode,
+    selectedAcademicYear,
+    session?.user.departmentCode,
+    showToast,
+  ]);
 
   useEffect(() => {
-    if (!isAuthorized || !selectedAcademicYear || !selectedSemester || !selectedSubject) {
+    if (
+      !isAuthorized ||
+      !selectedAcademicYear ||
+      !selectedSemester ||
+      !selectedSubject
+    ) {
       setClassesByGrade({ "10": [], "11": [], "12": [] });
       setSubjectTimetableByClass({});
       return;
@@ -362,7 +433,9 @@ export function TeachingAssignTeachersContent() {
         ]);
 
         const classes = Array.isArray(classesRes.data) ? classesRes.data : [];
-        const timetable = Array.isArray(timetableRes.data) ? timetableRes.data : [];
+        const timetable = Array.isArray(timetableRes.data)
+          ? timetableRes.data
+          : [];
         const classMetaByCode = new Map(
           classes
             .map((item) => ({
@@ -375,14 +448,22 @@ export function TeachingAssignTeachersContent() {
         );
         const classCodesWithSelectedSubject = new Set(
           timetable
-            .filter((item) => (item.subjectCode ?? "").trim().toUpperCase() === selectedSubject)
+            .filter(
+              (item) =>
+                (item.subjectCode ?? "").trim().toUpperCase() ===
+                selectedSubject,
+            )
             .map((item) => (item.classCode ?? "").trim().toUpperCase())
             .filter(Boolean),
         );
-        const nextTimetableByClass: Record<string, TimetableEntryPayload[]> = {};
+        const nextTimetableByClass: Record<string, TimetableEntryPayload[]> =
+          {};
 
         timetable
-          .filter((item) => (item.subjectCode ?? "").trim().toUpperCase() === selectedSubject)
+          .filter(
+            (item) =>
+              (item.subjectCode ?? "").trim().toUpperCase() === selectedSubject,
+          )
           .forEach((item) => {
             const classCode = (item.classCode ?? "").trim().toUpperCase();
             if (!classCode) {
@@ -401,22 +482,26 @@ export function TeachingAssignTeachersContent() {
               periodEnd: Number(item.periodEnd ?? 0),
             });
           });
-        const next: Record<GradeLevel, ClassByGrade[]> = { "10": [], "11": [], "12": [] };
+        const next: Record<GradeLevel, ClassByGrade[]> = {
+          "10": [],
+          "11": [],
+          "12": [],
+        };
 
         Array.from(classCodesWithSelectedSubject)
           .sort((a, b) => a.localeCompare(b))
           .forEach((classCode) => {
-          const classMeta = classMetaByCode.get(classCode);
-          const grade = parseGrade(classCode, classMeta?.grade);
-          if (!grade) {
-            return;
-          }
+            const classMeta = classMetaByCode.get(classCode);
+            const grade = parseGrade(classCode, classMeta?.grade);
+            if (!grade) {
+              return;
+            }
 
-          next[grade].push({
-            code: classCode,
-            name: (classMeta?.name ?? classCode).trim(),
+            next[grade].push({
+              code: classCode,
+              name: (classMeta?.name ?? classCode).trim(),
+            });
           });
-        });
 
         setClassesByGrade(next);
         setSubjectTimetableByClass(nextTimetableByClass);
@@ -424,7 +509,13 @@ export function TeachingAssignTeachersContent() {
         showToast("Lỗi tải danh sách lớp", "error");
       }
     })();
-  }, [isAuthorized, selectedAcademicYear, selectedSemester, selectedSubject, showToast]);
+  }, [
+    isAuthorized,
+    selectedAcademicYear,
+    selectedSemester,
+    selectedSubject,
+    showToast,
+  ]);
 
   useEffect(() => {
     setAssignments({});
@@ -447,7 +538,13 @@ export function TeachingAssignTeachersContent() {
   }, [hasAnyIssue]);
 
   useEffect(() => {
-    if (!isAuthorized || !selectedAcademicYear || !selectedSemester || !selectedSubject || allClasses.length === 0) {
+    if (
+      !isAuthorized ||
+      !selectedAcademicYear ||
+      !selectedSemester ||
+      !selectedSubject ||
+      allClasses.length === 0
+    ) {
       return;
     }
 
@@ -464,8 +561,12 @@ export function TeachingAssignTeachersContent() {
         }
 
         const rows = Array.isArray(response.data) ? response.data : [];
-        const availableClassCodes = new Set(allClasses.map((item) => item.code));
-        const allowedTeacherCodes = new Set(teacherOptions.map((item) => item.code));
+        const availableClassCodes = new Set(
+          allClasses.map((item) => item.code),
+        );
+        const allowedTeacherCodes = new Set(
+          teacherOptions.map((item) => item.code),
+        );
         const nextAssignments: Record<string, string> = {};
         const nextNotes: Record<string, string> = {};
         const nextExistingIds: Record<string, string> = {};
@@ -474,7 +575,11 @@ export function TeachingAssignTeachersContent() {
         rows.forEach((row) => {
           const classCode = (row.classCode ?? "").trim().toUpperCase();
           const teacherCode = (row.teacherCode ?? "").trim().toUpperCase();
-          if (!classCode || !teacherCode || !availableClassCodes.has(classCode)) {
+          if (
+            !classCode ||
+            !teacherCode ||
+            !availableClassCodes.has(classCode)
+          ) {
             return;
           }
 
@@ -518,12 +623,23 @@ export function TeachingAssignTeachersContent() {
     return () => {
       cancelled = true;
     };
-  }, [isAuthorized, selectedAcademicYear, selectedSemester, selectedSubject, allClasses, teacherOptions, isDepartmentManager, showToast]);
+  }, [
+    isAuthorized,
+    selectedAcademicYear,
+    selectedSemester,
+    selectedSubject,
+    allClasses,
+    teacherOptions,
+    isDepartmentManager,
+    showToast,
+  ]);
 
   const selectedAssignments = useMemo(() => {
     return allClasses
       .map((classItem) => {
-        const teacherCode = (assignments[classItem.code] ?? "").trim().toUpperCase();
+        const teacherCode = (assignments[classItem.code] ?? "")
+          .trim()
+          .toUpperCase();
         return {
           classCode: classItem.code,
           teacherCode,
@@ -537,11 +653,18 @@ export function TeachingAssignTeachersContent() {
       return false;
     }
 
-    return allClasses.every((classItem) => (assignments[classItem.code] ?? "").trim().length > 0);
+    return allClasses.every(
+      (classItem) => (assignments[classItem.code] ?? "").trim().length > 0,
+    );
   }, [allClasses, assignments]);
 
   useEffect(() => {
-    if (!isAuthorized || !selectedAcademicYear || !selectedSemester || !selectedSubject) {
+    if (
+      !isAuthorized ||
+      !selectedAcademicYear ||
+      !selectedSemester ||
+      !selectedSubject
+    ) {
       setInlineIssuesByClass({});
       setDuplicateConflicts([]);
       setMissingTimetableClasses([]);
@@ -577,15 +700,21 @@ export function TeachingAssignTeachersContent() {
           }
 
           const result = response.data;
-          const missing = Array.isArray(result?.missingTimetableClasses) ? result.missingTimetableClasses : [];
-          const conflictsRaw = Array.isArray(result?.conflicts) ? result.conflicts : [];
+          const missing = Array.isArray(result?.missingTimetableClasses)
+            ? result.missingTimetableClasses
+            : [];
+          const conflictsRaw = Array.isArray(result?.conflicts)
+            ? result.conflicts
+            : [];
           const issuesByClass: Record<string, string[]> = {};
 
           missing.forEach((classCode) => {
             if (!issuesByClass[classCode]) {
               issuesByClass[classCode] = [];
             }
-            issuesByClass[classCode].push("Chưa có thời khóa biểu cho lớp và môn này.");
+            issuesByClass[classCode].push(
+              "Chưa có thời khóa biểu cho lớp và môn này.",
+            );
           });
 
           const conflicts: DuplicateConflict[] = conflictsRaw.map((item) => ({
@@ -595,13 +724,18 @@ export function TeachingAssignTeachersContent() {
             dayOfWeek: Number(item.dayOfWeek ?? 0),
             periodStart: Number(item.periodStart ?? 0),
             periodEnd: Number(item.periodEnd ?? 0),
-            affectedClasses: Array.isArray(item.affectedClasses) ? item.affectedClasses : [],
+            affectedClasses: Array.isArray(item.affectedClasses)
+              ? item.affectedClasses
+              : [],
           }));
 
           conflicts.forEach((conflict) => {
-            const dayLabel = DAYS_LABEL[conflict.dayOfWeek] ?? `Thứ ${conflict.dayOfWeek}`;
+            const dayLabel =
+              DAYS_LABEL[conflict.dayOfWeek] ?? `Thứ ${conflict.dayOfWeek}`;
             conflict.affectedClasses.forEach((classCode) => {
-              const relatedClasses = conflict.affectedClasses.filter((value) => value !== classCode).join(", ");
+              const relatedClasses = conflict.affectedClasses
+                .filter((value) => value !== classCode)
+                .join(", ");
               const conflictMessage = relatedClasses
                 ? `Trùng lịch ${dayLabel} tiết ${conflict.periodStart}-${conflict.periodEnd} với lớp ${relatedClasses}.`
                 : `Trùng lịch ${dayLabel} tiết ${conflict.periodStart}-${conflict.periodEnd}.`;
@@ -614,17 +748,23 @@ export function TeachingAssignTeachersContent() {
           });
 
           Object.keys(issuesByClass).forEach((classCode) => {
-            issuesByClass[classCode] = Array.from(new Set(issuesByClass[classCode]));
+            issuesByClass[classCode] = Array.from(
+              new Set(issuesByClass[classCode]),
+            );
           });
 
           setInlineIssuesByClass(issuesByClass);
           setDuplicateConflicts(conflicts);
           setMissingTimetableClasses(missing);
-          setCanSave(areAllClassesAssigned && Object.keys(issuesByClass).length === 0);
+          setCanSave(
+            areAllClassesAssigned && Object.keys(issuesByClass).length === 0,
+          );
         } catch {
           if (!cancelled) {
             setCanSave(false);
-            setLiveCheckError("Không thể kiểm tra trùng lịch tự động. Bạn có thể kiểm tra lại thủ công.");
+            setLiveCheckError(
+              "Không thể kiểm tra trùng lịch tự động. Bạn có thể kiểm tra lại thủ công.",
+            );
           }
         } finally {
           if (!cancelled) {
@@ -664,7 +804,8 @@ export function TeachingAssignTeachersContent() {
           }
         />
         <Panel className="border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
-          Chỉ ADMIN hoặc tổ trưởng/tổ phó (departmentLevel 1-2) mới được phân công giáo viên.
+          Chỉ ADMIN hoặc tổ trưởng/tổ phó (departmentLevel 1-2) mới được phân
+          công giáo viên.
         </Panel>
       </div>
     );
@@ -695,11 +836,19 @@ export function TeachingAssignTeachersContent() {
     }));
   };
 
-  const handleTeacherBadgeEnter = (teacherCode: string, x: number, y: number) => {
+  const handleTeacherBadgeEnter = (
+    teacherCode: string,
+    x: number,
+    y: number,
+  ) => {
     setHoveredTeacher({ code: teacherCode, x, y });
   };
 
-  const handleTeacherBadgeMove = (teacherCode: string, x: number, y: number) => {
+  const handleTeacherBadgeMove = (
+    teacherCode: string,
+    x: number,
+    y: number,
+  ) => {
     setHoveredTeacher((current) => {
       if (!current || current.code !== teacherCode) {
         return { code: teacherCode, x, y };
@@ -747,8 +896,12 @@ export function TeachingAssignTeachersContent() {
       });
 
       const result = response.data;
-      const missing = Array.isArray(result?.missingTimetableClasses) ? result.missingTimetableClasses : [];
-      const conflictsRaw = Array.isArray(result?.conflicts) ? result.conflicts : [];
+      const missing = Array.isArray(result?.missingTimetableClasses)
+        ? result.missingTimetableClasses
+        : [];
+      const conflictsRaw = Array.isArray(result?.conflicts)
+        ? result.conflicts
+        : [];
 
       const conflicts = conflictsRaw.map((item) => ({
         teacherCode: item.teacherCode ?? "",
@@ -757,20 +910,30 @@ export function TeachingAssignTeachersContent() {
         dayOfWeek: Number(item.dayOfWeek ?? 0),
         periodStart: Number(item.periodStart ?? 0),
         periodEnd: Number(item.periodEnd ?? 0),
-        affectedClasses: Array.isArray(item.affectedClasses) ? item.affectedClasses : [],
+        affectedClasses: Array.isArray(item.affectedClasses)
+          ? item.affectedClasses
+          : [],
       }));
 
       setMissingTimetableClasses(missing);
       setDuplicateConflicts(conflicts);
-      setCanSave(missing.length === 0 && conflicts.length === 0 && areAllClassesAssigned);
+      setCanSave(
+        missing.length === 0 && conflicts.length === 0 && areAllClassesAssigned,
+      );
 
       if (missing.length === 0 && conflicts.length === 0) {
         showToast("Không có trùng lịch. Có thể lưu phân công.", "success");
       } else {
-        showToast("Phát hiện vấn đề trùng lịch hoặc thiếu thời khóa biểu. Xem chi tiết ngay trên từng lớp.", "info");
+        showToast(
+          "Phát hiện vấn đề trùng lịch hoặc thiếu thời khóa biểu. Xem chi tiết ngay trên từng lớp.",
+          "info",
+        );
       }
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Lỗi kiểm tra trùng lặp", "error");
+      showToast(
+        error instanceof Error ? error.message : "Lỗi kiểm tra trùng lặp",
+        "error",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -824,7 +987,10 @@ export function TeachingAssignTeachersContent() {
         `/teaching-assignments?academicYear=${encodeURIComponent(selectedAcademicYear)}&semester=${encodeURIComponent(selectedSemester)}&subject=${encodeURIComponent(selectedSubject)}`,
       );
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Lỗi lưu phân công", "error");
+      showToast(
+        error instanceof Error ? error.message : "Lỗi lưu phân công",
+        "error",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -838,25 +1004,36 @@ export function TeachingAssignTeachersContent() {
           style={{ left: hoveredTeacher.x + 14, top: hoveredTeacher.y + 14 }}
         >
           <p className="text-xs font-semibold text-slate-900">
-            {teacherNameByCode.get(hoveredTeacher.code) ?? hoveredTeacher.code} ({hoveredTeacher.code})
+            {teacherNameByCode.get(hoveredTeacher.code) ?? hoveredTeacher.code}{" "}
+            ({hoveredTeacher.code})
           </p>
           <p className="mt-2 text-xs font-semibold text-slate-700">
-            Tổng số tiết: {teacherInsights[hoveredTeacher.code]?.totalPeriods ?? 0}
+            Tổng số tiết:{" "}
+            {teacherInsights[hoveredTeacher.code]?.totalPeriods ?? 0}
           </p>
-          <p className="mt-2 text-xs font-semibold text-slate-700">Các lớp đang dạy</p>
+          <p className="mt-2 text-xs font-semibold text-slate-700">
+            Các lớp đang dạy
+          </p>
           <p className="mt-1 text-xs text-slate-600">
             {teacherInsights[hoveredTeacher.code]?.classes.length
               ? teacherInsights[hoveredTeacher.code].classes.join(", ")
               : "Chưa có"}
           </p>
-          <p className="mt-2 text-xs font-semibold text-slate-700">Lịch bị trùng</p>
+          <p className="mt-2 text-xs font-semibold text-slate-700">
+            Lịch bị trùng
+          </p>
           {teacherInsights[hoveredTeacher.code]?.conflicts.length ? (
             <div className="mt-1 space-y-1">
-              {teacherInsights[hoveredTeacher.code].conflicts.map((conflictText) => (
-                <p key={`${hoveredTeacher.code}-${conflictText}`} className="text-xs text-rose-700">
-                  • {conflictText}
-                </p>
-              ))}
+              {teacherInsights[hoveredTeacher.code].conflicts.map(
+                (conflictText) => (
+                  <p
+                    key={`${hoveredTeacher.code}-${conflictText}`}
+                    className="text-xs text-rose-700"
+                  >
+                    • {conflictText}
+                  </p>
+                ),
+              )}
             </div>
           ) : (
             <p className="mt-1 text-xs text-emerald-700">Không có trùng lịch</p>
@@ -883,7 +1060,9 @@ export function TeachingAssignTeachersContent() {
       <Panel className="p-5 sm:p-6">
         <div className="grid gap-4 sm:grid-cols-4">
           <div className="grid gap-1.5">
-            <label className="text-sm font-semibold text-slate-700">Năm học</label>
+            <label className="text-sm font-semibold text-slate-700">
+              Năm học
+            </label>
             <select
               value={selectedAcademicYear}
               onChange={(e) => setSelectedAcademicYear(e.target.value)}
@@ -899,7 +1078,9 @@ export function TeachingAssignTeachersContent() {
           </div>
 
           <div className="grid gap-1.5">
-            <label className="text-sm font-semibold text-slate-700">Học kỳ</label>
+            <label className="text-sm font-semibold text-slate-700">
+              Học kỳ
+            </label>
             <select
               value={selectedSemester}
               onChange={(e) => setSelectedSemester(e.target.value)}
@@ -911,7 +1092,9 @@ export function TeachingAssignTeachersContent() {
           </div>
 
           <div className="grid gap-1.5 sm:col-span-2">
-            <label className="text-sm font-semibold text-slate-700">Môn (để phân công)</label>
+            <label className="text-sm font-semibold text-slate-700">
+              Môn (để phân công)
+            </label>
             <select
               value={selectedSubject}
               onChange={(e) => setSelectedSubject(e.target.value)}
@@ -929,7 +1112,9 @@ export function TeachingAssignTeachersContent() {
 
         <div className="mt-4 grid gap-4 md:grid-cols-[1.3fr_0.7fr]">
           <div className="grid gap-1.5">
-            <label className="text-sm font-semibold text-slate-700">Lọc lớp cần phân công</label>
+            <label className="text-sm font-semibold text-slate-700">
+              Lọc lớp cần phân công
+            </label>
             <input
               value={classQuery}
               onChange={(e) => setClassQuery(e.target.value)}
@@ -940,10 +1125,20 @@ export function TeachingAssignTeachersContent() {
 
           <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
             <p className="font-semibold text-slate-900">Tiến độ phân công</p>
-            <p className="mt-1 text-slate-700">Đã gán: {assignmentProgress.assigned}/{assignmentProgress.total}</p>
-            <p className="text-slate-700">Chưa gán: {assignmentProgress.unassigned}</p>
-            <p className="text-slate-700">Hoàn thành: {assignmentProgress.completionRate}%</p>
-            <p className="mt-1 text-xs text-slate-500">{isLiveChecking ? "Đang kiểm tra trùng lịch tự động..." : "Hệ thống tự động kiểm tra trùng lịch khi đổi giáo viên."}</p>
+            <p className="mt-1 text-slate-700">
+              Đã gán: {assignmentProgress.assigned}/{assignmentProgress.total}
+            </p>
+            <p className="text-slate-700">
+              Chưa gán: {assignmentProgress.unassigned}
+            </p>
+            <p className="text-slate-700">
+              Hoàn thành: {assignmentProgress.completionRate}%
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
+              {isLiveChecking
+                ? "Đang kiểm tra trùng lịch tự động..."
+                : "Hệ thống tự động kiểm tra trùng lịch khi đổi giáo viên."}
+            </p>
           </div>
         </div>
 
@@ -956,46 +1151,77 @@ export function TeachingAssignTeachersContent() {
 
       <Panel className="overflow-hidden p-0">
         <div className="border-b border-slate-200 bg-slate-50 px-6 py-3">
-          <h3 className="text-sm font-semibold text-slate-900">Danh sách lớp theo môn đã chọn ({classRows.length} lớp)</h3>
+          <h3 className="text-sm font-semibold text-slate-900">
+            Danh sách lớp theo môn đã chọn ({classRows.length} lớp)
+          </h3>
         </div>
 
         {classRows.length === 0 ? (
-          <div className="px-6 py-4 text-sm text-slate-500">Không có lớp phù hợp bộ lọc hoặc chưa có thời khóa biểu cho môn đã chọn.</div>
+          <div className="px-6 py-4 text-sm text-slate-500">
+            Không có lớp phù hợp bộ lọc hoặc chưa có thời khóa biểu cho môn đã
+            chọn.
+          </div>
         ) : (
           <>
             <div className="hidden overflow-x-auto lg:block">
               <table className="w-full min-w-[960px] text-sm">
                 <thead>
                   <tr className="bg-slate-100 text-left text-slate-700">
-                    <th className="w-44 border-b border-r border-slate-200 px-4 py-3 font-semibold">Lớp</th>
-                    <th className="w-80 border-b border-r border-slate-200 px-4 py-3 font-semibold">Giáo viên phụ trách</th>
-                    <th className="w-80 border-b border-r border-slate-200 px-4 py-3 font-semibold">Lịch học</th>
-                    <th className="w-24 border-b border-r border-slate-200 px-4 py-3 font-semibold">Số tiết</th>
-                    <th className="w-80 border-b border-r border-slate-200 px-4 py-3 font-semibold">Trạng thái</th>
-                    <th className="w-80 border-b border-slate-200 px-4 py-3 font-semibold">Ghi chú</th>
+                    <th className="w-44 border-b border-r border-slate-200 px-4 py-3 font-semibold">
+                      Lớp
+                    </th>
+                    <th className="w-80 border-b border-r border-slate-200 px-4 py-3 font-semibold">
+                      Giáo viên phụ trách
+                    </th>
+                    <th className="w-80 border-b border-r border-slate-200 px-4 py-3 font-semibold">
+                      Lịch học
+                    </th>
+                    <th className="w-24 border-b border-r border-slate-200 px-4 py-3 font-semibold">
+                      Số tiết
+                    </th>
+                    <th className="w-80 border-b border-r border-slate-200 px-4 py-3 font-semibold">
+                      Trạng thái
+                    </th>
+                    <th className="w-80 border-b border-slate-200 px-4 py-3 font-semibold">
+                      Ghi chú
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {classRows.map((row) => {
                     const selectedTeacherCode = assignments[row.code] ?? "";
-                    const timetableSlots = (subjectTimetableByClass[row.code] ?? [])
+                    const timetableSlots = (
+                      subjectTimetableByClass[row.code] ?? []
+                    )
                       .slice()
-                      .sort((a, b) => (a.dayOfWeek - b.dayOfWeek) || (a.periodStart - b.periodStart));
+                      .sort(
+                        (a, b) =>
+                          a.dayOfWeek - b.dayOfWeek ||
+                          a.periodStart - b.periodStart,
+                      );
                     const issues = inlineIssuesByClass[row.code] ?? [];
                     const periodCount = classPeriodCountByCode[row.code] ?? 0;
                     const note = notesByClass[row.code] ?? "";
-                    const teacherLabel = teacherNameByCode.get(selectedTeacherCode) ?? selectedTeacherCode;
+                    const teacherLabel =
+                      teacherNameByCode.get(selectedTeacherCode) ??
+                      selectedTeacherCode;
 
                     return (
                       <tr key={row.code} className="align-top">
                         <td className="border-b border-r border-slate-200 px-4 py-3">
-                          <p className="font-semibold text-slate-900">{row.code}</p>
-                          <p className="text-xs text-slate-500">{row.name} · Khối {row.grade}</p>
+                          <p className="font-semibold text-slate-900">
+                            {row.code}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {row.name} · Khối {row.grade}
+                          </p>
                         </td>
                         <td className="border-b border-r border-slate-200 px-4 py-3">
                           <select
                             value={selectedTeacherCode}
-                            onChange={(e) => handleTeacherChange(row.code, e.target.value)}
+                            onChange={(e) =>
+                              handleTeacherChange(row.code, e.target.value)
+                            }
                             className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm"
                           >
                             <option value="">-- Chọn giáo viên --</option>
@@ -1010,8 +1236,20 @@ export function TeachingAssignTeachersContent() {
                             <div className="mt-2 inline-flex">
                               <span
                                 className="cursor-default rounded-md border border-sky-200 bg-sky-50 px-2 py-1 text-xs font-medium text-sky-700"
-                                onMouseEnter={(event) => handleTeacherBadgeEnter(selectedTeacherCode, event.clientX, event.clientY)}
-                                onMouseMove={(event) => handleTeacherBadgeMove(selectedTeacherCode, event.clientX, event.clientY)}
+                                onMouseEnter={(event) =>
+                                  handleTeacherBadgeEnter(
+                                    selectedTeacherCode,
+                                    event.clientX,
+                                    event.clientY,
+                                  )
+                                }
+                                onMouseMove={(event) =>
+                                  handleTeacherBadgeMove(
+                                    selectedTeacherCode,
+                                    event.clientX,
+                                    event.clientY,
+                                  )
+                                }
                                 onMouseLeave={handleTeacherBadgeLeave}
                               >
                                 {teacherLabel} ({selectedTeacherCode})
@@ -1031,19 +1269,25 @@ export function TeachingAssignTeachersContent() {
                                   key={`${row.code}-${slot.dayOfWeek}-${slot.periodStart}-${slot.periodEnd}-${index}`}
                                   className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-700"
                                 >
-                                  {DAYS_LABEL[slot.dayOfWeek] ?? `Thứ ${slot.dayOfWeek}`}: Tiết {slot.periodStart}-{slot.periodEnd}
+                                  {DAYS_LABEL[slot.dayOfWeek] ??
+                                    `Thứ ${slot.dayOfWeek}`}
+                                  : Tiết {slot.periodStart}-{slot.periodEnd}
                                 </span>
                               ))
                             )}
                           </div>
                         </td>
-                        <td className="border-b border-r border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700">{periodCount}</td>
+                        <td className="border-b border-r border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700">
+                          {periodCount}
+                        </td>
                         <td className="border-b border-r border-slate-200 px-4 py-3">
                           {selectedTeacherCode ? (
                             issues.length > 0 ? (
                               <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
                                 {issues.map((message) => (
-                                  <p key={`${row.code}-${message}`}>{message}</p>
+                                  <p key={`${row.code}-${message}`}>
+                                    {message}
+                                  </p>
                                 ))}
                               </div>
                             ) : (
@@ -1052,13 +1296,17 @@ export function TeachingAssignTeachersContent() {
                               </div>
                             )
                           ) : (
-                            <p className="text-xs text-slate-500">Chọn giáo viên để kiểm tra trùng lịch ngay.</p>
+                            <p className="text-xs text-slate-500">
+                              Chọn giáo viên để kiểm tra trùng lịch ngay.
+                            </p>
                           )}
                         </td>
                         <td className="border-b border-slate-200 px-4 py-3">
                           <input
                             value={note}
-                            onChange={(e) => handleNoteChange(row.code, e.target.value)}
+                            onChange={(e) =>
+                              handleNoteChange(row.code, e.target.value)
+                            }
                             placeholder="Nhập ghi chú cho lớp này..."
                             className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm"
                           />
@@ -1075,22 +1323,39 @@ export function TeachingAssignTeachersContent() {
                 const selectedTeacherCode = assignments[row.code] ?? "";
                 const timetableSlots = (subjectTimetableByClass[row.code] ?? [])
                   .slice()
-                  .sort((a, b) => (a.dayOfWeek - b.dayOfWeek) || (a.periodStart - b.periodStart));
+                  .sort(
+                    (a, b) =>
+                      a.dayOfWeek - b.dayOfWeek ||
+                      a.periodStart - b.periodStart,
+                  );
                 const issues = inlineIssuesByClass[row.code] ?? [];
                 const periodCount = classPeriodCountByCode[row.code] ?? 0;
                 const note = notesByClass[row.code] ?? "";
-                const teacherLabel = teacherNameByCode.get(selectedTeacherCode) ?? selectedTeacherCode;
+                const teacherLabel =
+                  teacherNameByCode.get(selectedTeacherCode) ??
+                  selectedTeacherCode;
 
                 return (
-                  <div key={`mobile-${row.code}`} className="rounded-xl border border-slate-200 p-4">
-                    <p className="text-sm font-semibold text-slate-900">{row.code} · {row.name}</p>
-                    <p className="mt-1 text-xs text-slate-500">Khối {row.grade}</p>
+                  <div
+                    key={`mobile-${row.code}`}
+                    className="rounded-xl border border-slate-200 p-4"
+                  >
+                    <p className="text-sm font-semibold text-slate-900">
+                      {row.code} · {row.name}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      Khối {row.grade}
+                    </p>
 
                     <div className="mt-3">
-                      <label className="mb-1 block text-xs font-semibold text-slate-700">Giáo viên phụ trách</label>
+                      <label className="mb-1 block text-xs font-semibold text-slate-700">
+                        Giáo viên phụ trách
+                      </label>
                       <select
                         value={selectedTeacherCode}
-                        onChange={(e) => handleTeacherChange(row.code, e.target.value)}
+                        onChange={(e) =>
+                          handleTeacherChange(row.code, e.target.value)
+                        }
                         className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm"
                       >
                         <option value="">-- Chọn giáo viên --</option>
@@ -1105,8 +1370,20 @@ export function TeachingAssignTeachersContent() {
                         <div className="mt-2 inline-flex">
                           <span
                             className="rounded-md border border-sky-200 bg-sky-50 px-2 py-1 text-xs font-medium text-sky-700"
-                            onMouseEnter={(event) => handleTeacherBadgeEnter(selectedTeacherCode, event.clientX, event.clientY)}
-                            onMouseMove={(event) => handleTeacherBadgeMove(selectedTeacherCode, event.clientX, event.clientY)}
+                            onMouseEnter={(event) =>
+                              handleTeacherBadgeEnter(
+                                selectedTeacherCode,
+                                event.clientX,
+                                event.clientY,
+                              )
+                            }
+                            onMouseMove={(event) =>
+                              handleTeacherBadgeMove(
+                                selectedTeacherCode,
+                                event.clientX,
+                                event.clientY,
+                              )
+                            }
                             onMouseLeave={handleTeacherBadgeLeave}
                           >
                             {teacherLabel} ({selectedTeacherCode})
@@ -1126,14 +1403,19 @@ export function TeachingAssignTeachersContent() {
                             key={`mobile-slot-${row.code}-${slot.dayOfWeek}-${slot.periodStart}-${slot.periodEnd}-${index}`}
                             className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-700"
                           >
-                            {DAYS_LABEL[slot.dayOfWeek] ?? `Thứ ${slot.dayOfWeek}`}: Tiết {slot.periodStart}-{slot.periodEnd}
+                            {DAYS_LABEL[slot.dayOfWeek] ??
+                              `Thứ ${slot.dayOfWeek}`}
+                            : Tiết {slot.periodStart}-{slot.periodEnd}
                           </span>
                         ))
                       )}
                     </div>
 
                     <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
-                      Số tiết: <span className="font-semibold text-slate-900">{periodCount}</span>
+                      Số tiết:{" "}
+                      <span className="font-semibold text-slate-900">
+                        {periodCount}
+                      </span>
                     </div>
 
                     <div className="mt-3">
@@ -1141,7 +1423,9 @@ export function TeachingAssignTeachersContent() {
                         issues.length > 0 ? (
                           <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
                             {issues.map((message) => (
-                              <p key={`mobile-${row.code}-${message}`}>{message}</p>
+                              <p key={`mobile-${row.code}-${message}`}>
+                                {message}
+                              </p>
                             ))}
                           </div>
                         ) : (
@@ -1150,15 +1434,21 @@ export function TeachingAssignTeachersContent() {
                           </div>
                         )
                       ) : (
-                        <p className="text-xs text-slate-500">Chọn giáo viên để kiểm tra trùng lịch ngay.</p>
+                        <p className="text-xs text-slate-500">
+                          Chọn giáo viên để kiểm tra trùng lịch ngay.
+                        </p>
                       )}
                     </div>
 
                     <div className="mt-3">
-                      <label className="mb-1 block text-xs font-semibold text-slate-700">Ghi chú</label>
+                      <label className="mb-1 block text-xs font-semibold text-slate-700">
+                        Ghi chú
+                      </label>
                       <input
                         value={note}
-                        onChange={(e) => handleNoteChange(row.code, e.target.value)}
+                        onChange={(e) =>
+                          handleNoteChange(row.code, e.target.value)
+                        }
                         placeholder="Nhập ghi chú cho lớp này..."
                         className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm"
                       />
@@ -1172,13 +1462,24 @@ export function TeachingAssignTeachersContent() {
       </Panel>
 
       <div className="flex justify-end gap-3">
-        <Button tone="ghost" onClick={clearAllAssignments} disabled={isLoading || isSaving}>
-          Reset phân công
+        <Button
+          tone="ghost"
+          onClick={clearAllAssignments}
+          disabled={isLoading || isSaving}
+        >
+          Đặt lại phân công
         </Button>
-        <Button tone="secondary" onClick={checkDuplicate} disabled={isLoading || isSaving}>
+        <Button
+          tone="secondary"
+          onClick={checkDuplicate}
+          disabled={isLoading || isSaving}
+        >
           Kiểm tra lại
         </Button>
-        <Button onClick={handleSave} disabled={isLoading || isSaving || !canSave}>
+        <Button
+          onClick={handleSave}
+          disabled={isLoading || isSaving || !canSave}
+        >
           {isSaving ? "Đang lưu..." : "Lưu phân công"}
         </Button>
       </div>
@@ -1198,10 +1499,15 @@ export function TeachingAssignTeachersContent() {
           </div>
           <div className="mt-2 space-y-1">
             {missingTimetableClasses.length > 0 ? (
-              <p>Chưa có thời khóa biểu cho: {missingTimetableClasses.join(", ")}</p>
+              <p>
+                Chưa có thời khóa biểu cho: {missingTimetableClasses.join(", ")}
+              </p>
             ) : null}
             {duplicateConflicts.length > 0 ? (
-              <p>Phát hiện {duplicateConflicts.length} xung đột lịch dạy. Chi tiết đã hiển thị trực tiếp theo từng lớp.</p>
+              <p>
+                Phát hiện {duplicateConflicts.length} xung đột lịch dạy. Chi
+                tiết đã hiển thị trực tiếp theo từng lớp.
+              </p>
             ) : null}
           </div>
         </div>

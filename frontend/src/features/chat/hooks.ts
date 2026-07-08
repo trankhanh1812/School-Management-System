@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { Client, IMessage } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
-import { env } from '@/lib/env';
+import { useEffect, useRef, useState } from "react";
+import { Client, IMessage } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
+import { env } from "@/lib/env";
 
 export interface ChatWebSocketMessage {
   action: string;
@@ -33,7 +33,7 @@ export const useChatWebSocket = (token: string | null | undefined) => {
     const sockUrl = `${apiUrl.protocol}//${apiUrl.host}/ws?token=${encodeURIComponent(token)}`;
 
     const client = new Client({
-      connectHeaders: {},
+      connectHeaders: { token },
       debug: (str) => {
         // console.debug('STOMP:', str);
       },
@@ -43,7 +43,7 @@ export const useChatWebSocket = (token: string | null | undefined) => {
         setConnected(true);
       },
       onStompError: (frame) => {
-        console.error('STOMP error', frame);
+        console.error("STOMP error", frame);
         setConnected(false);
       },
       onDisconnect: () => {
@@ -56,7 +56,9 @@ export const useChatWebSocket = (token: string | null | undefined) => {
 
     return () => {
       try {
-        Object.values(subscriptionsRef.current).forEach((s: any) => s.unsubscribe && s.unsubscribe());
+        Object.values(subscriptionsRef.current).forEach(
+          (s: any) => s.unsubscribe && s.unsubscribe(),
+        );
       } catch {}
       client.deactivate();
       clientRef.current = null;
@@ -67,12 +69,15 @@ export const useChatWebSocket = (token: string | null | undefined) => {
 
   const _handleIncoming = (payload: any) => {
     try {
-      const body = typeof payload === 'string' ? JSON.parse(payload) : JSON.parse(payload.body || '{}');
+      const body =
+        typeof payload === "string"
+          ? JSON.parse(payload)
+          : JSON.parse(payload.body || "{}");
       const msg = body as ChatWebSocketMessage;
       setMessages((prev) => [...prev, msg]);
       listenersRef.current.forEach((l) => l(msg));
     } catch (e) {
-      console.error('Failed to parse STOMP message', e);
+      console.error("Failed to parse STOMP message", e);
     }
   };
 
@@ -83,7 +88,10 @@ export const useChatWebSocket = (token: string | null | undefined) => {
     };
   };
 
-  const subscribeToGroup = (groupId: string, listener?: (msg: ChatWebSocketMessage) => void) => {
+  const subscribeToGroup = (
+    groupId: string,
+    listener?: (msg: ChatWebSocketMessage) => void,
+  ) => {
     const client = clientRef.current;
     if (!client || !client.connected) {
       return () => {};

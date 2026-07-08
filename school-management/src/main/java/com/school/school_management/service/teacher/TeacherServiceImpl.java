@@ -1,5 +1,21 @@
 package com.school.school_management.service.teacher;
 
+import java.time.OffsetDateTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.school.school_management.dto.teacher.AvailableHomeroomTeacherResponse;
 import com.school.school_management.dto.teacher.TeacherAssignmentResponse;
 import com.school.school_management.dto.teacher.TeacherDepartmentResponse;
@@ -18,20 +34,6 @@ import com.school.school_management.repository.RoleRepository;
 import com.school.school_management.repository.TeacherRepository;
 import com.school.school_management.repository.TeachingAssignmentRepository;
 import com.school.school_management.repository.UserRepository;
-import java.time.OffsetDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -101,6 +103,8 @@ public class TeacherServiceImpl implements TeacherService {
             .passwordHash(passwordEncoder.encode(teacherCode))
             .fullName(normalizeText(request.getFullName(), "Full name is required"))
             .status(defaultStatus(request.getStatus()))
+            // Mật khẩu mặc định = mã giáo viên (dễ đoán) → buộc đổi ở lần đăng nhập đầu.
+            .forcePasswordChange(true)
             .build();
 
         Role role = getOrCreateTeacherRole();
@@ -425,7 +429,7 @@ public class TeacherServiceImpl implements TeacherService {
 
     private NameParts splitFullName(String fullName) {
         String normalized = normalizeText(fullName, "Full name is required");
-        String[] parts = normalized.split("\\\\s+");
+        String[] parts = normalized.split("\\s+");
         if (parts.length == 1) {
             return new NameParts(parts[0], "");
         }

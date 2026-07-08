@@ -102,7 +102,7 @@ export const scoreApi = {
     });
 
     if (!response.ok) {
-      throw new Error("Khong the tai template diem");
+      throw new Error("Không thể tải mẫu điểm");
     }
 
     return response.blob();
@@ -122,7 +122,7 @@ export const scoreApi = {
     });
 
     if (!response.ok) {
-      throw new Error("Khong the tao preview diem");
+      throw new Error("Không thể tạo bản xem trước điểm");
     }
 
     const payload = (await response.json()) as ApiResponse<ScoreImportPreviewResponse>;
@@ -143,7 +143,7 @@ export const scoreApi = {
     });
 
     if (!response.ok) {
-      throw new Error("Import diem that bai");
+      throw new Error("Nhập điểm thất bại");
     }
 
     const payload = (await response.json()) as ApiResponse<ScoreImportPreviewResponse>;

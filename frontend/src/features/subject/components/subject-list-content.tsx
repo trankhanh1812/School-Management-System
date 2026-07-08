@@ -16,7 +16,9 @@ export function SubjectListContent() {
   const [deletingCode, setDeletingCode] = useState<string | null>(null);
 
   async function handleDelete(subjectCode: string) {
-    const confirmed = window.confirm(`Bạn có chắc chắn muốn xóa môn ${subjectCode}?`);
+    const confirmed = window.confirm(
+      `Bạn có chắc chắn muốn xóa môn ${subjectCode}?`,
+    );
     if (!confirmed) {
       return;
     }
@@ -27,7 +29,12 @@ export function SubjectListContent() {
       await refresh();
       showToast(`Đã xóa môn ${subjectCode}.`, "success");
     } catch (deleteError) {
-      showToast(deleteError instanceof Error ? deleteError.message : "Không thể xóa môn học.", "error");
+      showToast(
+        deleteError instanceof Error
+          ? deleteError.message
+          : "Không thể xóa môn học.",
+        "error",
+      );
     } finally {
       setDeletingCode(null);
     }
@@ -58,12 +65,22 @@ export function SubjectListContent() {
       )}
 
       {isLoading ? (
-        <Panel className="p-4 text-sm text-slate-500">Đang tải danh sách môn học...</Panel>
+        <Panel className="p-4 text-sm text-slate-500">
+          Đang tải danh sách môn học...
+        </Panel>
       ) : (
         <DataTable
           title="Danh sách môn học"
-          description="Mỗi môn học liên kết trực tiếp với bộ môn và teaching assignment tương ứng."
-          columns={["Mã môn", "Tên môn", "Bộ môn", "Khối", "Trạng thái", "Số phân công", "Hành động"]}
+          description="Mỗi môn học liên kết trực tiếp với bộ môn và phân công giảng dạy tương ứng."
+          columns={[
+            "Mã môn",
+            "Tên môn",
+            "Bộ môn",
+            "Khối",
+            "Trạng thái",
+            "Số phân công",
+            "Hành động",
+          ]}
           rows={records.map((subject) => [
             subject.code,
             subject.name,
@@ -71,7 +88,10 @@ export function SubjectListContent() {
             subject.gradeLevel ? `Khối ${subject.gradeLevel}` : "Chưa cập nhật",
             subject.status,
             String(subject.assignmentCount),
-            <div key={`actions-${subject.code}`} className="flex items-center gap-2">
+            <div
+              key={`actions-${subject.code}`}
+              className="flex items-center gap-2"
+            >
               <Link
                 href={`/subjects/${subject.code}/edit`}
                 className="inline-flex items-center justify-center rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"

@@ -1,5 +1,25 @@
 package com.school.school_management.service.classroom;
 
+import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.school.school_management.dto.classroom.PromotionImportPreviewResponse;
 import com.school.school_management.entity.AcademicYear;
 import com.school.school_management.entity.PromotionLog;
@@ -14,23 +34,6 @@ import com.school.school_management.repository.SchoolClassRepository;
 import com.school.school_management.repository.StudentClassRepository;
 import com.school.school_management.repository.StudentRepository;
 import com.school.school_management.repository.UserRepository;
-import java.io.InputStream;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.DataFormatter;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Transactional
@@ -86,13 +89,44 @@ public class PromotionImportServiceImpl implements PromotionImportService {
                 : schoolClassRepository.findByClassCodeAndDeletedAtIsNull(normalize(row.getProposedClass())).orElse(null);
             AcademicYear toAcademicYear = academicYearRepository.findByCode(normalize(row.getNextAcademicYear())).orElse(null);
 
+            String action = normalizeAction(row.getAction());
+            boolean isDropout = "dropout".equalsIgnoreCase(action);
+
+            // Idempotency: if the student already has a class mapping in the target year,
+            // this promotion was already applied — skip to avoid duplicate rows / constraint
+            // violation on the unique (student_id, academic_year_id) index.
+            if (toAcademicYear != null
+                    && studentClassRepository.findByStudentAndAcademicYear(student, toAcademicYear).isPresent()) {
+                continue;
+            }
+
+            // 1) Close the current active class mapping (the student finished that year).
+            if (activeMapping != null) {
+                activeMapping.setEndDate(LocalDate.now());
+                activeMapping.setStatus(isDropout ? "DROPPED" : "COMPLETED");
+                studentClassRepository.save(activeMapping);
+            }
+
+            // 2) Enrol the student into the next class/year (promote or repeat). Dropouts leave.
+            if (!isDropout && toClass != null && toAcademicYear != null) {
+                studentClassRepository.save(StudentClass.builder()
+                    .student(student)
+                    .schoolClass(toClass)
+                    .academicYear(toAcademicYear)
+                    .startDate(LocalDate.now())
+                    .status("ACTIVE")
+                    .transferReason("Xét lên lớp (" + action + ")")
+                    .build());
+            }
+
+            // 3) Record the promotion history.
             promotionLogRepository.save(PromotionLog.builder()
                 .student(student)
                 .fromClass(fromClass)
                 .toClass(toClass)
                 .fromAcademicYear(fromAcademicYear)
                 .toAcademicYear(toAcademicYear)
-                .promotionResult(normalizeAction(row.getAction()).toUpperCase(Locale.ROOT))
+                .promotionResult(action.toUpperCase(Locale.ROOT))
                 .promotedBy(currentUser.getId())
                 .promotedAt(OffsetDateTime.now())
                 .build());

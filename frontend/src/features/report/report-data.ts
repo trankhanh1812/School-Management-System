@@ -1,6 +1,13 @@
-import { classroomRecords, promotionPlans } from "@/features/classroom/classroom-data";
+import {
+  classroomRecords,
+  promotionPlans,
+} from "@/features/classroom/classroom-data";
 import { studentRecords } from "@/features/student/student-data";
-import { departmentRecords, teacherRecords, teachingAssignments } from "@/features/teacher/teacher-data";
+import {
+  departmentRecords,
+  teacherRecords,
+  teachingAssignments,
+} from "@/features/teacher/teacher-data";
 
 const parseAverage = (value: string) => Number.parseFloat(value);
 
@@ -21,7 +28,7 @@ export const reportMetrics = [
     label: "Phân công giảng dạy",
     value: String(teachingAssignments.length),
     trend: "+4",
-    note: "Tổng teaching assignment theo giáo viên, môn, lớp và học kỳ.",
+    note: "Tổng phân công giảng dạy theo giáo viên, môn, lớp và học kỳ.",
   },
   {
     label: "Đề án promotion",
@@ -47,8 +54,10 @@ export const classPerformance = classroomRecords.map((classroom) => {
     (student) => student.className === classroom.className,
   );
   const average =
-    relatedStudents.reduce((sum, student) => sum + parseAverage(student.scoreAverage), 0) /
-    Math.max(relatedStudents.length, 1);
+    relatedStudents.reduce(
+      (sum, student) => sum + parseAverage(student.scoreAverage),
+      0,
+    ) / Math.max(relatedStudents.length, 1);
 
   return {
     className: classroom.className,
@@ -59,10 +68,13 @@ export const classPerformance = classroomRecords.map((classroom) => {
   };
 });
 
-export const conductDistribution = ["Tốt", "Khá", "Trung bình", "Yếu"].map((conduct) => ({
-  label: conduct,
-  value: studentRecords.filter((student) => student.conduct === conduct).length,
-}));
+export const conductDistribution = ["Tốt", "Khá", "Trung bình", "Yếu"].map(
+  (conduct) => ({
+    label: conduct,
+    value: studentRecords.filter((student) => student.conduct === conduct)
+      .length,
+  }),
+);
 
 export const academicRankDistribution = [
   { label: "Giỏi", min: 8 },
@@ -70,7 +82,8 @@ export const academicRankDistribution = [
   { label: "Trung bình", min: 5 },
   { label: "Cần hỗ trợ", min: 0 },
 ].map((rank, index, allRanks) => {
-  const nextMin = index === 0 ? Number.POSITIVE_INFINITY : allRanks[index - 1].min;
+  const nextMin =
+    index === 0 ? Number.POSITIVE_INFINITY : allRanks[index - 1].min;
 
   const count = studentRecords.filter((student) => {
     const score = parseAverage(student.scoreAverage);

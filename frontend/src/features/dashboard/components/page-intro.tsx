@@ -27,6 +27,7 @@ const breadcrumbLabels: Record<string, string> = {
   System: "Cấu hình hệ thống",
   Teachers: "Giáo viên",
   Teaching: "Phân công giảng dạy",
+  "Assign Teachers": "Phân công giáo viên",
   Timetable: "Thời khóa biểu",
   Test: "Kiểm thử",
 };
@@ -42,11 +43,7 @@ function normalizeEyebrow(value: string) {
     .join(" / ");
 }
 
-export function PageIntro({
-  eyebrow,
-  title,
-  actions,
-}: PageIntroProps) {
+export function PageIntro({ eyebrow, title, actions }: PageIntroProps) {
   const normalizedEyebrow = normalizeEyebrow(eyebrow);
 
   return (
@@ -60,7 +57,9 @@ export function PageIntro({
             {title}
           </h2>
         </div>
-        {actions ? <div className="flex shrink-0 flex-wrap gap-2.5">{actions}</div> : null}
+        {actions ? (
+          <div className="flex shrink-0 flex-wrap gap-2.5">{actions}</div>
+        ) : null}
       </div>
     </Panel>
   );

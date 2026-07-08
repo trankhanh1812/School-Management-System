@@ -1,5 +1,22 @@
 package com.school.school_management.service.attendance;
 
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.school.school_management.dto.attendance.AttendanceResponse;
 import com.school.school_management.dto.attendance.AttendanceUpsertRequest;
 import com.school.school_management.dto.attendance.QRAttendanceRequest;
@@ -25,21 +42,6 @@ import com.school.school_management.repository.StudentRepository;
 import com.school.school_management.repository.UserRepository;
 import com.school.school_management.service.notification.NotificationAutomationService;
 import com.school.school_management.service.system.SystemSettingService;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -108,40 +110,42 @@ public class AttendanceServiceImpl implements AttendanceService {
         Student student = resolveStudent(request.getStudentCode());
         ClassSession session = resolveSession(request.getSessionId());
         assertCurrentUserCanCreateAttendanceForSession(session);
-        User capturedBy = (request.getCapturedByCode() != null && !request.getCapturedByCode().isBlank())
-            ? resolveUserByCode(request.getCapturedByCode())
-            : getCurrentUser();
+        // captured_by is always the authenticated user who actually entered the record,
+        // never a client-supplied code (which could misattribute the entry).
+        User capturedBy = getCurrentUser();
 
         // Check if student already has attendance for this session
         attendanceRepository.findByStudentAndSession(student, session).ifPresent(existing -> {
             throw new CustomException("Student already has attendance record for this session", 409);
         });
 
-        Attendance attendance = Attendance.builder()
-            .student(student)
-            .session(session)
-            .status(request.getStatus().toUpperCase(Locale.ROOT))
-            .method(MANUAL)
-            .capturedBy(capturedBy)
-            .build();
-
-        Attendance saved = attendanceRepository.save(attendance);
+        Attendance saved = persistAttendance(student, session,
+            request.getStatus().toUpperCase(Locale.ROOT), MANUAL, capturedBy);
         pushAttendanceNotification(saved, "Điểm danh cập nhật", "Điểm danh đã được cập nhật thủ công");
         return toResponse(saved);
     }
 
     @Override
     public AttendanceResponse recordQRAttendance(QRAttendanceRequest request) {
-        Student student = resolveStudent(request.getStudentCode());
+        // Bind to the authenticated student — never trust a studentCode from the request
+        // body, otherwise a logged-in student could check in as anyone else.
+        User currentUser = getCurrentUser();
+        Student student = studentRepository.findByUserAndDeletedAtIsNull(currentUser)
+            .orElseThrow(() -> new CustomException("Student profile not found for current user", 403));
+
         SystemSettingResponse settings = systemSettingService.getSettings();
 
-        // Verify IP is in allowed list
-        verifyClientIP(request.getClientIp(), settings.getAllowedSchoolIps());
+        // Verify the request originates from the school network using the server-resolved
+        // client IP. A client-supplied IP would defeat the whitelist entirely.
+        verifyClientIP(resolveClientIpFromContext(), settings.getAllowedSchoolIps());
 
         // Decode and validate QR data
         Map<String, Object> qrData = decodeQRData(request.getQrData());
         String sessionId = (String) qrData.get("sessionId");
         Long expiryTimestamp = (Long) qrData.get("expiryTimestamp");
+        if (sessionId == null || expiryTimestamp == null) {
+            throw new CustomException("Invalid QR code", 400);
+        }
 
         // Check if QR has expired
         if (System.currentTimeMillis() > expiryTimestamp) {
@@ -149,6 +153,10 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         ClassSession session = resolveSession(sessionId);
+        // Spec: QR is also invalid once the class session has ended.
+        if (session.getEndTime() != null && OffsetDateTime.now().isAfter(session.getEndTime())) {
+            throw new CustomException("QR code has expired", 400);
+        }
 
         // Check if student already has attendance for this session
         attendanceRepository.findByStudentAndSession(student, session).ifPresent(existing -> {
@@ -156,15 +164,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         });
 
         // Create attendance record for QR (no captured_by user, auto PRESENT)
-        Attendance attendance = Attendance.builder()
-            .student(student)
-            .session(session)
-            .status(PRESENT)
-            .method(QR)
-            .capturedBy(null)
-            .build();
-
-        Attendance saved = attendanceRepository.save(attendance);
+        Attendance saved = persistAttendance(student, session, PRESENT, QR, null);
         pushAttendanceNotification(saved, "Điểm danh QR thành công", "Học sinh đã check-in bằng QR");
         return toResponse(saved);
     }
@@ -186,6 +186,10 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         // 2. Resolve session
         ClassSession session = resolveSession(sessionId);
+        // Spec: QR is also invalid once the class session has ended.
+        if (session.getEndTime() != null && OffsetDateTime.now().isAfter(session.getEndTime())) {
+            throw new CustomException("Mã QR đã hết hạn.", 400);
+        }
 
         // 3. Resolve the currently authenticated student
         User currentUser = getCurrentUser();
@@ -203,15 +207,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         // 6. Create attendance record
-        Attendance attendance = Attendance.builder()
-            .student(student)
-            .session(session)
-            .status(PRESENT)
-            .method(QR)
-            .capturedBy(null)
-            .build();
-
-        Attendance saved = attendanceRepository.save(attendance);
+        Attendance saved = persistAttendance(student, session, PRESENT, QR, null);
         pushAttendanceNotification(saved, "Điểm danh QR thành công", "Học sinh đã check-in bằng QR");
 
         return QRConfirmResponse.builder()
@@ -247,17 +243,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Transactional(readOnly = true)
     public List<AttendanceResponse> getStudentAttendance(String studentCode) {
         Student student = resolveStudent(studentCode);
-        // If caller is PARENT, ensure parent is linked to this student
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getAuthorities().stream().anyMatch(a -> "ROLE_PARENT".equals(a.getAuthority())) && !isCurrentUserAdmin()) {
-            User currentUser = getCurrentUser();
-            Parent parent = parentRepository.findByUser(currentUser)
-                .orElseThrow(() -> new CustomException("Parent profile not found", 403));
-
-            if (parentStudentRepository.findByParentAndStudent(parent, student).isEmpty()) {
-                throw new CustomException("Forbidden", 403);
-            }
-        }
+        assertCanViewStudentAttendance(student);
         return attendanceRepository.findByStudent(student).stream()
             .map(this::toResponse)
             .toList();
@@ -267,16 +253,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Transactional(readOnly = true)
     public List<AttendanceResponse> getAttendanceByDateRange(String studentCode, OffsetDateTime startDate, OffsetDateTime endDate) {
         Student student = resolveStudent(studentCode);
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getAuthorities().stream().anyMatch(a -> "ROLE_PARENT".equals(a.getAuthority())) && !isCurrentUserAdmin()) {
-            User currentUser = getCurrentUser();
-            Parent parent = parentRepository.findByUser(currentUser)
-                .orElseThrow(() -> new CustomException("Parent profile not found", 403));
-
-            if (parentStudentRepository.findByParentAndStudent(parent, student).isEmpty()) {
-                throw new CustomException("Forbidden", 403);
-            }
-        }
+        assertCanViewStudentAttendance(student);
         return attendanceRepository.findByStudentAndSession_StartTimeGreaterThanEqualAndSession_StartTimeLessThan(
                 student, startDate, endDate
             ).stream()
@@ -382,7 +359,11 @@ public class AttendanceServiceImpl implements AttendanceService {
             }
         }
 
-        attendanceRepository.delete(attendance);
+        // Soft delete (spec: no physical deletes). @SQLRestriction on the entity keeps
+        // the deleted row out of all subsequent reads.
+        attendance.setDeletedAt(OffsetDateTime.now());
+        attendance.setDeletedBy(currentUser.getId());
+        attendanceRepository.save(attendance);
     }
 
     @Override
@@ -477,16 +458,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Transactional(readOnly = true)
     public Map<String, Object> getAttendanceStats(String studentCode, OffsetDateTime startDate, OffsetDateTime endDate) {
         Student student = resolveStudent(studentCode);
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getAuthorities().stream().anyMatch(a -> "ROLE_PARENT".equals(a.getAuthority())) && !isCurrentUserAdmin()) {
-            User currentUser = getCurrentUser();
-            Parent parent = parentRepository.findByUser(currentUser)
-                .orElseThrow(() -> new CustomException("Parent profile not found", 403));
-
-            if (parentStudentRepository.findByParentAndStudent(parent, student).isEmpty()) {
-                throw new CustomException("Forbidden", 403);
-            }
-        }
+        assertCanViewStudentAttendance(student);
         List<Attendance> records = attendanceRepository.findByStudentAndSession_StartTimeGreaterThanEqualAndSession_StartTimeLessThan(
             student, startDate, endDate
         );
@@ -530,12 +502,13 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     private void verifyClientIP(String clientIp, List<String> allowedIps) {
-        if (clientIp == null || clientIp.isBlank()) {
-            throw new CustomException("Client IP is required for QR attendance", 400);
+        // No whitelist configured = allow QR attendance from any IP.
+        if (allowedIps == null || allowedIps.isEmpty()) {
+            return;
         }
 
-        if (allowedIps == null || allowedIps.isEmpty()) {
-            throw new CustomException("School IP ranges are not configured", 400);
+        if (clientIp == null || clientIp.isBlank()) {
+            throw new CustomException("Client IP is required for QR attendance", 400);
         }
 
         String normalizedClientIp = clientIp.split(",")[0].trim();
@@ -753,6 +726,61 @@ public class AttendanceServiceImpl implements AttendanceService {
             .anyMatch("ROLE_ADMIN"::equals);
     }
 
+    /**
+     * Ownership guard for reading a student's attendance.
+     * ADMIN/TEACHER: allowed. PARENT: only if linked to the student.
+     * STUDENT: only their own record (prevents IDOR via a different studentCode).
+     */
+    private void assertCanViewStudentAttendance(Student student) {
+        if (isCurrentUserAdmin()) {
+            return;
+        }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) {
+            throw new CustomException("Unauthenticated", 401);
+        }
+        boolean isTeacher = auth.getAuthorities().stream()
+            .anyMatch(a -> "ROLE_TEACHER".equals(a.getAuthority()));
+        if (isTeacher) {
+            return;
+        }
+        boolean isParent = auth.getAuthorities().stream()
+            .anyMatch(a -> "ROLE_PARENT".equals(a.getAuthority()));
+        User currentUser = getCurrentUser();
+        if (isParent) {
+            Parent parent = parentRepository.findByUser(currentUser)
+                .orElseThrow(() -> new CustomException("Parent profile not found", 403));
+            if (parentStudentRepository.findByParentAndStudent(parent, student).isEmpty()) {
+                throw new CustomException("Forbidden", 403);
+            }
+            return;
+        }
+        // STUDENT (or any other role): only their own attendance.
+        if (student.getUser() == null || !student.getUser().getId().equals(currentUser.getId())) {
+            throw new CustomException("Forbidden", 403);
+        }
+    }
+
+    /**
+     * Creates the attendance row, or REUSES an existing one (including a soft-deleted row)
+     * for the same student+session. Reusing avoids a unique-constraint violation on
+     * re-marking after a soft delete (the @SQLRestriction hides the deleted row from
+     * normal reads, so a plain insert would collide).
+     */
+    private Attendance persistAttendance(Student student, ClassSession session,
+                                         String status, String method, User capturedBy) {
+        Attendance attendance = attendanceRepository
+            .findAnyByStudentAndSession(student.getId(), session.getId())
+            .orElseGet(() -> Attendance.builder().student(student).session(session).build());
+        attendance.setStatus(status);
+        attendance.setMethod(method);
+        attendance.setCapturedBy(capturedBy);
+        // Undelete if this was a previously soft-deleted record.
+        attendance.setDeletedAt(null);
+        attendance.setDeletedBy(null);
+        return attendanceRepository.save(attendance);
+    }
+
     private AttendanceResponse toResponse(Attendance attendance) {
         ClassSession session = attendance.getSession();
         String capturedByCode = null;
@@ -763,6 +791,15 @@ public class AttendanceServiceImpl implements AttendanceService {
             capturedByName = attendance.getCapturedBy().getFullName();
         }
 
+        // A session may have no assigned teacher yet (e.g. admin-entered attendance);
+        // guard the teacher chain so mapping never NPEs.
+        String teacherCode = null;
+        String teacherName = null;
+        if (session.getTeacher() != null && session.getTeacher().getUser() != null) {
+            teacherCode = session.getTeacher().getUser().getEmail();
+            teacherName = session.getTeacher().getUser().getFullName();
+        }
+
         return AttendanceResponse.builder()
             .attendanceId(attendance.getId().toString())
             .studentCode(attendance.getStudent().getStudentCode())
@@ -771,15 +808,15 @@ public class AttendanceServiceImpl implements AttendanceService {
             .className(session.getSchoolClass().getClassCode())
             .subjectCode(session.getSubject().getCode())
             .subjectName(session.getSubject().getName())
-            .teacherCode(session.getTeacher().getUser().getEmail())
-            .teacherName(session.getTeacher().getUser().getFullName())
+            .teacherCode(teacherCode)
+            .teacherName(teacherName)
             .sessionStartTime(session.getStartTime())
             .sessionEndTime(session.getEndTime())
             .status(attendance.getStatus())
             .method(attendance.getMethod())
             .capturedByCode(capturedByCode)
             .capturedByName(capturedByName)
-            .createdAt(attendance.getId() != null ? OffsetDateTime.now() : null)
+            .createdAt(attendance.getCreatedAt())
             .build();
     }
 }

@@ -21,25 +21,43 @@ export function TeachingListContent() {
   const { showToast } = useToast();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [keyword, setKeyword] = useState(searchParams.get("q")?.trim() ?? "");
-  const [yearFilter, setYearFilter] = useState(searchParams.get("academicYear")?.trim() || "all");
-  const [semesterFilter, setSemesterFilter] = useState(searchParams.get("semester")?.trim().toUpperCase() || "all");
-  const [subjectFilter, setSubjectFilter] = useState(searchParams.get("subject")?.trim().toUpperCase() || "all");
+  const [yearFilter, setYearFilter] = useState(
+    searchParams.get("academicYear")?.trim() || "all",
+  );
+  const [semesterFilter, setSemesterFilter] = useState(
+    searchParams.get("semester")?.trim().toUpperCase() || "all",
+  );
+  const [subjectFilter, setSubjectFilter] = useState(
+    searchParams.get("subject")?.trim().toUpperCase() || "all",
+  );
   const isAdmin = session?.user.role === "ADMIN";
   const isTeacher = session?.user.role === "TEACHER";
-  const isDepartmentManager = isTeacher && (session?.user.departmentLevel === 1 || session?.user.departmentLevel === 2);
+  const isDepartmentManager =
+    isTeacher &&
+    (session?.user.departmentLevel === 1 ||
+      session?.user.departmentLevel === 2);
 
   const yearOptions = useMemo(
-    () => Array.from(new Set(records.map((item) => item.academicYearCode))).filter(Boolean).sort((a, b) => b.localeCompare(a)),
+    () =>
+      Array.from(new Set(records.map((item) => item.academicYearCode)))
+        .filter(Boolean)
+        .sort((a, b) => b.localeCompare(a)),
     [records],
   );
 
   const semesterOptions = useMemo(
-    () => Array.from(new Set(records.map((item) => item.semesterCode))).filter(Boolean).sort((a, b) => a.localeCompare(b)),
+    () =>
+      Array.from(new Set(records.map((item) => item.semesterCode)))
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b)),
     [records],
   );
 
   const subjectOptions = useMemo(
-    () => Array.from(new Set(records.map((item) => item.subjectCode))).filter(Boolean).sort((a, b) => a.localeCompare(b)),
+    () =>
+      Array.from(new Set(records.map((item) => item.subjectCode)))
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b)),
     [records],
   );
 
@@ -58,15 +76,23 @@ export function TeachingListContent() {
       params.set("q", keyword.trim());
     }
     const query = params.toString();
-    return query ? `/teaching-assignments/assign-teachers?${query}` : "/teaching-assignments/assign-teachers";
+    return query
+      ? `/teaching-assignments/assign-teachers?${query}`
+      : "/teaching-assignments/assign-teachers";
   }, [yearFilter, semesterFilter, subjectFilter, keyword]);
 
   const filteredRecords = useMemo(() => {
     const q = keyword.trim().toLowerCase();
     return records
-      .filter((item) => (yearFilter === "all" ? true : item.academicYearCode === yearFilter))
-      .filter((item) => (semesterFilter === "all" ? true : item.semesterCode === semesterFilter))
-      .filter((item) => (subjectFilter === "all" ? true : item.subjectCode === subjectFilter))
+      .filter((item) =>
+        yearFilter === "all" ? true : item.academicYearCode === yearFilter,
+      )
+      .filter((item) =>
+        semesterFilter === "all" ? true : item.semesterCode === semesterFilter,
+      )
+      .filter((item) =>
+        subjectFilter === "all" ? true : item.subjectCode === subjectFilter,
+      )
       .filter((item) => {
         if (!q) {
           return true;
@@ -93,7 +119,9 @@ export function TeachingListContent() {
   }
 
   async function handleDelete(assignmentId: string) {
-    const confirmed = window.confirm("Bạn có chắc chắn muốn xóa phân công giảng dạy này?");
+    const confirmed = window.confirm(
+      "Bạn có chắc chắn muốn xóa phân công giảng dạy này?",
+    );
     if (!confirmed) {
       return;
     }
@@ -104,7 +132,12 @@ export function TeachingListContent() {
       await refresh();
       showToast("Đã xóa phân công giảng dạy.", "success");
     } catch (deleteError) {
-      showToast(deleteError instanceof Error ? deleteError.message : "Không thể xóa phân công giảng dạy.", "error");
+      showToast(
+        deleteError instanceof Error
+          ? deleteError.message
+          : "Không thể xóa phân công giảng dạy.",
+        "error",
+      );
     } finally {
       setDeletingId(null);
     }
@@ -118,15 +151,15 @@ export function TeachingListContent() {
           isDepartmentManager
             ? "Phân công giảng dạy bộ môn"
             : isTeacher
-            ? "Phân công giảng dạy của tôi"
-            : "Quản lý phân công giảng dạy"
+              ? "Phân công giảng dạy của tôi"
+              : "Quản lý phân công giảng dạy"
         }
         description={
           isDepartmentManager
             ? "Xem và điều phối phân công giáo viên trong phạm vi bộ môn của bạn."
             : isTeacher
-            ? "Bạn chỉ xem được các phân công thuộc tài khoản giáo viên hiện tại."
-            : "Quản lý phân công giáo viên - lớp - môn theo học kỳ và năm học."
+              ? "Bạn chỉ xem được các phân công thuộc tài khoản giáo viên hiện tại."
+              : "Quản lý phân công giáo viên - lớp - môn theo học kỳ và năm học."
         }
         actions={
           <>
@@ -135,7 +168,10 @@ export function TeachingListContent() {
                 <ButtonLink href={editBatchHref} tone="primary">
                   Chỉnh sửa đợt này
                 </ButtonLink>
-                <ButtonLink href="/teaching-assignments/assign-teachers" tone="secondary">
+                <ButtonLink
+                  href="/teaching-assignments/assign-teachers"
+                  tone="secondary"
+                >
                   Phân công giáo viên
                 </ButtonLink>
                 {isAdmin && (
@@ -156,21 +192,34 @@ export function TeachingListContent() {
       )}
 
       {isLoading ? (
-        <Panel className="p-4 text-sm text-slate-500">Đang tải teaching assignment...</Panel>
+        <Panel className="p-4 text-sm text-slate-500">
+          Đang tải phân công giảng dạy...
+        </Panel>
       ) : (
         (() => {
           const columns = isAdmin
-            ? ["Giáo viên", "Lớp", "Môn", "Lịch dạy", "Học kỳ", "Năm học", "Hành động"]
+            ? [
+                "Giáo viên",
+                "Lớp",
+                "Môn",
+                "Lịch dạy",
+                "Học kỳ",
+                "Năm học",
+                "Hành động",
+              ]
             : ["Giáo viên", "Lớp", "Môn", "Lịch dạy", "Học kỳ", "Năm học"];
 
           const rows = filteredRecords.map((item) => {
             const scheduleText = formatSchedule(item.scheduleData);
-            
+
             const baseRow = [
               `${item.teacherName} (${item.teacherCode})`,
               `${item.className} (${item.classCode})`,
               `${item.subjectName} (${item.subjectCode})`,
-              <div key={`schedule-${item.assignmentId}`} className="whitespace-pre-wrap text-xs text-slate-600">
+              <div
+                key={`schedule-${item.assignmentId}`}
+                className="whitespace-pre-wrap text-xs text-slate-600"
+              >
                 {scheduleText}
               </div>,
               item.semesterCode,
@@ -213,7 +262,9 @@ export function TeachingListContent() {
               <Panel className="p-5 sm:p-6">
                 <div className="grid gap-3 md:grid-cols-4">
                   <div className="md:col-span-2">
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Tìm kiếm</label>
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                      Tìm kiếm
+                    </label>
                     <input
                       value={keyword}
                       onChange={(event) => setKeyword(event.target.value)}
@@ -223,7 +274,9 @@ export function TeachingListContent() {
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Năm học</label>
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                      Năm học
+                    </label>
                     <select
                       value={yearFilter}
                       onChange={(event) => setYearFilter(event.target.value)}
@@ -239,10 +292,14 @@ export function TeachingListContent() {
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Học kỳ</label>
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                      Học kỳ
+                    </label>
                     <select
                       value={semesterFilter}
-                      onChange={(event) => setSemesterFilter(event.target.value)}
+                      onChange={(event) =>
+                        setSemesterFilter(event.target.value)
+                      }
                       className="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm"
                     >
                       <option value="all">Tất cả</option>
@@ -255,7 +312,9 @@ export function TeachingListContent() {
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Môn học</label>
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                      Môn học
+                    </label>
                     <select
                       value={subjectFilter}
                       onChange={(event) => setSubjectFilter(event.target.value)}
@@ -271,13 +330,19 @@ export function TeachingListContent() {
                   </div>
 
                   <div className="md:col-span-3 flex items-end">
-                    <p className="text-sm text-slate-700">Hiển thị {filteredRecords.length} bản ghi phù hợp.</p>
+                    <p className="text-sm text-slate-700">
+                      Hiển thị {filteredRecords.length} bản ghi phù hợp.
+                    </p>
                   </div>
                 </div>
               </Panel>
 
               <DataTable
-                title={isAdmin ? "Danh sách phân công giảng dạy" : "Phân công giảng dạy"}
+                title={
+                  isAdmin
+                    ? "Danh sách phân công giảng dạy"
+                    : "Phân công giảng dạy"
+                }
                 description={
                   isAdmin
                     ? "Tổng hợp toàn bộ phân công theo giáo viên, lớp, môn, học kỳ và năm học."

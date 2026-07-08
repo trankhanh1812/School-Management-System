@@ -1,18 +1,29 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  type ReactNode,
+} from "react";
 import { env } from "@/lib/env";
 import { useAuthContext } from "@/providers/auth-provider";
-import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
+import { Client } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
 
 type NotificationRealtimeContextValue = {
   connected: boolean;
 };
 
-const NotificationRealtimeContext = createContext<NotificationRealtimeContextValue | null>(null);
+const NotificationRealtimeContext =
+  createContext<NotificationRealtimeContextValue | null>(null);
 
-export function NotificationRealtimeProvider({ children }: { children: ReactNode }) {
+export function NotificationRealtimeProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const { session, isAuthHydrated } = useAuthContext();
   const clientRef = useRef<Client | null>(null);
   const reconnectTimerRef = useRef<number | null>(null);
@@ -33,7 +44,11 @@ export function NotificationRealtimeProvider({ children }: { children: ReactNode
         return;
       }
 
-      window.dispatchEvent(new CustomEvent("notification-unread-changed", { detail: { count, source } }));
+      window.dispatchEvent(
+        new CustomEvent("notification-unread-changed", {
+          detail: { count, source },
+        }),
+      );
     }
 
     function dispatchReloadRequest(detail: unknown) {
@@ -41,7 +56,9 @@ export function NotificationRealtimeProvider({ children }: { children: ReactNode
         return;
       }
 
-      window.dispatchEvent(new CustomEvent("notification-reload-requested", { detail }));
+      window.dispatchEvent(
+        new CustomEvent("notification-reload-requested", { detail }),
+      );
     }
 
     function closeSocket() {
@@ -77,6 +94,7 @@ export function NotificationRealtimeProvider({ children }: { children: ReactNode
       const sockUrl = `${apiUrl.protocol}//${apiUrl.host}/ws?token=${encodeURIComponent(accessToken)}`;
 
       const client = new Client({
+        connectHeaders: { token: accessToken },
         webSocketFactory: () => new SockJS(sockUrl) as any,
         reconnectDelay: 5000,
         onConnect: () => {
@@ -85,13 +103,16 @@ export function NotificationRealtimeProvider({ children }: { children: ReactNode
             const dest = `/topic/notifications/${session.user.id}`;
             subscriptionRef.current = client.subscribe(dest, (message) => {
               try {
-                const payload = JSON.parse(message.body || '{}');
+                const payload = JSON.parse(message.body || "{}");
 
-                if (typeof payload.unreadCount === 'number') {
-                  dispatchUnreadCount(payload.unreadCount, payload.type ?? 'UNREAD_COUNT_UPDATED');
+                if (typeof payload.unreadCount === "number") {
+                  dispatchUnreadCount(
+                    payload.unreadCount,
+                    payload.type ?? "UNREAD_COUNT_UPDATED",
+                  );
                 }
 
-                if (payload.type === 'NOTIFICATION_CREATED') {
+                if (payload.type === "NOTIFICATION_CREATED") {
                   dispatchReloadRequest(payload);
                 }
               } catch {
@@ -107,7 +128,7 @@ export function NotificationRealtimeProvider({ children }: { children: ReactNode
         },
         onDisconnect: () => {
           connectedRef.current = false;
-        }
+        },
       });
 
       client.activate();
@@ -125,7 +146,9 @@ export function NotificationRealtimeProvider({ children }: { children: ReactNode
   }, [isAuthHydrated, session?.tokens.accessToken]);
 
   return (
-    <NotificationRealtimeContext.Provider value={{ connected: connectedRef.current }}>
+    <NotificationRealtimeContext.Provider
+      value={{ connected: connectedRef.current }}
+    >
       {children}
     </NotificationRealtimeContext.Provider>
   );
@@ -134,7 +157,9 @@ export function NotificationRealtimeProvider({ children }: { children: ReactNode
 export function useNotificationRealtime() {
   const context = useContext(NotificationRealtimeContext);
   if (!context) {
-    throw new Error("useNotificationRealtime must be used within NotificationRealtimeProvider.");
+    throw new Error(
+      "useNotificationRealtime must be used within NotificationRealtimeProvider.",
+    );
   }
 
   return context;

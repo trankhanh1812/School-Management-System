@@ -1,16 +1,10 @@
 package com.school.school_management.controller.attendance;
 
-import com.school.school_management.dto.ApiResponse;
-import com.school.school_management.dto.attendance.AttendanceResponse;
-import com.school.school_management.dto.attendance.AttendanceUpsertRequest;
-import com.school.school_management.dto.attendance.QRAttendanceRequest;
-import com.school.school_management.service.attendance.AttendanceService;
-import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +18,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.school.school_management.dto.ApiResponse;
+import com.school.school_management.dto.attendance.AttendanceResponse;
+import com.school.school_management.dto.attendance.AttendanceUpsertRequest;
+import com.school.school_management.dto.attendance.QRAttendanceRequest;
+import com.school.school_management.dto.attendance.QRConfirmRequest;
+import com.school.school_management.dto.attendance.QRConfirmResponse;
+import com.school.school_management.service.attendance.AttendanceService;
+
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
@@ -66,6 +71,21 @@ public class AttendanceController {
         AttendanceResponse response = attendanceService.recordQRAttendance(request);
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(ApiResponse.success(response, "QR attendance recorded successfully"));
+    }
+
+    /**
+     * Confirm QR attendance from the signed deep-link token (STUDENT).
+     * This is the SECURE path: the QR carries a server-signed JWT (not a forgeable
+     * Base64 payload), the student is taken from the authenticated session, and the
+     * client IP is resolved server-side from the request.
+     */
+    @PostMapping("/qr/confirm")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<ApiResponse<QRConfirmResponse>> confirmQRAttendance(
+            @Valid @RequestBody QRConfirmRequest request) {
+        QRConfirmResponse response = attendanceService.confirmQRAttendance(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(ApiResponse.success(response, "QR attendance confirmed successfully"));
     }
 
     /**
