@@ -1,40 +1,43 @@
 package com.school.school_management.service.student;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.school.school_management.dto.student.BulkImportRequest;
 import com.school.school_management.dto.student.BulkImportResponse;
 import com.school.school_management.dto.student.ImportErrorRecord;
 import com.school.school_management.dto.student.ParentImportRequest;
-import com.school.school_management.dto.student.StudentImportPreviewResponse;
 import com.school.school_management.dto.student.StudentImportRequest;
+import com.school.school_management.dto.student.StudentImportPreviewResponse;
 import com.school.school_management.dto.student.StudentUpsertRequest;
+import com.school.school_management.entity.ImportLog;
 import com.school.school_management.entity.Parent;
 import com.school.school_management.entity.ParentStudent;
 import com.school.school_management.entity.Role;
 import com.school.school_management.entity.Student;
 import com.school.school_management.entity.User;
 import com.school.school_management.entity.UserRole;
+import com.school.school_management.repository.ImportLogRepository;
 import com.school.school_management.repository.ParentRepository;
 import com.school.school_management.repository.ParentStudentRepository;
 import com.school.school_management.repository.RoleRepository;
 import com.school.school_management.repository.StudentRepository;
 import com.school.school_management.repository.UserRepository;
 import com.school.school_management.util.ExcelImportUtil;
-
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -49,8 +52,22 @@ public class ImportServiceImpl implements ImportService {
     private final ParentStudentRepository parentStudentRepository;
     private final PasswordEncoder passwordEncoder;
     private final PlatformTransactionManager transactionManager;
+    private final ImportLogRepository importLogRepository;
 
     private final Map<String, byte[]> errorReportStore = new HashMap<>();
+
+    /** Người đang đăng nhập (để gán imported_by cho import_log); null nếu không xác định được. */
+    private User resolveCurrentUser() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || auth.getName() == null) {
+                return null;
+            }
+            return userRepository.findByUsernameAndDeletedAtIsNull(auth.getName()).orElse(null);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
 
     @Override
     public StudentImportPreviewResponse getImportPreview(MultipartFile file) {
@@ -238,11 +255,30 @@ public class ImportServiceImpl implements ImportService {
                 errorReportStore.put(importId.toString(), report);
             }
 
+            int totalRows = request.getStudents().size() + request.getParents().size();
+            int failedRows = (int) errors.stream().map(ImportErrorRecord::getRow).filter(r -> r != null).distinct().count();
+
+            // Lưu lịch sử import vào DB (import_log) để màn hình quản trị đọc được;
+            // trước đây chỉ giữ báo cáo lỗi trong RAM nên restart là mất.
+            try {
+                importLogRepository.save(ImportLog.builder()
+                    .importType("STUDENT")
+                    .fileName(file.getOriginalFilename())
+                    .totalRows(totalRows)
+                    .successRows(success)
+                    .failedRows(failedRows)
+                    .importedBy(resolveCurrentUser())
+                    .importedAt(OffsetDateTime.now())
+                    .build());
+            } catch (Exception logEx) {
+                // Không để việc ghi log chặn kết quả import
+            }
+
             return BulkImportResponse.builder()
                 .importId(importId)
-                .totalRecords(request.getStudents().size() + request.getParents().size())
+                .totalRecords(totalRows)
                 .successfulRecords(success)
-                .failedRecords((int) errors.stream().map(ImportErrorRecord::getRow).filter(r -> r != null).distinct().count())
+                .failedRecords(failedRows)
                 .errors(errors)
                 .message("Import completed")
                 .build();

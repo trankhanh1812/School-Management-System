@@ -8,6 +8,8 @@ public interface ExamService {
 
     List<ExamResponse> listExams();
 
+    List<ExamResponse> getMyExams();
+
     ExamResponse getExam(String examId);
 
     ExamResponse createExam(ExamUpsertRequest request);

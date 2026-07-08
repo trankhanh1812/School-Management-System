@@ -1,27 +1,15 @@
 package com.school.school_management.service.score;
 
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
-
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.school.school_management.dto.score.ScoreHistoryResponse;
 import com.school.school_management.dto.score.ScoreResponse;
 import com.school.school_management.dto.score.ScoreUpsertRequest;
 import com.school.school_management.entity.Exam;
-import com.school.school_management.entity.ParentStudent;
 import com.school.school_management.entity.Score;
 import com.school.school_management.entity.ScoreApprovalLog;
 import com.school.school_management.entity.ScoreHistory;
 import com.school.school_management.entity.Teacher;
 import com.school.school_management.entity.User;
+import com.school.school_management.entity.ParentStudent;
 import com.school.school_management.exception.CustomException;
 import com.school.school_management.repository.ExamRepository;
 import com.school.school_management.repository.ParentStudentRepository;
@@ -32,6 +20,16 @@ import com.school.school_management.repository.TeacherRepository;
 import com.school.school_management.repository.UserRepository;
 import com.school.school_management.service.notification.NotificationAutomationService;
 import com.school.school_management.service.system.SystemSettingService;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -111,6 +109,12 @@ public class ScoreServiceImpl implements ScoreService {
 
         BigDecimal nextValue = request.getScoreValue() == null ? BigDecimal.ZERO : request.getScoreValue();
         BigDecimal oldValue = score.getScoreValue() == null ? BigDecimal.ZERO : score.getScoreValue();
+
+        // Điểm phải trong [0, 10] — chặn ở backend (trước đây chỉ FE chặn),
+        // đồng bộ với validate của đường import điểm.
+        if (nextValue.compareTo(BigDecimal.ZERO) < 0 || nextValue.compareTo(BigDecimal.TEN) > 0) {
+            throw new CustomException("Score must be between 0 and 10", 400);
+        }
 
         score.setScoreValue(nextValue);
         if (!PUBLISHED.equalsIgnoreCase(score.getStatus()) && !LOCKED.equalsIgnoreCase(score.getStatus())) {
@@ -236,6 +240,57 @@ public class ScoreServiceImpl implements ScoreService {
         }
 
         return toResponse(saved);
+    }
+
+    @Override
+    public int approveScores(String examId) {
+        Exam exam = getExamEntity(examId);
+        List<Score> scores = scoreRepository.findByExamAndDeletedAtIsNull(exam);
+        if (scores.isEmpty()) {
+            throw new CustomException("No scores found for exam", 404);
+        }
+
+        User approver = getCurrentUser();
+        OffsetDateTime now = OffsetDateTime.now();
+        java.util.LinkedHashMap<UUID, User> teachersToNotify = new java.util.LinkedHashMap<>();
+        int approvedCount = 0;
+
+        for (Score score : scores) {
+            // Only SUBMITTED scores advance to APPROVED; silently skip records that
+            // are still DRAFT (not submitted yet) or already APPROVED/PUBLISHED/LOCKED,
+            // so a bulk approve never fails just because the batch is mixed.
+            if (!SUBMITTED.equalsIgnoreCase(score.getStatus())) {
+                continue;
+            }
+
+            score.setStatus(APPROVED);
+            scoreRepository.save(score);
+
+            scoreApprovalLogRepository.save(ScoreApprovalLog.builder()
+                .score(score)
+                .approvedBy(approver)
+                .action("APPROVE")
+                .createdAt(now)
+                .build());
+
+            approvedCount++;
+
+            if (score.getTeacher() != null && score.getTeacher().getUser() != null
+                    && score.getTeacher().getUser().getDeletedAt() == null) {
+                teachersToNotify.put(score.getTeacher().getUser().getId(), score.getTeacher().getUser());
+            }
+        }
+
+        if (approvedCount > 0 && !teachersToNotify.isEmpty()) {
+            notificationAutomationService.notifyUsers(
+                new java.util.ArrayList<>(teachersToNotify.values()),
+                "Điểm đã được duyệt",
+                String.format("Điểm bài kiểm tra %s đã được duyệt.", normalizeText(exam.getTitle(), "N/A")),
+                "SCORE_UPDATE"
+            );
+        }
+
+        return approvedCount;
     }
 
     @Override

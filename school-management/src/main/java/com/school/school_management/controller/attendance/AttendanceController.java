@@ -1,10 +1,18 @@
 package com.school.school_management.controller.attendance;
 
+import com.school.school_management.dto.ApiResponse;
+import com.school.school_management.dto.attendance.AttendanceResponse;
+import com.school.school_management.dto.attendance.AttendanceUpsertRequest;
+import com.school.school_management.dto.attendance.QRAttendanceRequest;
+import com.school.school_management.dto.attendance.QRConfirmRequest;
+import com.school.school_management.dto.attendance.QRConfirmResponse;
+import com.school.school_management.service.attendance.AttendanceService;
+import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,17 +26,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.school.school_management.dto.ApiResponse;
-import com.school.school_management.dto.attendance.AttendanceResponse;
-import com.school.school_management.dto.attendance.AttendanceUpsertRequest;
-import com.school.school_management.dto.attendance.QRAttendanceRequest;
-import com.school.school_management.dto.attendance.QRConfirmRequest;
-import com.school.school_management.dto.attendance.QRConfirmResponse;
-import com.school.school_management.service.attendance.AttendanceService;
-
-import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
@@ -126,6 +123,31 @@ public class AttendanceController {
         log.info("Fetching attendance history for student: {}", studentCode);
         List<AttendanceResponse> response = attendanceService.getStudentAttendance(studentCode);
         return ResponseEntity.ok(ApiResponse.success(response, "Student attendance history retrieved"));
+    }
+
+    /**
+     * Get attendance history for the currently authenticated student (STUDENT).
+     * The student is resolved from the JWT, so no student code is required.
+     */
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<ApiResponse<List<AttendanceResponse>>> getMyAttendance() {
+        log.info("Fetching attendance history for current student");
+        List<AttendanceResponse> response = attendanceService.getMyAttendance();
+        return ResponseEntity.ok(ApiResponse.success(response, "My attendance history retrieved"));
+    }
+
+    /**
+     * Get attendance statistics for the currently authenticated student (STUDENT).
+     */
+    @GetMapping("/me/stats")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getMyAttendanceStats(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endDate) {
+        log.info("Fetching attendance stats for current student from {} to {}", startDate, endDate);
+        Map<String, Object> response = attendanceService.getMyAttendanceStats(startDate, endDate);
+        return ResponseEntity.ok(ApiResponse.success(response, "My attendance statistics retrieved"));
     }
 
     /**

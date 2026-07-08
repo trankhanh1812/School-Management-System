@@ -228,6 +228,20 @@ export const teachingApi = {
     );
   },
 
+  getMyTimetableGrid(semesterCode?: string) {
+    const query = new URLSearchParams();
+    if (semesterCode && semesterCode.trim()) {
+      query.set("semesterCode", semesterCode.trim());
+    }
+    const suffix = query.toString() ? `?${query.toString()}` : "";
+    return apiClient.get<ApiResponse<TimetableEntryPayload[]>>(
+      `/teaching-assignments/timetable/me${suffix}`,
+      {
+        authenticated: true,
+      },
+    );
+  },
+
   listTimetableVersions(semesterCode: string, academicYearCode: string) {
     const query = new URLSearchParams({ semesterCode, academicYearCode });
     return apiClient.get<ApiResponse<TimetableVersionApiRecord[]>>(
@@ -288,7 +302,7 @@ export const teachingApi = {
     );
 
     if (!response.ok) {
-      throw new Error("Không thể xem trước nhập thời khóa biểu");
+      throw new Error("Không thể xem trước file nhập thời khóa biểu");
     }
 
     return (await response.json()) as ApiResponse<TimetableImportPreviewResponse>;

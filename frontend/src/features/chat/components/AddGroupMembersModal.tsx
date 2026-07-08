@@ -11,9 +11,15 @@ type Props = {
   open: boolean;
   onClose: () => void;
   groupId: string;
+  onMembersChanged?: () => void;
 };
 
-export default function AddGroupMembersModal({ open, onClose, groupId }: Props) {
+export default function AddGroupMembersModal({
+  open,
+  onClose,
+  groupId,
+  onMembersChanged,
+}: Props) {
   const [tab, setTab] = useState<"teachers" | "students">("teachers");
   const [teachers, setTeachers] = useState<any[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
@@ -65,24 +71,29 @@ export default function AddGroupMembersModal({ open, onClose, groupId }: Props) 
   }
 
   async function handleAdd() {
-    const ids = Object.entries(selected).filter(([, v]) => v).map(([k]) => k);
+    const ids = Object.entries(selected)
+      .filter(([, v]) => v)
+      .map(([k]) => k);
     if (!ids.length) {
       // If adding students and a class is selected, add entire class
-      if (tab === 'students' && selectedClass) {
+      if (tab === "students" && selectedClass) {
         setLoading(true);
         try {
           await chatApi.addStudentMembers(groupId, null, selectedClass);
+          onMembersChanged?.();
           onClose();
           return;
         } catch (apiErr: any) {
-          console.error('API Error Details:', {
+          console.error("API Error Details:", {
             status: apiErr?.response?.status,
             statusText: apiErr?.response?.statusText,
             data: apiErr?.response?.data,
             config: apiErr?.config,
-            message: apiErr?.message
+            message: apiErr?.message,
           });
-          alert(`Không thể thêm thành viên trong lớp: ${(apiErr as any)?.response?.data?.message || (apiErr as any)?.message}`);
+          alert(
+            `Không thể thêm thành viên trong lớp: ${(apiErr as any)?.response?.data?.message || (apiErr as any)?.message}`,
+          );
           return;
         } finally {
           setLoading(false);
@@ -102,60 +113,93 @@ export default function AddGroupMembersModal({ open, onClose, groupId }: Props) 
             await chatApi.addMember(groupId, id);
           }
         }
+        onMembersChanged?.();
         onClose();
         return;
       }
 
       if (tab === "students") {
         // Use the new backend endpoint to add students by code or class
-        console.log('Adding students:', { groupId, studentCodes: ids, classCode: null });
+        console.log("Adding students:", {
+          groupId,
+          studentCodes: ids,
+          classCode: null,
+        });
         try {
           await chatApi.addStudentMembers(groupId, ids, null);
+          onMembersChanged?.();
           onClose();
         } catch (apiErr: any) {
-          console.error('API Error Details:', {
+          console.error("API Error Details:", {
             status: apiErr?.response?.status,
             statusText: apiErr?.response?.statusText,
             data: apiErr?.response?.data,
             config: apiErr?.config,
-            message: apiErr?.message
+            message: apiErr?.message,
           });
           throw apiErr;
         }
         return;
       }
     } catch (err) {
-      console.error('Full error:', err);
-      alert(`Không thể thêm thành viên. Trạng thái: ${(err as any)?.response?.status}, thông báo: ${(err as any)?.response?.data?.message || (err as any)?.message}`);
+      console.error("Full error:", err);
+      alert(
+        `Không thể thêm thành viên. Trạng thái: ${(err as any)?.response?.status}, thông báo: ${(err as any)?.response?.data?.message || (err as any)?.message}`,
+      );
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <Modal open={open} title="Thêm thành viên vào nhóm" onClose={onClose} size="md" footer={
-      <>
-        <Button tone="secondary" onClick={onClose} disabled={loading}>
-          Hủy
-        </Button>
-        <Button onClick={handleAdd} disabled={loading}>
-          Thêm mục đã chọn
-        </Button>
-      </>
-    }>
+    <Modal
+      open={open}
+      title="Thêm thành viên vào nhóm"
+      onClose={onClose}
+      size="md"
+      footer={
+        <>
+          <Button tone="secondary" onClick={onClose} disabled={loading}>
+            Hủy
+          </Button>
+          <Button onClick={handleAdd} disabled={loading}>
+            Thêm mục đã chọn
+          </Button>
+        </>
+      }
+    >
       <div className="mb-4 flex gap-2">
-        <button className={`px-3 py-2 rounded ${tab === 'teachers' ? 'bg-slate-100' : ''}`} onClick={() => setTab('teachers')}>Giáo viên</button>
-        <button className={`px-3 py-2 rounded ${tab === 'students' ? 'bg-slate-100' : ''}`} onClick={() => setTab('students')}>Học sinh</button>
+        <button
+          className={`px-3 py-2 rounded ${tab === "teachers" ? "bg-slate-100" : ""}`}
+          onClick={() => setTab("teachers")}
+        >
+          Giáo viên
+        </button>
+        <button
+          className={`px-3 py-2 rounded ${tab === "students" ? "bg-slate-100" : ""}`}
+          onClick={() => setTab("students")}
+        >
+          Học sinh
+        </button>
       </div>
 
       {tab === "teachers" ? (
         <div className="space-y-3">
           {teachers.map((t) => (
-            <label key={t.id} className="flex items-center gap-3 p-2 border rounded">
-              <input type="checkbox" checked={!!selected[t.id]} onChange={() => toggle(t.id)} />
+            <label
+              key={t.id}
+              className="flex items-center gap-3 p-2 border rounded"
+            >
+              <input
+                type="checkbox"
+                checked={!!selected[t.id]}
+                onChange={() => toggle(t.id)}
+              />
               <div>
                 <div className="font-medium">{t.fullName}</div>
-                <div className="text-sm text-slate-500">{t.teacherCode} • {t.department}</div>
+                <div className="text-sm text-slate-500">
+                  {t.teacherCode} • {t.department}
+                </div>
               </div>
             </label>
           ))}
@@ -164,22 +208,38 @@ export default function AddGroupMembersModal({ open, onClose, groupId }: Props) 
         <div className="space-y-3">
           <div>
             <label className="block text-sm">Lớp</label>
-            <select onChange={(e) => onSelectClass(e.target.value)} className="mt-1 w-full">
+            <select
+              onChange={(e) => onSelectClass(e.target.value)}
+              className="mt-1 w-full"
+            >
               <option value="">-- chọn lớp --</option>
               {classes.map((c) => (
-                <option key={c.classCode} value={c.classCode}>{c.classCode} - {c.className}</option>
+                <option key={c.classCode} value={c.classCode}>
+                  {c.classCode} - {c.className}
+                </option>
               ))}
             </select>
           </div>
 
-          <p className="text-sm text-slate-500">Chọn học sinh để thêm vào nhóm này.</p>
+          <p className="text-sm text-slate-500">
+            Chọn học sinh để thêm vào nhóm này.
+          </p>
 
           {students.length === 0 ? (
-            <p className="text-sm text-slate-500 italic">Không tìm thấy học sinh trong lớp đã chọn</p>
+            <p className="text-sm text-slate-500 italic">
+              Không tìm thấy học sinh trong lớp đã chọn
+            </p>
           ) : (
             students.map((s) => (
-              <label key={s.studentCode} className="flex items-center gap-3 p-2 border rounded">
-                <input type="checkbox" checked={!!selected[s.studentCode]} onChange={() => toggle(s.studentCode)} />
+              <label
+                key={s.studentCode}
+                className="flex items-center gap-3 p-2 border rounded"
+              >
+                <input
+                  type="checkbox"
+                  checked={!!selected[s.studentCode]}
+                  onChange={() => toggle(s.studentCode)}
+                />
                 <div>
                   <div className="font-medium">{s.fullName}</div>
                   <div className="text-sm text-slate-500">{s.studentCode}</div>

@@ -11,7 +11,10 @@ import {
   type ClassStudentRecord,
   type ClassroomMetricRecord,
 } from "@/features/classroom/classroom-adapter";
-import type { ClassroomRecord, PromotionPlan } from "@/features/classroom/classroom-data";
+import type {
+  ClassroomRecord,
+  PromotionPlan,
+} from "@/features/classroom/classroom-data";
 
 export type ClassroomListFilters = {
   academicYearCode?: string;
@@ -45,7 +48,9 @@ type PromotionBoardState = {
   refresh: () => Promise<void>;
 };
 
-export function useClassroomListData(filters?: ClassroomListFilters): ClassroomListState {
+export function useClassroomListData(
+  filters?: ClassroomListFilters,
+): ClassroomListState {
   const [records, setRecords] = useState<ClassroomRecord[]>([]);
   const [metrics, setMetrics] = useState<ClassroomMetricRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,13 +61,24 @@ export function useClassroomListData(filters?: ClassroomListFilters): ClassroomL
     setError("");
 
     try {
-      const [listResponse, metricsResponse] = await Promise.all([
+      // The class list is the primary data; metrics are secondary. Load them
+      // independently so a failing metrics endpoint doesn't blank the whole screen.
+      const [listResult, metricsResult] = await Promise.allSettled([
         classroomApi.list(filters),
         classroomApi.metrics(),
       ]);
 
-      setRecords(mapClassroomList(listResponse.data));
-      setMetrics(mapClassroomMetrics(metricsResponse.data));
+      if (listResult.status === "fulfilled") {
+        setRecords(mapClassroomList(listResult.value.data));
+      } else {
+        throw listResult.reason;
+      }
+
+      setMetrics(
+        metricsResult.status === "fulfilled"
+          ? mapClassroomMetrics(metricsResult.value.data)
+          : [],
+      );
     } catch (loadError) {
       setRecords([]);
       setMetrics([]);
@@ -89,7 +105,9 @@ export function useClassroomListData(filters?: ClassroomListFilters): ClassroomL
   };
 }
 
-export function useClassroomDetailData(classCode: string): ClassroomDetailState {
+export function useClassroomDetailData(
+  classCode: string,
+): ClassroomDetailState {
   const [classroom, setClassroom] = useState<ClassroomRecord | null>(null);
   const [students, setStudents] = useState<ClassStudentRecord[]>([]);
   const [promotionPlans, setPromotionPlans] = useState<PromotionPlan[]>([]);
@@ -101,11 +119,12 @@ export function useClassroomDetailData(classCode: string): ClassroomDetailState 
     setError("");
 
     try {
-      const [detailResponse, studentsResponse, plansResponse] = await Promise.all([
-        classroomApi.detail(classCode),
-        classroomApi.students(classCode),
-        classroomApi.promotionPlans(classCode),
-      ]);
+      const [detailResponse, studentsResponse, plansResponse] =
+        await Promise.all([
+          classroomApi.detail(classCode),
+          classroomApi.students(classCode),
+          classroomApi.promotionPlans(classCode),
+        ]);
 
       setClassroom(mapClassroomRecord(detailResponse.data));
       setStudents(mapClassStudentList(studentsResponse.data));

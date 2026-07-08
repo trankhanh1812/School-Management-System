@@ -150,13 +150,13 @@ export default function AttendancePage() {
 
       const yearsFromTeaching = uniqueSorted(
         teachingAssignments
-          .map((item) => item.academicYearCode?.trim())
+          .map((item) => normalizeYear(item.academicYearCode))
           .filter((item): item is string => Boolean(item)),
       );
 
       const yearsFromClassroom = uniqueSorted(
         classrooms
-          .map((item) => item.academicYear?.trim())
+          .map((item) => normalizeYear(item.academicYear))
           .filter((item): item is string => Boolean(item)),
       );
 
@@ -1112,6 +1112,16 @@ function uniqueSorted(values: string[]) {
   return Array.from(new Set(values)).sort((a, b) => b.localeCompare(a));
 }
 
+// Academic years arrive in two shapes: raw "2026-2027" (teaching assignments) and
+// display-formatted "2026 - 2027" (classroom API). Canonicalise before comparing,
+// otherwise the class filter matches nothing and the dropdown stays disabled.
+function normalizeYear(value: string | undefined | null) {
+  return (value ?? "")
+    .replace(/\s*-\s*/g, "-")
+    .trim()
+    .toUpperCase();
+}
+
 function dedupOptions(options: Option[]) {
   const seen = new Set<string>();
   return options.filter((item) => {
@@ -1172,13 +1182,10 @@ function getSemestersByYear(
   assignments: TeachingAssignmentApiRecord[],
   academicYearCode: string,
 ) {
+  const targetYear = normalizeYear(academicYearCode);
   return uniqueSorted(
     assignments
-      .filter(
-        (item) =>
-          (item.academicYearCode ?? "").toUpperCase() ===
-          academicYearCode.toUpperCase(),
-      )
+      .filter((item) => normalizeYear(item.academicYearCode) === targetYear)
       .map((item) => item.semesterCode?.trim())
       .filter((item): item is string => Boolean(item)),
   );
@@ -1190,13 +1197,10 @@ function getClassOptionsByYear(
   academicYearCode: string,
   isTeacher: boolean,
 ) {
+  const targetYear = normalizeYear(academicYearCode);
   const teacherClassCodes = new Set(
     assignments
-      .filter(
-        (item) =>
-          (item.academicYearCode ?? "").toUpperCase() ===
-          academicYearCode.toUpperCase(),
-      )
+      .filter((item) => normalizeYear(item.academicYearCode) === targetYear)
       .map((item) => item.classCode?.trim().toUpperCase())
       .filter((item): item is string => Boolean(item)),
   );
@@ -1210,10 +1214,7 @@ function getClassOptionsByYear(
       if (isTeacher) {
         return teacherClassCodes.has(code);
       }
-      return (
-        (item.academicYear ?? "").toUpperCase() ===
-        academicYearCode.toUpperCase()
-      );
+      return normalizeYear(item.academicYear) === targetYear;
     })
     .map((item) => ({
       value: item.classCode ?? "",

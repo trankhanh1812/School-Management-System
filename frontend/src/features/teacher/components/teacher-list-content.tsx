@@ -22,7 +22,8 @@ export function TeacherListContent() {
     [departmentQuery, debouncedSearch],
   );
 
-  const { records, departments, isLoading, error } = useTeacherListData(filters);
+  const { records, departments, isLoading, error, refresh } =
+    useTeacherListData(filters);
 
   return (
     <div className="grid gap-4">
@@ -51,7 +52,9 @@ export function TeacherListContent() {
 
       <section className="grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
         <Panel className="p-5 sm:p-6">
-          <h3 className="text-xl font-semibold tracking-tight text-slate-950">Bộ môn đang quản lý</h3>
+          <h3 className="text-xl font-semibold tracking-tight text-slate-950">
+            Bộ môn đang quản lý
+          </h3>
           <div className="mt-4 grid gap-3">
             <input
               type="search"
@@ -80,11 +83,14 @@ export function TeacherListContent() {
                 key={department.id}
                 className="rounded-2xl border border-slate-200 p-4 text-sm leading-6 text-slate-700"
               >
-                <p className="font-semibold text-slate-950">{department.name}</p>
+                <p className="font-semibold text-slate-950">
+                  {department.name}
+                </p>
                 <p className="mt-1">Trưởng bộ môn: {department.headTeacher}</p>
                 <p className="mt-1">Phó bộ môn: {department.viceHeadTeacher}</p>
                 <p className="mt-1">
-                  {department.teacherCount} giáo viên • {department.subjectCount} môn phụ trách
+                  {department.teacherCount} giáo viên •{" "}
+                  {department.subjectCount} môn phụ trách
                 </p>
               </div>
             ))}
@@ -98,7 +104,9 @@ export function TeacherListContent() {
 
         <div className="grid gap-4">
           {isLoading && (
-            <Panel className="p-4 text-sm text-slate-500">Đang tải danh sách giáo viên...</Panel>
+            <Panel className="p-4 text-sm text-slate-500">
+              Đang tải danh sách giáo viên...
+            </Panel>
           )}
           {!isLoading && records.length === 0 && (
             <Panel className="border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
@@ -106,7 +114,11 @@ export function TeacherListContent() {
             </Panel>
           )}
           {records.map((teacher) => (
-            <TeacherSummaryCard key={teacher.teacherCode} teacher={teacher} />
+            <TeacherSummaryCard
+              key={teacher.teacherCode}
+              teacher={teacher}
+              onDeleted={() => void refresh()}
+            />
           ))}
         </div>
       </section>

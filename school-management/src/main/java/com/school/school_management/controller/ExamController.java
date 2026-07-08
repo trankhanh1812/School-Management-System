@@ -34,6 +34,12 @@ public class ExamController {
         return ResponseEntity.ok(ApiResponse.of(examService.listExams(), "Exams fetched successfully", 200));
     }
 
+    @PreAuthorize("hasAnyRole('STUDENT', 'PARENT', 'ADMIN', 'TEACHER')")
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<List<ExamResponse>>> getMyExams() {
+        return ResponseEntity.ok(ApiResponse.of(examService.getMyExams(), "My exams fetched successfully", 200));
+    }
+
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     @GetMapping("/{examId}")
     public ResponseEntity<ApiResponse<ExamResponse>> getExam(@PathVariable String examId) {

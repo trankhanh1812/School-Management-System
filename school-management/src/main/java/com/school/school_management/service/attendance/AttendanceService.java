@@ -28,6 +28,12 @@ public interface AttendanceService {
 
     List<AttendanceResponse> getStudentAttendance(String studentCode);
 
+    /** Attendance history of the currently authenticated student (resolved from JWT). */
+    List<AttendanceResponse> getMyAttendance();
+
+    /** Attendance statistics of the currently authenticated student (resolved from JWT). */
+    Map<String, Object> getMyAttendanceStats(OffsetDateTime startDate, OffsetDateTime endDate);
+
     List<AttendanceResponse> getAttendanceByDateRange(String studentCode, OffsetDateTime startDate, OffsetDateTime endDate);
 
     AttendanceResponse updateAttendance(String attendanceId, String newStatus);

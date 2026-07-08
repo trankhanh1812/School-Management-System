@@ -1,8 +1,38 @@
 import Link from "next/link";
+import { useState } from "react";
+import { teacherApi } from "@/features/teacher/api";
 import type { TeacherRecord } from "@/features/teacher/teacher-data";
 import { Panel } from "@/shared/ui/panel";
 
-export function TeacherSummaryCard({ teacher }: { teacher: TeacherRecord }) {
+export function TeacherSummaryCard({
+  teacher,
+  onDeleted,
+}: {
+  teacher: TeacherRecord;
+  onDeleted?: () => void;
+}) {
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  async function handleDelete() {
+    if (
+      !confirm(
+        `Bạn có chắc chắn muốn xóa hồ sơ giáo viên ${teacher.fullName}? Hành động này không thể hoàn tác.`,
+      )
+    ) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await teacherApi.delete(teacher.teacherCode);
+      onDeleted?.();
+    } catch (error) {
+      alert("Có lỗi khi xóa hồ sơ giáo viên");
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   return (
     <Panel className="p-5">
       <div className="grid gap-4">
@@ -49,6 +79,13 @@ export function TeacherSummaryCard({ teacher }: { teacher: TeacherRecord }) {
           >
             Xem phân công điểm
           </Link>
+          <button
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="inline-flex items-center justify-center rounded-full border border-red-300 px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isDeleting ? "Đang xóa..." : "Xóa"}
+          </button>
         </div>
       </div>
     </Panel>

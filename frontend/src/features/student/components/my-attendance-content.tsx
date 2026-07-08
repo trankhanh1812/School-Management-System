@@ -1,19 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { attendanceApi } from "@/features/attendance/api";
 import { PageIntro } from "@/features/dashboard/components/page-intro";
-import { useAuthSession } from "@/hooks/use-auth-session";
 import { useToast } from "@/shared/components/toast-provider";
 import { Button } from "@/shared/ui/button";
-import { FormInput } from "@/shared/ui/form-field";
 import { Panel } from "@/shared/ui/panel";
 
 export function MyAttendanceContent() {
-  const { session } = useAuthSession();
   const { showToast } = useToast();
 
-  const [studentCode, setStudentCode] = useState(session?.user.email ?? "");
   const [loading, setLoading] = useState(false);
   const [records, setRecords] = useState<
     Array<{
@@ -42,37 +38,37 @@ export function MyAttendanceContent() {
     return { start, end };
   }, []);
 
-  async function loadAttendance() {
-    if (!studentCode.trim()) {
-      showToast("Vui lòng nhập mã học sinh", "error");
-      return;
-    }
+  const loadAttendance = useCallback(
+    async (notify = false) => {
+      setLoading(true);
+      try {
+        const [historyResponse, statsResponse] = await Promise.all([
+          attendanceApi.getMyAttendance(),
+          attendanceApi.getMyStats(dateRange.start, dateRange.end),
+        ]);
 
-    setLoading(true);
-    try {
-      const [historyResponse, statsResponse] = await Promise.all([
-        attendanceApi.getStudentAttendance(studentCode.trim()),
-        attendanceApi.getStats(
-          studentCode.trim(),
-          dateRange.start,
-          dateRange.end,
-        ),
-      ]);
+        setRecords(historyResponse.data ?? []);
+        setStats(statsResponse.data ?? null);
+        if (notify) {
+          showToast("Đã tải dữ liệu điểm danh", "success");
+        }
+      } catch (error) {
+        showToast(
+          error instanceof Error
+            ? error.message
+            : "Không thể tải dữ liệu điểm danh",
+          "error",
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [dateRange.start, dateRange.end, showToast],
+  );
 
-      setRecords(historyResponse.data ?? []);
-      setStats(statsResponse.data ?? null);
-      showToast("Đã tải dữ liệu điểm danh", "success");
-    } catch (error) {
-      showToast(
-        error instanceof Error
-          ? error.message
-          : "Không thể tải dữ liệu điểm danh",
-        "error",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
+  useEffect(() => {
+    void loadAttendance();
+  }, [loadAttendance]);
 
   const attendanceData = {
     totalDays: stats?.totalSessions ?? 0,
@@ -92,23 +88,17 @@ export function MyAttendanceContent() {
       />
 
       <Panel className="p-5 sm:p-6">
-        <div className="grid gap-4 md:grid-cols-[1fr_auto]">
-          <FormInput
-            label="Mã học sinh"
-            hint="Nếu hệ thống chưa map tự động, nhập mã học sinh để tra cứu."
-            value={studentCode}
-            onChange={(event) => setStudentCode(event.target.value)}
-            placeholder="VD: HS0001"
-          />
-          <div className="flex items-end">
-            <Button
-              onClick={() => void loadAttendance()}
-              disabled={loading}
-              className="w-full md:w-auto"
-            >
-              {loading ? "Đang tải..." : "Xem dữ liệu điểm danh"}
-            </Button>
-          </div>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-slate-600">
+            Dữ liệu điểm danh của bạn trong năm học được cập nhật tự động.
+          </p>
+          <Button
+            onClick={() => void loadAttendance(true)}
+            disabled={loading}
+            className="w-full sm:w-auto"
+          >
+            {loading ? "Đang tải..." : "Làm mới"}
+          </Button>
         </div>
       </Panel>
 

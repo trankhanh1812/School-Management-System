@@ -235,6 +235,27 @@ export default function ScoreGradebookPage() {
     }
   }
 
+  async function handleApproveAllScores() {
+    if (!selectedExamId) {
+      return;
+    }
+    try {
+      const response = await scoreApi.approveAll(selectedExamId);
+      const approved = response.data ?? 0;
+      if (approved > 0) {
+        showToast(`Đã duyệt ${approved} bản ghi điểm`, "success");
+      } else {
+        showToast("Không có bản ghi nào đang chờ duyệt", "error");
+      }
+      await loadData(selectedExamId);
+    } catch (error) {
+      showToast(
+        error instanceof Error ? error.message : "Không duyệt được điểm",
+        "error",
+      );
+    }
+  }
+
   async function handlePublishScores() {
     if (!selectedExamId) {
       return;
@@ -380,7 +401,7 @@ export default function ScoreGradebookPage() {
               onClick={handleSelectImportFile}
               disabled={isPreviewingImport || isImporting}
             >
-              {isPreviewingImport ? "Đang xem trước..." : "Import Excel"}
+              {isPreviewingImport ? "Đang xem trước..." : "Nhập từ Excel"}
             </Button>
             <ButtonLink href="/students">Mở hồ sơ học sinh</ButtonLink>
           </>
@@ -509,6 +530,15 @@ export default function ScoreGradebookPage() {
             >
               Gửi duyệt
             </Button>
+            {isAdmin ? (
+              <Button
+                tone="secondary"
+                onClick={handleApproveAllScores}
+                disabled={!selectedExamId || isLoading}
+              >
+                Duyệt cả bài
+              </Button>
+            ) : null}
             {isAdmin ? (
               <Button
                 tone="primary"

@@ -172,9 +172,18 @@ public class ClassroomServiceImpl implements ClassroomService {
             .filter(item -> !isBlank(item.getTransferReason()))
             .count();
         long promotionDraft = classes.stream()
-            .mapToLong(item -> getPromotionPlansByClassCode(item.getClassCode()).stream()
-                .filter(plan -> "draft".equalsIgnoreCase(plan.getStatus()))
-                .count())
+            .mapToLong(item -> {
+                // Counting drafts runs the full scoring/promotion engine per class.
+                // A single class with edge-case student data must not 500 the whole
+                // metrics endpoint (which would blank out the class-management screen).
+                try {
+                    return getPromotionPlansByClassCode(item.getClassCode()).stream()
+                        .filter(plan -> "draft".equalsIgnoreCase(plan.getStatus()))
+                        .count();
+                } catch (RuntimeException exception) {
+                    return 0L;
+                }
+            })
             .sum();
 
         return List.of(

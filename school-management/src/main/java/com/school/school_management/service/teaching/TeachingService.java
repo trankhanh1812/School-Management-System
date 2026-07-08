@@ -32,6 +32,8 @@ public interface TeachingService {
 
     List<TimetableEntryResponse> getTimetableGrid(String semesterCode, String academicYearCode, String versionId);
 
+    List<TimetableEntryResponse> getMyTimetable(String semesterCode);
+
     List<TimetableVersionResponse> getTimetableVersions(String semesterCode, String academicYearCode);
 
     void upsertTimetableGrid(TimetableGridUpsertRequest request);

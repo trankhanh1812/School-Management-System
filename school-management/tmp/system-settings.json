@@ -1,10 +1,14 @@
 {
-  "allowedSchoolIps" : [ "192.168.1.0/24" ],
-  "oralWeight" : 1.0,
-  "quiz15Weight" : 1.0,
-  "onePeriodWeight" : 2.0,
-  "midtermWeight" : 3.0,
-  "finalWeight" : 3.0,
-  "scoreEditWindowDays" : 3,
-  "requireAdminApproval" : true
+  "allowedSchoolIps": ["192.168.1.0/24"],
+  "oralWeight": 1.0,
+  "quiz15Weight": 1.0,
+  "onePeriodWeight": 2.0,
+  "midtermWeight": 3.0,
+  "finalWeight": 3.0,
+  "scoreEditWindowDays": 3,
+  "requireAdminApproval": true,
+  "passMark": 5.0,
+  "failingSubjectMark": 5.0,
+  "maxFailedSubjectsToPromote": 2,
+  "graduationGradeLevel": 12
 }

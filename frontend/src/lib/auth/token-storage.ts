@@ -30,7 +30,9 @@ export function storeSession(session: AuthSession, persist = true) {
   }
 
   const storage = persist ? window.localStorage : window.sessionStorage;
-  const alternateStorage = persist ? window.sessionStorage : window.localStorage;
+  const alternateStorage = persist
+    ? window.sessionStorage
+    : window.localStorage;
 
   alternateStorage.removeItem(storageKeys.accessToken);
   alternateStorage.removeItem(storageKeys.refreshToken);
@@ -39,7 +41,37 @@ export function storeSession(session: AuthSession, persist = true) {
   storage.setItem(storageKeys.accessToken, session.tokens.accessToken);
   storage.setItem(storageKeys.refreshToken, session.tokens.refreshToken);
   storage.setItem(storageKeys.authSession, JSON.stringify(session));
+}
 
+/**
+ * Replaces just the access/refresh tokens after a silent refresh, keeping them in
+ * whichever storage (local vs session) currently holds the session so the user's
+ * "remember me" choice is preserved. Also patches the cached session JSON.
+ */
+export function updateStoredTokens(accessToken: string, refreshToken: string) {
+  if (!isBrowser()) {
+    return;
+  }
+
+  const storage =
+    window.localStorage.getItem(storageKeys.accessToken) != null
+      ? window.localStorage
+      : window.sessionStorage;
+
+  storage.setItem(storageKeys.accessToken, accessToken);
+  storage.setItem(storageKeys.refreshToken, refreshToken);
+
+  const raw = storage.getItem(storageKeys.authSession);
+  if (raw) {
+    try {
+      const session = JSON.parse(raw) as AuthSession;
+      session.tokens.accessToken = accessToken;
+      session.tokens.refreshToken = refreshToken;
+      storage.setItem(storageKeys.authSession, JSON.stringify(session));
+    } catch {
+      // Corrupt session JSON — leave it; getStoredSession() will clear it later.
+    }
+  }
 }
 
 export function getStoredSession(): AuthSession | null {

@@ -66,6 +66,21 @@ export const attendanceApi = {
     );
   },
 
+  // Get attendance history of the current student (STUDENT — resolved from JWT)
+  getMyAttendance() {
+    return apiClient.get<ApiResponse<AttendanceRecord[]>>("/attendance/me", {
+      authenticated: true,
+    });
+  },
+
+  // Get attendance statistics of the current student (STUDENT — resolved from JWT)
+  getMyStats(startDate: string, endDate: string) {
+    return apiClient.get<ApiResponse<AttendanceStats>>(
+      `/attendance/me/stats?startDate=${startDate}&endDate=${endDate}`,
+      { authenticated: true },
+    );
+  },
+
   // Get attendance by date range (STUDENT/PARENT/ADMIN)
   getAttendanceByDateRange(
     studentCode: string,

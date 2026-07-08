@@ -35,6 +35,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthHydrated(true);
   }, []);
 
+  // When the api-client silently refreshes the tokens (on a 401), sync the new
+  // tokens into the in-memory session so token-dependent consumers — notably the
+  // notification WebSocket — reconnect with the fresh token instead of dying.
+  useEffect(() => {
+    function handleTokensRefreshed(event: Event) {
+      const detail = (event as CustomEvent).detail as
+        | { accessToken?: string; refreshToken?: string }
+        | undefined;
+      if (!detail?.accessToken) {
+        return;
+      }
+
+      setSession((previous) =>
+        previous
+          ? {
+              ...previous,
+              tokens: {
+                ...previous.tokens,
+                accessToken: detail.accessToken!,
+                refreshToken:
+                  detail.refreshToken ?? previous.tokens.refreshToken,
+              },
+            }
+          : previous,
+      );
+    }
+
+    window.addEventListener("auth-tokens-refreshed", handleTokensRefreshed);
+    return () =>
+      window.removeEventListener(
+        "auth-tokens-refreshed",
+        handleTokensRefreshed,
+      );
+  }, []);
+
   const signIn = useCallback((nextSession: AuthSession, persist = true) => {
     saveAuthSession(nextSession, persist);
     setSession(nextSession);

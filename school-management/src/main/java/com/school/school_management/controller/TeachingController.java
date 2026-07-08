@@ -119,6 +119,17 @@ public class TeachingController {
         ));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT', 'PARENT')")
+    @GetMapping("/timetable/me")
+    public ResponseEntity<ApiResponse<List<TimetableEntryResponse>>> getMyTimetable(
+            @RequestParam(required = false) String semesterCode) {
+        return ResponseEntity.ok(ApiResponse.of(
+            teachingService.getMyTimetable(semesterCode),
+            "Timetable fetched successfully",
+            200
+        ));
+    }
+
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     @GetMapping("/timetable/versions")
     public ResponseEntity<ApiResponse<List<TimetableVersionResponse>>> getTimetableVersions(

@@ -1,24 +1,5 @@
 package com.school.school_management.service.teaching;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.school.school_management.dto.teaching.TeachingAssignmentResponse;
 import com.school.school_management.dto.teaching.TeachingAssignmentUpsertRequest;
 import com.school.school_management.dto.teaching.TeachingConflictCheckRequest;
@@ -29,16 +10,19 @@ import com.school.school_management.dto.teaching.TimetableGridUpsertRequest;
 import com.school.school_management.dto.teaching.TimetableVersionResponse;
 import com.school.school_management.entity.SchoolClass;
 import com.school.school_management.entity.Semester;
+import com.school.school_management.entity.Student;
+import com.school.school_management.entity.StudentClass;
 import com.school.school_management.entity.Subject;
 import com.school.school_management.entity.Teacher;
 import com.school.school_management.entity.TeachingAssignment;
 import com.school.school_management.entity.Timetable;
 import com.school.school_management.entity.TimetableVersion;
 import com.school.school_management.entity.User;
-import com.school.school_management.enums.TimetableVersionStatus;
 import com.school.school_management.exception.CustomException;
+import com.school.school_management.enums.TimetableVersionStatus;
 import com.school.school_management.repository.SchoolClassRepository;
 import com.school.school_management.repository.SemesterRepository;
+import com.school.school_management.repository.StudentClassRepository;
 import com.school.school_management.repository.SubjectRepository;
 import com.school.school_management.repository.TeacherRepository;
 import com.school.school_management.repository.TeachingAssignmentRepository;
@@ -46,6 +30,23 @@ import com.school.school_management.repository.TimetableRepository;
 import com.school.school_management.repository.TimetableVersionRepository;
 import com.school.school_management.repository.UserRepository;
 import com.school.school_management.service.notification.NotificationAutomationService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -57,6 +58,7 @@ public class TeachingServiceImpl implements TeachingService {
     private final SubjectRepository subjectRepository;
     private final SemesterRepository semesterRepository;
     private final UserRepository userRepository;
+    private final StudentClassRepository studentClassRepository;
     private final TimetableRepository timetableRepository;
     private final TimetableVersionRepository timetableVersionRepository;
     private final ObjectMapper objectMapper;
@@ -69,6 +71,7 @@ public class TeachingServiceImpl implements TeachingService {
             SubjectRepository subjectRepository,
             SemesterRepository semesterRepository,
             UserRepository userRepository,
+            StudentClassRepository studentClassRepository,
             TimetableRepository timetableRepository,
             TimetableVersionRepository timetableVersionRepository,
             ObjectMapper objectMapper,
@@ -79,6 +82,7 @@ public class TeachingServiceImpl implements TeachingService {
         this.subjectRepository = subjectRepository;
         this.semesterRepository = semesterRepository;
         this.userRepository = userRepository;
+        this.studentClassRepository = studentClassRepository;
         this.timetableRepository = timetableRepository;
         this.timetableVersionRepository = timetableVersionRepository;
         this.objectMapper = objectMapper;
@@ -119,6 +123,7 @@ public class TeachingServiceImpl implements TeachingService {
 
         TeachingAssignment saved = teachingAssignmentRepository.save(assignment);
         syncTimetableTeacher(request, saved);
+        syncHomeroomTeacher(saved);
 
         notificationAutomationService.notifyUsers(
             List.of(saved.getTeacher().getUser()),
@@ -155,6 +160,7 @@ public class TeachingServiceImpl implements TeachingService {
 
         TeachingAssignment saved = teachingAssignmentRepository.save(current);
         syncTimetableTeacher(request, saved);
+        syncHomeroomTeacher(saved);
 
         notificationAutomationService.notifyUsers(
             List.of(saved.getTeacher().getUser()),
@@ -185,6 +191,9 @@ public class TeachingServiceImpl implements TeachingService {
                 "ANNOUNCEMENT"
             );
         }
+        // Gỡ giáo viên khỏi các tiết TKB tương ứng (đảo ngược syncTimetableTeacher),
+        // tránh để TKB hiển thị giáo viên đã bị hủy phân công.
+        clearTimetableTeacher(assignment);
         teachingAssignmentRepository.delete(assignment);
     }
 
@@ -209,6 +218,53 @@ public class TeachingServiceImpl implements TeachingService {
         }
         slots.forEach(slot -> slot.setTeacher(saved.getTeacher()));
         timetableRepository.saveAll(slots);
+    }
+
+    /**
+     * Đồng bộ cờ chủ nhiệm sang lớp: khi một phân công được đánh dấu isHomeroom=true,
+     * cập nhật SchoolClass.homeroomTeacher cho khớp (trước đây 2 nguồn dữ liệu tách rời).
+     */
+    private void syncHomeroomTeacher(TeachingAssignment saved) {
+        if (!Boolean.TRUE.equals(saved.getIsHomeroom())
+                || saved.getSchoolClass() == null
+                || saved.getTeacher() == null || saved.getTeacher().getId() == null) {
+            return;
+        }
+        SchoolClass cls = saved.getSchoolClass();
+        boolean already = cls.getHomeroomTeacher() != null
+            && saved.getTeacher().getId().equals(cls.getHomeroomTeacher().getId());
+        if (!already) {
+            cls.setHomeroomTeacher(saved.getTeacher());
+            schoolClassRepository.save(cls);
+        }
+    }
+
+    /**
+     * Khi hủy phân công: gỡ giáo viên đó khỏi các tiết TKB cùng lớp/môn/học kỳ
+     * (đảo ngược syncTimetableTeacher). Chỉ gỡ đúng giáo viên của phân công bị xóa.
+     */
+    private void clearTimetableTeacher(TeachingAssignment assignment) {
+        if (assignment.getTeacher() == null || assignment.getTeacher().getId() == null
+                || assignment.getSchoolClass() == null
+                || assignment.getSubject() == null
+                || assignment.getSemester() == null
+                || assignment.getSemester().getAcademicYear() == null) {
+            return;
+        }
+        List<Timetable> slots = timetableRepository
+            .findByVersion_Semester_CodeIgnoreCaseAndVersion_Semester_AcademicYear_CodeIgnoreCaseAndSchoolClass_ClassCodeIgnoreCaseAndSubject_CodeIgnoreCase(
+                assignment.getSemester().getCode(),
+                assignment.getSemester().getAcademicYear().getCode(),
+                assignment.getSchoolClass().getClassCode(),
+                assignment.getSubject().getCode());
+        List<Timetable> affected = slots.stream()
+            .filter(s -> s.getTeacher() != null && assignment.getTeacher().getId().equals(s.getTeacher().getId()))
+            .toList();
+        if (affected.isEmpty()) {
+            return;
+        }
+        affected.forEach(s -> s.setTeacher(null));
+        timetableRepository.saveAll(affected);
     }
 
     @Override
@@ -359,6 +415,68 @@ public class TeachingServiceImpl implements TeachingService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<TimetableEntryResponse> getMyTimetable(String semesterCode) {
+        Student student = getCurrentStudent();
+
+        StudentClass currentClass = studentClassRepository
+            .findFirstByStudentAndEndDateIsNullOrderByStartDateDesc(student)
+            .orElseThrow(() -> new CustomException("Chưa xác định được lớp hiện tại của học sinh", 404));
+
+        SchoolClass schoolClass = currentClass.getSchoolClass();
+        if (schoolClass == null || schoolClass.getClassCode() == null || schoolClass.getClassCode().isBlank()) {
+            throw new CustomException("Chưa xác định được lớp hiện tại của học sinh", 404);
+        }
+        if (currentClass.getAcademicYear() == null || currentClass.getAcademicYear().getCode() == null
+                || currentClass.getAcademicYear().getCode().isBlank()) {
+            throw new CustomException("Chưa xác định được năm học hiện tại của học sinh", 404);
+        }
+
+        String classCode = normalizeCode(schoolClass.getClassCode());
+        String academicYearCode = normalizeCode(currentClass.getAcademicYear().getCode());
+        String resolvedSemesterCode = (semesterCode != null && !semesterCode.isBlank())
+            ? semesterCode
+            : resolveActiveSemesterCode(academicYearCode);
+
+        // Reuse the existing grid builder for the resolved semester/year (active locked
+        // version), then keep only the current student's class so a student cannot see
+        // other classes' timetables.
+        return getTimetableGrid(resolvedSemesterCode, academicYearCode, null).stream()
+            .filter(entry -> classCode.equalsIgnoreCase(entry.getClassCode() != null ? entry.getClassCode().trim() : ""))
+            .toList();
+    }
+
+    private String resolveActiveSemesterCode(String academicYearCode) {
+        List<Semester> semesters = semesterRepository.findByAcademicYear_CodeOrderByStartDateDesc(academicYearCode);
+        if (semesters.isEmpty()) {
+            return "HK1";
+        }
+        LocalDate today = LocalDate.now();
+        return semesters.stream()
+            .filter(semester -> semester.getStartDate() != null && semester.getEndDate() != null
+                && !today.isBefore(semester.getStartDate()) && !today.isAfter(semester.getEndDate()))
+            .map(Semester::getCode)
+            .findFirst()
+            .orElse(semesters.get(0).getCode());
+    }
+
+    private Student getCurrentStudent() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
+            throw new CustomException("Unauthenticated", 401);
+        }
+
+        User user = userRepository.findByEmail(authentication.getName().trim().toLowerCase(Locale.ROOT))
+            .orElseThrow(() -> new CustomException("Current user not found", 404));
+
+        Student student = user.getStudent();
+        if (student == null) {
+            throw new CustomException("Student profile not found", 403);
+        }
+        return student;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<TimetableVersionResponse> getTimetableVersions(String semesterCode, String academicYearCode) {
         String normalizedSemesterCode = normalizeCode(semesterCode);
         String normalizedAcademicYearCode = normalizeCode(academicYearCode);
@@ -418,16 +536,38 @@ public class TeachingServiceImpl implements TeachingService {
             }
         }
 
-        int nextVersionNo = versions.isEmpty() ? 1 : safeVersionNo(versions.get(0).getVersionNo()) + 1;
-        TimetableVersion activeVersion = timetableVersionRepository.save(TimetableVersion.builder()
-            .semester(semester)
-            .versionNo(nextVersionNo)
-            .name(safe(request.getVersionName(), "Phiên bản " + nextVersionNo))
-            .status(status.toApiValue())
-            .effectiveFrom(effectiveFrom)
-            .effectiveTo(effectiveTo)
-            .isActive(status.isLocked())
-            .build());
+        // Lưu NHÁP mà bản mới nhất cũng đang là nháp → cập nhật đè lên chính bản đó,
+        // KHÔNG sinh version_no mới mỗi lần lưu (tránh phình version khi đang soạn).
+        // Bản đã KHÓA là lịch sử bất biến → luôn tạo version mới.
+        TimetableVersion latest = versions.isEmpty() ? null : versions.get(0);
+        boolean reuseDraft = !status.isLocked()
+            && latest != null
+            && !resolveTimetableVersionStatus(latest).isLocked();
+
+        TimetableVersion activeVersion;
+        if (reuseDraft) {
+            latest.setName(safe(request.getVersionName(), latest.getName()));
+            latest.setStatus(status.toApiValue());
+            latest.setEffectiveFrom(effectiveFrom);
+            latest.setEffectiveTo(effectiveTo);
+            latest.setIsActive(false);
+            activeVersion = timetableVersionRepository.save(latest);
+            // Xoá tiết cũ rồi flush ngay để tránh đụng unique (version_id, class, day, period_start)
+            // khi chèn tiết mới trong cùng phiên bản.
+            timetableRepository.deleteByVersion_Id(activeVersion.getId());
+            timetableRepository.flush();
+        } else {
+            int nextVersionNo = versions.isEmpty() ? 1 : safeVersionNo(versions.get(0).getVersionNo()) + 1;
+            activeVersion = timetableVersionRepository.save(TimetableVersion.builder()
+                .semester(semester)
+                .versionNo(nextVersionNo)
+                .name(safe(request.getVersionName(), "Phiên bản " + nextVersionNo))
+                .status(status.toApiValue())
+                .effectiveFrom(effectiveFrom)
+                .effectiveTo(effectiveTo)
+                .isActive(status.isLocked())
+                .build());
+        }
 
         List<Timetable> entries = request.getEntries().stream()
             .map(item -> Timetable.builder()

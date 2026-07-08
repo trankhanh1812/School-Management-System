@@ -8,6 +8,7 @@ import com.school.school_management.entity.ExamClass;
 import com.school.school_management.entity.SchoolClass;
 import com.school.school_management.entity.Score;
 import com.school.school_management.entity.Semester;
+import com.school.school_management.entity.Student;
 import com.school.school_management.entity.StudentClass;
 import com.school.school_management.entity.Subject;
 import com.school.school_management.entity.Teacher;
@@ -104,6 +105,31 @@ public class ExamServiceImpl implements ExamService {
 
         return exams.stream()
             .filter(exam -> canTeacherAccessExam(exam, allowedAssignmentKeys))
+            .map(this::toResponse)
+            .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ExamResponse> getMyExams() {
+        User currentUser = getCurrentUser();
+        Student student = currentUser.getStudent();
+        if (student == null) {
+            throw new CustomException("Current account is not linked to a student profile", 403);
+        }
+
+        Set<String> classCodes = studentClassRepository.findByStudentOrderByStartDateDesc(student).stream()
+            .map(StudentClass::getSchoolClass)
+            .filter(schoolClass -> schoolClass != null && schoolClass.getClassCode() != null)
+            .map(SchoolClass::getClassCode)
+            .collect(Collectors.toSet());
+
+        return classCodes.stream()
+            .flatMap(classCode -> examClassRepository.findBySchoolClass_ClassCode(classCode).stream())
+            .map(ExamClass::getExam)
+            .filter(exam -> exam != null && exam.getDeletedAt() == null)
+            .collect(Collectors.toMap(Exam::getId, exam -> exam, (existing, duplicate) -> existing))
+            .values().stream()
             .map(this::toResponse)
             .toList();
     }

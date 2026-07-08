@@ -114,9 +114,9 @@ export function LineChart({
           </svg>
 
           <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-slate-600 sm:grid-cols-4 lg:grid-cols-8">
-            {points.map((point) => (
+            {points.map((point, index) => (
               <div
-                key={`${point.label}-${point.value}`}
+                key={`${point.label}-${point.value}-${index}`}
                 className="rounded-lg border border-slate-200 bg-white/70 px-2 py-1"
               >
                 <p className="font-medium text-slate-700">{point.label}</p>

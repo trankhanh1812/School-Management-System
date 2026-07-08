@@ -1,5 +1,35 @@
 package com.school.school_management.service.student;
 
+import com.school.school_management.dto.student.StudentResponse;
+import com.school.school_management.dto.student.StudentTranscriptResponse;
+import com.school.school_management.dto.student.StudentUpsertRequest;
+import com.school.school_management.dto.student.PromotionHistoryResponse;
+import com.school.school_management.dto.student.ScoreHistoryResponse;
+import com.school.school_management.entity.AcademicYear;
+import com.school.school_management.entity.AcademicRankRule;
+import com.school.school_management.entity.Parent;
+import com.school.school_management.entity.ParentStudent;
+import com.school.school_management.entity.Role;
+import com.school.school_management.entity.SchoolClass;
+import com.school.school_management.entity.Score;
+import com.school.school_management.entity.Student;
+import com.school.school_management.entity.StudentClass;
+import com.school.school_management.entity.User;
+import com.school.school_management.entity.UserRole;
+import com.school.school_management.entity.PromotionLog;
+import com.school.school_management.enums.ExamType;
+import com.school.school_management.exception.CustomException;
+import com.school.school_management.repository.AcademicYearRepository;
+import com.school.school_management.repository.AcademicRankRuleRepository;
+import com.school.school_management.repository.ParentRepository;
+import com.school.school_management.repository.ParentStudentRepository;
+import com.school.school_management.repository.RoleRepository;
+import com.school.school_management.repository.SchoolClassRepository;
+import com.school.school_management.repository.StudentClassRepository;
+import com.school.school_management.repository.StudentRepository;
+import com.school.school_management.repository.PromotionLogRepository;
+import com.school.school_management.repository.ScoreHistoryRepository;
+import com.school.school_management.repository.UserRepository;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -11,43 +41,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.school.school_management.dto.student.PromotionHistoryResponse;
-import com.school.school_management.dto.student.ScoreHistoryResponse;
-import com.school.school_management.dto.student.StudentResponse;
-import com.school.school_management.dto.student.StudentTranscriptResponse;
-import com.school.school_management.dto.student.StudentUpsertRequest;
-import com.school.school_management.entity.AcademicRankRule;
-import com.school.school_management.entity.AcademicYear;
-import com.school.school_management.entity.ParentStudent;
-import com.school.school_management.entity.PromotionLog;
-import com.school.school_management.entity.Role;
-import com.school.school_management.entity.SchoolClass;
-import com.school.school_management.entity.Score;
-import com.school.school_management.entity.Student;
-import com.school.school_management.entity.StudentClass;
-import com.school.school_management.entity.User;
-import com.school.school_management.entity.UserRole;
-import com.school.school_management.enums.ExamType;
-import com.school.school_management.exception.CustomException;
-import com.school.school_management.repository.AcademicRankRuleRepository;
-import com.school.school_management.repository.AcademicYearRepository;
-import com.school.school_management.repository.PromotionLogRepository;
-import com.school.school_management.repository.RoleRepository;
-import com.school.school_management.repository.SchoolClassRepository;
-import com.school.school_management.repository.ScoreHistoryRepository;
-import com.school.school_management.repository.StudentClassRepository;
-import com.school.school_management.repository.StudentRepository;
-import com.school.school_management.repository.UserRepository;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -67,6 +67,8 @@ public class StudentServiceImpl implements StudentService {
     private final PasswordEncoder passwordEncoder;
     private final PromotionLogRepository promotionLogRepository;
     private final ScoreHistoryRepository scoreHistoryRepository;
+    private final ParentRepository parentRepository;
+    private final ParentStudentRepository parentStudentRepository;
 
     public StudentServiceImpl(
             StudentRepository studentRepository,
@@ -78,7 +80,9 @@ public class StudentServiceImpl implements StudentService {
             StudentClassRepository studentClassRepository,
             PasswordEncoder passwordEncoder,
             PromotionLogRepository promotionLogRepository,
-            ScoreHistoryRepository scoreHistoryRepository) {
+            ScoreHistoryRepository scoreHistoryRepository,
+            ParentRepository parentRepository,
+            ParentStudentRepository parentStudentRepository) {
         this.studentRepository = studentRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -89,6 +93,8 @@ public class StudentServiceImpl implements StudentService {
         this.passwordEncoder = passwordEncoder;
         this.promotionLogRepository = promotionLogRepository;
         this.scoreHistoryRepository = scoreHistoryRepository;
+        this.parentRepository = parentRepository;
+        this.parentStudentRepository = parentStudentRepository;
     }
 
     @Override
@@ -224,7 +230,91 @@ public class StudentServiceImpl implements StudentService {
 
         Student savedStudent = studentRepository.save(student);
         upsertCurrentClass(savedStudent, request);
+        upsertParents(savedStudent, request);
         return toResponse(savedStudent);
+    }
+
+    /**
+     * Tạo/liên kết phụ huynh khi tạo học sinh qua form (trước đây chỉ luồng Import mới tạo phụ huynh).
+     * Logic mô phỏng ImportServiceImpl#createParentAndLink: nếu user (theo phone) đã tồn tại thì tái dùng,
+     * chưa có thì tạo user role PARENT + parent + parent_student link.
+     */
+    private void upsertParents(Student student, StudentUpsertRequest request) {
+        if (request.getParents() == null || request.getParents().isEmpty()) {
+            return;
+        }
+
+        Role parentRole = roleRepository.findByCode("PARENT")
+            .orElseThrow(() -> new CustomException("PARENT role missing", 500));
+
+        for (StudentUpsertRequest.ParentUpsertRequest parentRequest : request.getParents()) {
+            if (parentRequest == null) {
+                continue;
+            }
+            String parentName = normalizeOptionalText(parentRequest.getFullName());
+            if (isBlank(parentName)) {
+                continue;
+            }
+
+            String phone = normalizeOptionalText(parentRequest.getPhone());
+            String email = isBlank(parentRequest.getEmail())
+                ? buildSyntheticParentEmail(!isBlank(phone) ? phone : generateParentCode())
+                : parentRequest.getEmail().trim().toLowerCase(Locale.ROOT);
+
+            // Tái dùng user nếu đã có (theo username = phone), tránh trùng tài khoản.
+            User existingUser = isBlank(phone) ? null : userRepository.findByUsername(phone).orElse(null);
+            User savedUser;
+            if (existingUser != null) {
+                savedUser = existingUser;
+            } else {
+                String username = !isBlank(phone) ? phone : generateParentCode();
+                User parentUser = User.builder()
+                    .username(username)
+                    .email(email)
+                    .passwordHash(passwordEncoder.encode(!isBlank(phone) ? phone : username))
+                    .fullName(parentName)
+                    .status(ACTIVE_STATUS)
+                    .forcePasswordChange(true)
+                    .build();
+                parentUser.getUserRoles().add(
+                    UserRole.builder().user(parentUser).role(parentRole).build()
+                );
+                savedUser = userRepository.save(parentUser);
+            }
+
+            final String parentPhone = phone;
+            final String resolvedParentName = parentName;
+            Parent parent = parentRepository.findByUser(savedUser).orElseGet(() ->
+                parentRepository.save(
+                    Parent.builder()
+                        .user(savedUser)
+                        .parentCode(generateParentCode())
+                        .fullName(resolvedParentName)
+                        .phone(parentPhone)
+                        .build()
+                )
+            );
+
+            if (parentStudentRepository.findByParentAndStudent(parent, student).isEmpty()) {
+                parentStudentRepository.save(
+                    ParentStudent.builder()
+                        .parent(parent)
+                        .student(student)
+                        .isPrimaryContact(parentRequest.isPrimaryContact())
+                        .canViewScore(true)
+                        .build()
+                );
+            }
+        }
+    }
+
+    private String generateParentCode() {
+        long count = parentRepository.count() + 1;
+        return String.format("PAR%06d", count);
+    }
+
+    private String buildSyntheticParentEmail(String code) {
+        return code.toLowerCase(Locale.ROOT) + "@import.local";
     }
 
     @Override
@@ -971,6 +1061,10 @@ public class StudentServiceImpl implements StudentService {
         Student student = getStudentEntity(studentCode);
         student.setDeletedAt(java.time.OffsetDateTime.now());
         student.setDeletedBy(getCurrentUserId());
+        // Khoá tài khoản đăng nhập của học sinh khi soft-delete (đối xứng với xoá giáo viên).
+        if (student.getUser() != null) {
+            student.getUser().setStatus("INACTIVE");
+        }
         studentRepository.save(student);
     }
 

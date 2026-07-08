@@ -17,7 +17,19 @@ public interface SchoolClassRepository extends BaseRepository<SchoolClass, UUID>
 
     Optional<SchoolClass> findByIdAndDeletedAtIsNull(UUID id);
 
-    Optional<SchoolClass> findByClassCodeAndDeletedAtIsNull(String classCode);
+    // A class_code is unique only within an academic year, so the same code
+    // (e.g. "10A1") can legitimately exist across multiple years — deriving this
+    // as a plain Optional throws IncorrectResultSizeDataAccessException once a
+    // second year exists. Resolve to the most recent academic year's class.
+    @Query("""
+            select c from SchoolClass c
+            left join c.academicYear ay
+            where c.classCode = :classCode
+                and c.deletedAt is null
+            order by ay.startDate desc
+            limit 1
+            """)
+    Optional<SchoolClass> findByClassCodeAndDeletedAtIsNull(@Param("classCode") String classCode);
 
     boolean existsByClassCodeAndDeletedAtIsNull(String classCode);
 

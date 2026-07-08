@@ -8,6 +8,9 @@ public interface ConductService {
 
     List<ConductResponse> getConducts();
 
+    /** Hạnh kiểm của chính học sinh đang đăng nhập (màn my-conduct). */
+    List<ConductResponse> getMyConducts();
+
     ConductResponse getConduct(String id);
 
     ConductResponse createConduct(ConductUpsertRequest request);

@@ -72,6 +72,12 @@ public class ScoreController {
         return ResponseEntity.ok(ApiResponse.of(scoreService.approveScore(scoreId), "Score approved successfully", 200));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/approve")
+    public ResponseEntity<ApiResponse<Integer>> approveScores(@RequestParam String examId) {
+        return ResponseEntity.ok(ApiResponse.of(scoreService.approveScores(examId), "Scores approved successfully", 200));
+    }
+
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     @PatchMapping("/publish")
     public ResponseEntity<ApiResponse<Void>> publishScores(@RequestParam String examId) {

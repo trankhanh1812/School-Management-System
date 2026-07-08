@@ -3,19 +3,25 @@ package com.school.school_management.service.conduct;
 import com.school.school_management.dto.conduct.ConductResponse;
 import com.school.school_management.dto.conduct.ConductUpsertRequest;
 import com.school.school_management.entity.Conduct;
+import com.school.school_management.entity.Role;
 import com.school.school_management.entity.SchoolClass;
 import com.school.school_management.entity.Semester;
 import com.school.school_management.entity.Student;
 import com.school.school_management.entity.Teacher;
+import com.school.school_management.entity.User;
+import com.school.school_management.entity.UserRole;
 import com.school.school_management.exception.CustomException;
 import com.school.school_management.repository.ConductRepository;
 import com.school.school_management.repository.SchoolClassRepository;
 import com.school.school_management.repository.SemesterRepository;
 import com.school.school_management.repository.StudentRepository;
 import com.school.school_management.repository.TeacherRepository;
+import com.school.school_management.repository.UserRepository;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -28,18 +34,21 @@ public class ConductServiceImpl implements ConductService {
     private final SemesterRepository semesterRepository;
     private final SchoolClassRepository schoolClassRepository;
     private final TeacherRepository teacherRepository;
+    private final UserRepository userRepository;
 
     public ConductServiceImpl(
             ConductRepository conductRepository,
             StudentRepository studentRepository,
             SemesterRepository semesterRepository,
             SchoolClassRepository schoolClassRepository,
-            TeacherRepository teacherRepository) {
+            TeacherRepository teacherRepository,
+            UserRepository userRepository) {
         this.conductRepository = conductRepository;
         this.studentRepository = studentRepository;
         this.semesterRepository = semesterRepository;
         this.schoolClassRepository = schoolClassRepository;
         this.teacherRepository = teacherRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -60,12 +69,14 @@ public class ConductServiceImpl implements ConductService {
     public ConductResponse createConduct(ConductUpsertRequest request) {
         Student student = resolveStudent(request.getStudentCode());
         Semester semester = resolveSemester(request.getSemesterCode());
+        SchoolClass schoolClass = resolveSchoolClass(request.getClassCode());
+        assertCanAssessConduct(schoolClass);
         ensureConductDoesNotExist(student, semester, null);
 
         Conduct conduct = Conduct.builder()
             .student(student)
             .semester(semester)
-            .schoolClass(resolveSchoolClass(request.getClassCode()))
+            .schoolClass(schoolClass)
             .conductLevel(normalizeText(request.getConductLevel(), "Conduct level is required"))
             .remarks(normalizeOptionalText(request.getRemarks()))
             .assessedBy(resolveTeacher(request.getAssessedByTeacherCode()))
@@ -79,11 +90,13 @@ public class ConductServiceImpl implements ConductService {
         Conduct conduct = getConductEntity(id);
         Student student = resolveStudent(request.getStudentCode());
         Semester semester = resolveSemester(request.getSemesterCode());
+        SchoolClass schoolClass = resolveSchoolClass(request.getClassCode());
+        assertCanAssessConduct(schoolClass);
         ensureConductDoesNotExist(student, semester, conduct.getId());
 
         conduct.setStudent(student);
         conduct.setSemester(semester);
-        conduct.setSchoolClass(resolveSchoolClass(request.getClassCode()));
+        conduct.setSchoolClass(schoolClass);
         conduct.setConductLevel(normalizeText(request.getConductLevel(), "Conduct level is required"));
         conduct.setRemarks(normalizeOptionalText(request.getRemarks()));
         conduct.setAssessedBy(resolveTeacher(request.getAssessedByTeacherCode()));
@@ -94,7 +107,55 @@ public class ConductServiceImpl implements ConductService {
     @Override
     public void deleteConduct(String id) {
         Conduct conduct = getConductEntity(id);
+        assertCanAssessConduct(conduct.getSchoolClass());
         conductRepository.delete(conduct);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ConductResponse> getMyConducts() {
+        User currentUser = getCurrentUser();
+        Student student = currentUser.getStudent();
+        if (student == null) {
+            throw new CustomException("Current account is not linked to a student profile", 403);
+        }
+        return conductRepository.findByStudentOrderByIdDesc(student).stream()
+            .map(this::toResponse)
+            .toList();
+    }
+
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
+            throw new CustomException("Unauthenticated", 401);
+        }
+        String email = authentication.getName().trim().toLowerCase(Locale.ROOT);
+        return userRepository.findByEmail(email)
+            .orElseThrow(() -> new CustomException("Current user not found", 404));
+    }
+
+    /**
+     * Chỉ ADMIN hoặc giáo viên CHỦ NHIỆM của lớp mới được tạo/sửa/xoá hạnh kiểm lớp đó.
+     * (Trước đây controller giới hạn cứng ADMIN; nay mở cho GVCN đúng nghiệp vụ.)
+     */
+    private void assertCanAssessConduct(SchoolClass schoolClass) {
+        User currentUser = getCurrentUser();
+        boolean isAdmin = currentUser.getUserRoles().stream()
+            .map(UserRole::getRole)
+            .filter(role -> role != null)
+            .map(Role::getCode)
+            .filter(code -> code != null)
+            .anyMatch(code -> code.equalsIgnoreCase("ADMIN"));
+        if (isAdmin) {
+            return;
+        }
+        Teacher currentTeacher = currentUser.getTeacher();
+        if (currentTeacher != null && currentTeacher.getId() != null
+                && schoolClass != null && schoolClass.getHomeroomTeacher() != null
+                && currentTeacher.getId().equals(schoolClass.getHomeroomTeacher().getId())) {
+            return;
+        }
+        throw new CustomException("Chỉ giáo viên chủ nhiệm của lớp mới được đánh giá hạnh kiểm", 403);
     }
 
     private Conduct getConductEntity(String id) {

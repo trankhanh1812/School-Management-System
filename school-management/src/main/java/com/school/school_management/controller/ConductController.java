@@ -34,20 +34,26 @@ public class ConductController {
         return ResponseEntity.ok(ApiResponse.of(conductService.getConducts(), "Conduct records fetched successfully", 200));
     }
 
+    @PreAuthorize("hasAnyRole('STUDENT', 'ADMIN', 'TEACHER')")
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<List<ConductResponse>>> getMyConducts() {
+        return ResponseEntity.ok(ApiResponse.of(conductService.getMyConducts(), "My conduct records fetched successfully", 200));
+    }
+
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ConductResponse>> getConduct(@PathVariable String id) {
         return ResponseEntity.ok(ApiResponse.of(conductService.getConduct(id), "Conduct record fetched successfully", 200));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     @PostMapping
     public ResponseEntity<ApiResponse<ConductResponse>> createConduct(@Valid @RequestBody ConductUpsertRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(ApiResponse.of(conductService.createConduct(request), "Conduct record created successfully", 201));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ConductResponse>> updateConduct(
             @PathVariable String id,
@@ -55,7 +61,7 @@ public class ConductController {
         return ResponseEntity.ok(ApiResponse.of(conductService.updateConduct(id, request), "Conduct record updated successfully", 200));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteConduct(@PathVariable String id) {
         conductService.deleteConduct(id);

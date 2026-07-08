@@ -1,22 +1,5 @@
 package com.school.school_management.service.attendance;
 
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.school.school_management.dto.attendance.AttendanceResponse;
 import com.school.school_management.dto.attendance.AttendanceUpsertRequest;
 import com.school.school_management.dto.attendance.QRAttendanceRequest;
@@ -42,6 +25,21 @@ import com.school.school_management.repository.StudentRepository;
 import com.school.school_management.repository.UserRepository;
 import com.school.school_management.service.notification.NotificationAutomationService;
 import com.school.school_management.service.system.SystemSettingService;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -247,6 +245,29 @@ public class AttendanceServiceImpl implements AttendanceService {
         return attendanceRepository.findByStudent(student).stream()
             .map(this::toResponse)
             .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AttendanceResponse> getMyAttendance() {
+        Student student = resolveCurrentStudent();
+        // Reuse the existing history logic (ownership check inside passes for the owner).
+        return getStudentAttendance(student.getStudentCode());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, Object> getMyAttendanceStats(OffsetDateTime startDate, OffsetDateTime endDate) {
+        Student student = resolveCurrentStudent();
+        // Reuse the existing stats logic.
+        return getAttendanceStats(student.getStudentCode(), startDate, endDate);
+    }
+
+    /** Resolve the currently authenticated user's student profile from the JWT. */
+    private Student resolveCurrentStudent() {
+        User currentUser = getCurrentUser();
+        return studentRepository.findByUserAndDeletedAtIsNull(currentUser)
+            .orElseThrow(() -> new CustomException("Student profile not found for current user", 403));
     }
 
     @Override
@@ -645,10 +666,15 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     private Semester resolveSemester(String semesterCode) {
         String normalizedSemesterCode = semesterCode.trim().toUpperCase(Locale.ROOT);
-        List<Semester> semesters = semesterRepository.findAll();
-        return semesters.stream()
+        // Mã học kỳ (vd "HK1") lặp lại qua từng năm học, nên findFirst() dễ vớ
+        // nhầm HK1 của năm cũ -> lọc session ra rỗng. Chọn theo năm học GẦN NHẤT,
+        // khớp với cách resolve lớp (findByClassCode... cũng lấy năm mới nhất).
+        return semesterRepository.findAll().stream()
             .filter(semester -> semester.getCode() != null && normalizedSemesterCode.equalsIgnoreCase(semester.getCode()))
-            .findFirst()
+            .max(java.util.Comparator.comparing(semester ->
+                semester.getAcademicYear() != null && semester.getAcademicYear().getStartDate() != null
+                    ? semester.getAcademicYear().getStartDate()
+                    : java.time.LocalDate.MIN))
             .orElseThrow(() -> new CustomException("Semester not found", 404));
     }
 

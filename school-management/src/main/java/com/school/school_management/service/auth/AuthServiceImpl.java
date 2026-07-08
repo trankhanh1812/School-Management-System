@@ -8,12 +8,14 @@ import com.school.school_management.dto.auth.RegisterRequest;
 import com.school.school_management.dto.auth.ResetPasswordRequest;
 import com.school.school_management.entity.PasswordResetToken;
 import com.school.school_management.entity.Role;
+import com.school.school_management.entity.Student;
 import com.school.school_management.entity.Teacher;
 import com.school.school_management.entity.User;
 import com.school.school_management.entity.UserRole;
 import com.school.school_management.exception.CustomException;
 import com.school.school_management.repository.PasswordResetTokenRepository;
 import com.school.school_management.repository.RoleRepository;
+import com.school.school_management.repository.StudentRepository;
 import com.school.school_management.repository.UserRepository;
 import com.school.school_management.security.JwtProvider;
 import java.time.OffsetDateTime;
@@ -44,6 +46,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final StudentRepository studentRepository;
 
     public AuthServiceImpl(
             AuthenticationManager authenticationManager,
@@ -51,13 +54,15 @@ public class AuthServiceImpl implements AuthService {
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             RoleRepository roleRepository,
-            PasswordResetTokenRepository passwordResetTokenRepository) {
+            PasswordResetTokenRepository passwordResetTokenRepository,
+            StudentRepository studentRepository) {
         this.authenticationManager = authenticationManager;
         this.jwtProvider = jwtProvider;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
+        this.studentRepository = studentRepository;
     }
 
     @Override
@@ -71,6 +76,9 @@ public class AuthServiceImpl implements AuthService {
             );
 
             User user = getActiveUserByEmail(authentication.getName());
+            // Ghi mốc đăng nhập gần nhất (trước đây cột last_login_at không bao giờ được cập nhật).
+            user.setLastLoginAt(OffsetDateTime.now());
+            userRepository.save(user);
             String accessToken = jwtProvider.generateAccessToken(authentication);
             String refreshToken = jwtProvider.generateRefreshToken(user.getEmail());
 
@@ -91,8 +99,10 @@ public class AuthServiceImpl implements AuthService {
             throw new CustomException("Email already exists", 409);
         }
 
-        // Self-registration is always a STUDENT account. Privileged roles must be
-        // granted via admin-managed user provisioning.
+        // Self-registration is ALWAYS a STUDENT account. Privileged roles
+        // (ADMIN/TEACHER/PARENT/STAFF) must be provisioned by an ADMIN through the
+        // admin user-management flow — never chosen by an anonymous caller.
+        // The client-supplied registerRequest.getRole() is intentionally ignored.
         Role role = getOrCreateRole(com.school.school_management.enums.UserRole.STUDENT);
 
         User user = User.builder()
@@ -105,6 +115,11 @@ public class AuthServiceImpl implements AuthService {
 
         user.getUserRoles().add(UserRole.builder().user(user).role(role).build());
         User savedUser = userRepository.save(user);
+
+        // Tài khoản tự đăng ký luôn là HỌC SINH → tạo hồ sơ students tối thiểu
+        // (chưa xếp lớp; ADMIN sẽ bổ sung lớp/năm học sau). Trước đây register chỉ
+        // tạo users + user_roles nên học sinh tự đăng ký thiếu hồ sơ students.
+        createStudentProfileFor(savedUser);
 
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -120,6 +135,30 @@ public class AuthServiceImpl implements AuthService {
             String refreshToken = jwtProvider.generateRefreshToken(savedUser.getEmail());
             return buildLoginResponse(savedUser, accessToken, refreshToken);
         }
+    }
+
+    /**
+     * Tạo hồ sơ students tối thiểu gắn với tài khoản vừa đăng ký (chưa xếp lớp).
+     * Tách tên: từ cuối là tên (firstName), phần còn lại là họ + đệm (lastName).
+     * Mã HS suy từ id user để bảo đảm duy nhất.
+     */
+    private void createStudentProfileFor(User user) {
+        String fullName = user.getFullName() != null ? user.getFullName().trim() : "";
+        String firstName = fullName;
+        String lastName = "";
+        int lastSpace = fullName.lastIndexOf(' ');
+        if (lastSpace > 0) {
+            lastName = fullName.substring(0, lastSpace).trim();
+            firstName = fullName.substring(lastSpace + 1).trim();
+        }
+        String code = "HS" + user.getId().toString().replace("-", "").substring(0, 8).toUpperCase(Locale.ROOT);
+        studentRepository.save(Student.builder()
+            .user(user)
+            .studentCode(code)
+            .firstName(firstName)
+            .lastName(lastName)
+            .status(ACTIVE_STATUS)
+            .build());
     }
 
     @Override
@@ -152,6 +191,9 @@ public class AuthServiceImpl implements AuthService {
             .expiresAt(OffsetDateTime.now().plusMinutes(30))
             .build());
         log.info("Created password reset token for {}", email);
+        // Token is delivered out-of-band (email in production); available here only
+        // for server-side logging/dev. It MUST NOT be returned to the HTTP client.
+        log.debug("Password reset token for {}: {}", email, token);
         return token;
     }
 

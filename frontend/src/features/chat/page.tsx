@@ -99,6 +99,19 @@ export default function ChatPage() {
     }
   };
 
+  const refreshSelectedGroup = async () => {
+    if (!selectedGroup) return;
+    try {
+      const fresh = await chatApi.getGroup(selectedGroup.id);
+      if (fresh) {
+        setSelectedGroup(fresh);
+        setGroups((prev) => prev.map((g) => (g.id === fresh.id ? fresh : g)));
+      }
+    } catch (error) {
+      console.error("Failed to refresh group:", error);
+    }
+  };
+
   const handleSelectGroup = async (group: ChatGroupResponse) => {
     setSelectedGroup(group);
     setMessages([]);
@@ -195,6 +208,7 @@ export default function ChatPage() {
             onSendMessage={handleSendMessage}
             currentUserId={user.id}
             connected={connected}
+            onMembersChanged={refreshSelectedGroup}
           />
         ) : (
           <div className="flex items-center justify-center h-full rounded-lg bg-white border border-gray-200">

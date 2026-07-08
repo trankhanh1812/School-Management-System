@@ -17,6 +17,8 @@ public interface ScoreService {
 
     ScoreResponse approveScore(String scoreId);
 
+    int approveScores(String examId);
+
     void publishScores(String examId);
 
     List<ScoreHistoryResponse> getScoreHistory(String scoreId);

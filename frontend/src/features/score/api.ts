@@ -63,33 +63,54 @@ export const scoreApi = {
   },
 
   update(scoreId: string, payload: ScoreUpsertPayload) {
-    return apiClient.put<ApiResponse<ScoreRecord>>(`/scores/${scoreId}`, payload, {
-      authenticated: true,
-    });
+    return apiClient.put<ApiResponse<ScoreRecord>>(
+      `/scores/${scoreId}`,
+      payload,
+      {
+        authenticated: true,
+      },
+    );
   },
 
   submit(examId: string) {
-    return apiClient.patch<ApiResponse<void>>(`/scores/submit?examId=${encodeURIComponent(examId)}`, {
-      authenticated: true,
-    });
+    return apiClient.patch<ApiResponse<void>>(
+      `/scores/submit?examId=${encodeURIComponent(examId)}`,
+      undefined,
+      { authenticated: true },
+    );
   },
 
   approve(scoreId: string) {
-    return apiClient.patch<ApiResponse<ScoreRecord>>(`/scores/${scoreId}/approve`, {
-      authenticated: true,
-    });
+    return apiClient.patch<ApiResponse<ScoreRecord>>(
+      `/scores/${scoreId}/approve`,
+      undefined,
+      { authenticated: true },
+    );
+  },
+
+  approveAll(examId: string) {
+    return apiClient.patch<ApiResponse<number>>(
+      `/scores/approve?examId=${encodeURIComponent(examId)}`,
+      undefined,
+      { authenticated: true },
+    );
   },
 
   publish(examId: string) {
-    return apiClient.patch<ApiResponse<void>>(`/scores/publish?examId=${encodeURIComponent(examId)}`, {
-      authenticated: true,
-    });
+    return apiClient.patch<ApiResponse<void>>(
+      `/scores/publish?examId=${encodeURIComponent(examId)}`,
+      undefined,
+      { authenticated: true },
+    );
   },
 
   history(scoreId: string) {
-    return apiClient.get<ApiResponse<ScoreHistoryRecord[]>>(`/scores/${scoreId}/history`, {
-      authenticated: true,
-    });
+    return apiClient.get<ApiResponse<ScoreHistoryRecord[]>>(
+      `/scores/${scoreId}/history`,
+      {
+        authenticated: true,
+      },
+    );
   },
 
   async downloadImportTemplate() {
@@ -97,7 +118,9 @@ export const scoreApi = {
     const response = await fetch(`${env.apiBaseUrl}/scores/import/template`, {
       method: "GET",
       headers: {
-        Authorization: tokens?.accessToken ? `Bearer ${tokens.accessToken}` : "",
+        Authorization: tokens?.accessToken
+          ? `Bearer ${tokens.accessToken}`
+          : "",
       },
     });
 
@@ -116,7 +139,9 @@ export const scoreApi = {
     const response = await fetch(`${env.apiBaseUrl}/scores/import/preview`, {
       method: "POST",
       headers: {
-        Authorization: tokens?.accessToken ? `Bearer ${tokens.accessToken}` : "",
+        Authorization: tokens?.accessToken
+          ? `Bearer ${tokens.accessToken}`
+          : "",
       },
       body: formData,
     });
@@ -125,7 +150,8 @@ export const scoreApi = {
       throw new Error("Không thể tạo bản xem trước điểm");
     }
 
-    const payload = (await response.json()) as ApiResponse<ScoreImportPreviewResponse>;
+    const payload =
+      (await response.json()) as ApiResponse<ScoreImportPreviewResponse>;
     return payload;
   },
 
@@ -137,7 +163,9 @@ export const scoreApi = {
     const response = await fetch(`${env.apiBaseUrl}/scores/import`, {
       method: "POST",
       headers: {
-        Authorization: tokens?.accessToken ? `Bearer ${tokens.accessToken}` : "",
+        Authorization: tokens?.accessToken
+          ? `Bearer ${tokens.accessToken}`
+          : "",
       },
       body: formData,
     });
@@ -146,7 +174,8 @@ export const scoreApi = {
       throw new Error("Nhập điểm thất bại");
     }
 
-    const payload = (await response.json()) as ApiResponse<ScoreImportPreviewResponse>;
+    const payload =
+      (await response.json()) as ApiResponse<ScoreImportPreviewResponse>;
     return payload;
   },
 };
