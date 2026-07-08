@@ -1,15 +1,14 @@
 package com.school.school_management.service.system;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.school.school_management.dto.system.SystemSettingResponse;
 import com.school.school_management.dto.system.SystemSettingUpsertRequest;
+import com.school.school_management.entity.SystemSetting;
 import com.school.school_management.exception.CustomException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import com.school.school_management.repository.SystemSettingRepository;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,67 +16,80 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class SystemSettingServiceImpl implements SystemSettingService {
 
-    private static final Path SETTINGS_PATH = Paths.get("tmp", "system-settings.json");
+    // Cấu hình là singleton: đúng 1 dòng trong bảng, luôn id = 1.
+    private static final Integer SETTINGS_ID = 1;
 
-    private final ObjectMapper objectMapper;
+    private final SystemSettingRepository systemSettingRepository;
 
-    public SystemSettingServiceImpl(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+    public SystemSettingServiceImpl(SystemSettingRepository systemSettingRepository) {
+        this.systemSettingRepository = systemSettingRepository;
     }
 
     @Override
     @Transactional(readOnly = true)
     public SystemSettingResponse getSettings() {
-        if (!Files.exists(SETTINGS_PATH)) {
-            return defaultSettings();
-        }
-
-        try {
-            SystemSettingResponse response = objectMapper.readValue(
-                    SETTINGS_PATH.toFile(),
-                    SystemSettingResponse.class
-            );
-            if (response.getAllowedSchoolIps() == null) {
-                response.setAllowedSchoolIps(new ArrayList<>());
-            }
-            return applyPromotionDefaults(response);
-        } catch (IOException exception) {
-            throw new CustomException("Failed to read system settings", 500);
-        }
+        return systemSettingRepository.findById(SETTINGS_ID)
+            .map(this::toResponse)
+            .orElseGet(this::defaultSettings);
     }
 
     @Override
     public SystemSettingResponse updateSettings(SystemSettingUpsertRequest request) {
         validateWeights(request);
 
-        SystemSettingResponse response = SystemSettingResponse.builder()
-                .allowedSchoolIps(normalizeIps(request.getAllowedSchoolIps()))
-                .oralWeight(request.getOralWeight())
-                .quiz15Weight(request.getQuiz15Weight())
-                .onePeriodWeight(request.getOnePeriodWeight())
-                .midtermWeight(request.getMidtermWeight())
-                .finalWeight(request.getFinalWeight())
-                .scoreEditWindowDays(request.getScoreEditWindowDays())
-                .requireAdminApproval(request.isRequireAdminApproval())
-                .passMark(request.getPassMark())
-                .failingSubjectMark(request.getFailingSubjectMark())
-                .maxFailedSubjectsToPromote(request.getMaxFailedSubjectsToPromote())
-                .graduationGradeLevel(request.getGraduationGradeLevel())
-                .build();
-        applyPromotionDefaults(response);
+        List<String> normalizedIps = normalizeIps(request.getAllowedSchoolIps());
 
-        try {
-            Files.createDirectories(SETTINGS_PATH.getParent());
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(SETTINGS_PATH.toFile(), response);
-            return response;
-        } catch (IOException exception) {
-            throw new CustomException("Failed to save system settings", 500);
+        SystemSetting entity = SystemSetting.builder()
+            .id(SETTINGS_ID)
+            .allowedSchoolIps(String.join(",", normalizedIps))
+            .oralWeight(request.getOralWeight())
+            .quiz15Weight(request.getQuiz15Weight())
+            .onePeriodWeight(request.getOnePeriodWeight())
+            .midtermWeight(request.getMidtermWeight())
+            .finalWeight(request.getFinalWeight())
+            .scoreEditWindowDays(request.getScoreEditWindowDays())
+            .requireAdminApproval(request.isRequireAdminApproval())
+            .passMark(request.getPassMark())
+            .failingSubjectMark(request.getFailingSubjectMark())
+            .maxFailedSubjectsToPromote(request.getMaxFailedSubjectsToPromote())
+            .graduationGradeLevel(request.getGraduationGradeLevel())
+            .build();
+
+        return toResponse(systemSettingRepository.save(entity));
+    }
+
+    private SystemSettingResponse toResponse(SystemSetting entity) {
+        SystemSettingResponse response = SystemSettingResponse.builder()
+            .allowedSchoolIps(splitIps(entity.getAllowedSchoolIps()))
+            .oralWeight(entity.getOralWeight())
+            .quiz15Weight(entity.getQuiz15Weight())
+            .onePeriodWeight(entity.getOnePeriodWeight())
+            .midtermWeight(entity.getMidtermWeight())
+            .finalWeight(entity.getFinalWeight())
+            .scoreEditWindowDays(entity.getScoreEditWindowDays())
+            .requireAdminApproval(entity.isRequireAdminApproval())
+            .passMark(entity.getPassMark())
+            .failingSubjectMark(entity.getFailingSubjectMark())
+            .maxFailedSubjectsToPromote(entity.getMaxFailedSubjectsToPromote())
+            .graduationGradeLevel(entity.getGraduationGradeLevel())
+            .build();
+        return applyPromotionDefaults(response);
+    }
+
+    private List<String> splitIps(String joined) {
+        if (joined == null || joined.isBlank()) {
+            return new ArrayList<>();
         }
+        return Arrays.stream(joined.split(","))
+            .map(String::trim)
+            .filter(ip -> !ip.isEmpty())
+            .distinct()
+            .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
      * Fills any missing promotion-policy field with its default. Uses nullable wrappers
-     * so that an older settings file (saved before these fields existed) still gets sane
+     * so that an older settings row (saved before these fields existed) still gets sane
      * defaults instead of 0, which would break promotion logic.
      */
     private SystemSettingResponse applyPromotionDefaults(SystemSettingResponse response) {
@@ -98,10 +110,10 @@ public class SystemSettingServiceImpl implements SystemSettingService {
 
     private void validateWeights(SystemSettingUpsertRequest request) {
         double total = request.getOralWeight()
-                + request.getQuiz15Weight()
-                + request.getOnePeriodWeight()
-                + request.getMidtermWeight()
-                + request.getFinalWeight();
+            + request.getQuiz15Weight()
+            + request.getOnePeriodWeight()
+            + request.getMidtermWeight()
+            + request.getFinalWeight();
 
         if (total <= 0) {
             throw new CustomException("Total weighted assessment weights must be greater than 0", 400);
@@ -114,11 +126,11 @@ public class SystemSettingServiceImpl implements SystemSettingService {
         }
 
         return rawIps.stream()
-                .filter(ip -> ip != null && !ip.trim().isEmpty())
-                .map(String::trim)
-                .distinct()
-                .peek(this::validateCidr)
-                .toList();
+            .filter(ip -> ip != null && !ip.trim().isEmpty())
+            .map(String::trim)
+            .distinct()
+            .peek(this::validateCidr)
+            .toList();
     }
 
     /**
@@ -162,20 +174,20 @@ public class SystemSettingServiceImpl implements SystemSettingService {
 
     private SystemSettingResponse defaultSettings() {
         return SystemSettingResponse.builder()
-                // Empty by default = allow QR attendance from any IP. Admin can add
-                // CIDR ranges in System Settings to restrict to the school network.
-                .allowedSchoolIps(new ArrayList<>())
-                .oralWeight(1.0)
-                .quiz15Weight(1.0)
-                .onePeriodWeight(2.0)
-                .midtermWeight(3.0)
-                .finalWeight(3.0)
-                .scoreEditWindowDays(3)
-                .requireAdminApproval(true)
-                .passMark(5.0)
-                .failingSubjectMark(5.0)
-                .maxFailedSubjectsToPromote(2)
-                .graduationGradeLevel(12)
-                .build();
+            // Empty by default = allow QR attendance from any IP. Admin can add
+            // CIDR ranges in System Settings to restrict to the school network.
+            .allowedSchoolIps(new ArrayList<>())
+            .oralWeight(1.0)
+            .quiz15Weight(1.0)
+            .onePeriodWeight(2.0)
+            .midtermWeight(3.0)
+            .finalWeight(3.0)
+            .scoreEditWindowDays(3)
+            .requireAdminApproval(true)
+            .passMark(5.0)
+            .failingSubjectMark(5.0)
+            .maxFailedSubjectsToPromote(2)
+            .graduationGradeLevel(12)
+            .build();
     }
 }
